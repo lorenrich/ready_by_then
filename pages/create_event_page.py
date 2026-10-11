@@ -52,4 +52,5 @@ with st.form("create_event"):
                     dietary_needs=dietary_needs,
                     event_complete=event_complete_final,
                     notes=notes)
+       st.switch_page("pages/events_page.py")
        

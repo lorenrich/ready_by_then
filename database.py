@@ -46,12 +46,14 @@ def initialize_schema(conn):
         CREATE TABLE IF NOT EXISTS recipes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        dish_type TEXT,
-        yield INTEGER,
-        preheat_temp INTEGER,
-        preheat_unit TEXT,
-        preheat_time_estimate INTEGER,
-        cook_time_estimate INTEGER,
+        recipe_type TEXT,
+        recipe_yield INTEGER,
+        recipe_cooking_vessel TEXT,
+        recipe_preheat_temp INTEGER,
+        recipe_preheat_unit TEXT,
+        recipe_preheat_time INTEGER,
+        recipe_cook_time INTEGER,
+        recipe_source TEXT,
         notes TEXT
         );
     """)
