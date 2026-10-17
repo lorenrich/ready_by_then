@@ -8,8 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 import pandas as pd
-from database import get_connection
-from recipes import create_recipe
+from database.database import get_connection
 
 # Create the connection to the database
 conn = get_connection()
@@ -32,4 +31,4 @@ if st.button("Create new recipe", type="primary", icon=":material/event:"):
 if df.empty:
     st.write("You do not have any recipes logged")
 else:
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")

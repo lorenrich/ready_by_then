@@ -1,41 +1,48 @@
 """
-Streamlit home page and navigation
+Streamlit app
 """
 # Import
 import streamlit as st
-from events import create_event
-from database import get_connection
+from database.database import get_connection
+from styles.page_config import pages
 
+# Connect to database
 conn = get_connection()
 
-# --- PAGE CONFIG ---
-home_page = st.Page("pages/home_page.py", title="Home", icon=":material/home:", default=True)
-events_page = st.Page("pages/events_page.py", title="Events", icon=":material/event:")
-create_event_page = st.Page("pages/create_event_page.py", title="Create Event", url_path="create_event")
-recipe_page = st.Page(page="pages/recipes_page.py", title="Recipes", icon=":material/chef_hat:")
-create_recipe_page = st.Page(page="pages/create_recipe_page.py", title="Create Recipe", icon=":material/chef_hat:")
-custom_lists_page = st.Page(page="pages/custom_lists_page.py", title="Custom Lists", icon=":material/list_alt:")
-help_page = st.Page(page="pages/help_page.py", title="Help", icon=":material/help:")
 
-# --- HIDE SPECIFIED PAGES FROM NAVIGATION ---
-st.html("""
-<style>
-    [data-testid="stSidebarNavLink"][href$="create_event"] {
-        display: none;
-    }
-</style>
-""")
-
-# --- SITE NAVIGATION ---
+# Site navigation
 pg = st.navigation([
-    home_page,
-    events_page,
-    create_event_page,
-    recipe_page,
-    create_recipe_page,
-    custom_lists_page,
-    help_page
-])
+    pages['home'],
+    pages['events'],
+    pages['event_details'],
+    pages['create_event'],
+    pages['edit_event'],
+    pages['recipes'],
+    pages['recipe_details'],
+    pages['create_recipe'],
+    pages['edit_recipe'],
+    pages['custom_lists'],
+    pages['custom_list_details'],
+    pages['create_custom_list'],
+    pages['edit_custom_list'],
+    pages['help']
+], position="hidden")
 
-# --- RUN NAVIGATION ---
+# Sidebar config
+with st.sidebar:
+    st.page_link(pages['home'])
+
+    st.page_link(pages['events'])
+    if pg in (pages['events'], pages['create_event']):
+        st.page_link(pages['event_details'], label="Event Details")
+        st.page_link(pages['create_event'], label="Create Event")
+        
+    st.page_link(pages['recipes'])
+
+    st.page_link(pages['custom_lists'])
+
+    st.page_link(pages['help'])
+
+
+# Run
 pg.run()

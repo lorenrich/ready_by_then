@@ -19,33 +19,34 @@ def get_connection():
 def initialize_schema(conn):
     conn.execute("""
         CREATE TABLE IF NOT EXISTS events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_name TEXT NOT NULL,
         event_date TEXT NOT NULL,
         num_adults INTEGER NOT NULL,
         num_kids INTEGER NOT NULL,
-        will_kids_eat_adult_meal BOOLEAN NOT NULL,
+        num_hearty_eaters INTEGER NOT NULL,
+        need_kids_menu BOOLEAN NOT NULL,
         dietary_needs TEXT,
         event_complete BOOLEAN DEFAULT 0,
-        notes TEXT
+        event_notes TEXT
         );
     """)
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS menus (
         event_id INTEGER,
-        menu_item_id INTEGER,
+        recipe_id INTEGER,
         host_prepares BOOLEAN DEFAULT 0,
-        whos_bringing TEXT,
-        FOREIGN KEY (event_id) REFERENCES events(id),
-        FOREIGN KEY (menu_item_id) REFERENCES recipes(id)
+        who_brings TEXT,
+        FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE
         );
     """)
         
     conn.execute("""
         CREATE TABLE IF NOT EXISTS recipes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        recipe_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        recipe_name TEXT NOT NULL,
         recipe_type TEXT,
         recipe_yield INTEGER,
         recipe_cooking_vessel TEXT,
@@ -60,13 +61,13 @@ def initialize_schema(conn):
         
     conn.execute("""
         CREATE TABLE IF NOT EXISTS recipe_ingredients (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ingredient_id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipe_id INTEGER NOT NULL,
         ingredient_name TEXT NOT NULL,
         amount INTEGER,
         unit TEXT,
         prep_timing TEXT,
-        FOREIGN KEY (recipe_id) REFERENCES recipes(id)
+        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE
         );
     """)
 
@@ -74,20 +75,21 @@ def initialize_schema(conn):
         CREATE TABLE IF NOT EXISTS recipe_components (
         parent_recipe_id INTEGER NOT NULL,
         component_recipe_id INTEGER NOT NULL,
-        FOREIGN KEY (parent_recipe_id) REFERENCES recipes(id),
-        FOREIGN KEY (component_recipe_id) REFERENCES recipes(id)
+        FOREIGN KEY (parent_recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
+        FOREIGN KEY (component_recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
         )
     """)
         
     conn.execute("""
         CREATE TABLE IF NOT EXISTS custom_lists (
-        id INTEGER PRIMARY KEY,
+        list_id INTEGER PRIMARY KEY,
         list_name TEXT NOT NULL,
         item_name TEXT NOT NULL,
         need_to_buy BOOLEAN DEFAULT 0,
         advance_prep_okay BOOLEAN DEFAULT 0,
         ideal_start_time INTEGER,  -- e.g. 1
-        ideal_start_units TEXT  -- e.g. 'day' for 1 day before event
+        ideal_start_units TEXT,  -- e.g. 'day' for 1 day before event
+        apply_to_all BOOLEAN DEFAULT 0,
         );
     """)
         
@@ -100,7 +102,7 @@ Set table data restrictions - thoughts, not fully built into rest of code yet
 ALTER_RECIPES_TABLE = """
     ALTER TABLE recipes
     ADD CONSTRAINT dish_type
-    CHECK (dish_type IN ('entree', 'side dish', 'salad', 'soup', 'dessert'));
+    CHECK (dish_type IN ('Entree', 'Side dish', 'Salad', 'Soup', 'Dessert'));
 """
 
 ALTER_INGREDIENTS_TABLE = """

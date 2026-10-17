@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-from database import get_connection
+from ready_by_then.database.database import get_connection
 from recipes import create_recipe
 
 # Create the connection to the database
