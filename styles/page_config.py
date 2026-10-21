@@ -16,6 +16,8 @@ pages = {
     'create_recipe': st.Page("pages/create_recipe.py", title="Create Recipe", url_path="create_recipe"),
     'edit_recipe': st.Page("pages/edit_recipe.py", title="Edit Recipe", url_path="edit_recipe"),
 
+    'add_ingredients': st.Page("pages/add_ingredients.py", title="Add Ingredients", url_path="add_ingredients"),
+
     'custom_lists': st.Page(page="pages/custom_lists.py", title="Custom Lists", icon=":material/list_alt:", url_path="custom_lists"),
     'custom_list_details': st.Page(page="pages/custom_list_details.py", title="Custom List Details", url_path="custom_list_details"),
     'copy_custom_list': st.Page(page="pages/copy_custom_list.py", title="Copy Custom List", url_path="copy_custom_list"),

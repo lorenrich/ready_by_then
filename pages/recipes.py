@@ -26,7 +26,7 @@ st.title("Recipes")
 st.space("small")
 
 # Buttons
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([1, 8], gap="small")
 with col1:
     if create_button(name='back'):
         st.switch_page(pages['home'])

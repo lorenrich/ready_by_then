@@ -25,7 +25,7 @@ def get_recipes_for_display(conn):
     SELECT 
         recipe_id AS "Recipe ID",
         recipe_name AS "Recipe",
-        recipe_type AS "Type"
+        recipe_type AS "Type",
         recipe_status AS "Status"
     FROM recipes
     ''', conn,
