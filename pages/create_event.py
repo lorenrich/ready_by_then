@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-from database.database import get_connection
+from database.database import get_connection, DEFAULT_STATUSES
 from database.events import create_event
 from styles.page_config import setup_page_defaults, pages, buttons
 
@@ -38,12 +38,13 @@ with st.form("create_event"):
                                  accept_new_options=False)
     kids_menu = 1 if need_kids_menu == "Yes" else 0
     dietary_needs = st.text_area("Does anyone have dietary needs or preferences?")
-    event_complete = st.selectbox("Has this event already happened?",
+    event_occurred = st.selectbox("Has this event already happened?",
                                   ["Yes", "No"],
                                   index=None,
                                   accept_new_options=False)
-    event_complete = 1 if event_complete == "Yes" else 0
+    event_occurred = 1 if event_occurred == "Yes" else 0
     event_notes = st.text_area("Any notes you want to make?")
+    event_status = st.selectbox("Are the event details complete?", options=DEFAULT_STATUSES, index=1)
 
     # Submit
     if st.form_submit_button("Submit"):
@@ -55,7 +56,8 @@ with st.form("create_event"):
                     num_hearty_eaters=num_hearty_eaters,
                     need_kids_menu=kids_menu, 
                     dietary_needs=dietary_needs,
-                    event_complete=event_complete,
-                    event_notes=event_notes)
+                    event_occurred=event_occurred,
+                    event_notes=event_notes,
+                    event_status=event_status)
        st.switch_page(pages['events'])
        

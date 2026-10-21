@@ -26,15 +26,19 @@ st.title("Events")
 st.space("small")
 
 # Buttons
-if create_button(name='back'):
-    st.switch_page(pages['home'])
+col1, col2 = st.columns(2)
+with col1:
+    if create_button(name='back'):
+        st.switch_page(pages['home'])
+with col2:
+    if create_button(name='create_event'):
+            st.switch_page(pages['create_event'])
 
 # Table of events
 if df.empty:
     st.write("You do not have any events logged")
     st.write(" ")
-    if create_button(name='create_event'):
-        st.switch_page(pages['create_event'])
+    
 else:
     event_table = st.dataframe(
         df, 
@@ -45,5 +49,5 @@ else:
 
     selected = event_table.selection.rows
     if selected:
-        st.session_state["selected_event_id"] = df.iloc[selected[0]]["Event ID"]
+        st.session_state["selected_event_id"] = int(df.iloc[selected[0]]["Event ID"])
         st.switch_page(pages['event_details'])

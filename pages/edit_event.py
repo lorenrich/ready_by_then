@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 import pandas as pd
-from database.database import get_connection, edit_event
-from database.events import get_selected_event
+from database.database import get_connection, DEFAULT_STATUSES
+from database.events import get_selected_event, edit_event
 from styles.page_config import setup_page_defaults, pages
 
 # Connect to database
@@ -35,13 +35,17 @@ st.title("Edit Event")
 st.space("small")
 
 # Identify default index values for form selectbox
-kids_menu_options = selected_event_df['need_kids_menu'].tolist()
-kids_menu_default_value = selected_event_df["need_kids_menu"]
-kids_menu_default_idx = kids_menu_options.index(kids_menu_default_value)
+kids_menu_default_value = selected_event_df["need_kids_menu"]  # 1 or 0
+if kids_menu_default_value == 1:  # Yes
+    kids_menu_default_idx = 0  # Yes is first index
+else:
+    kids_menu_default_idx = 1
 
-event_complete_options = selected_event_df['event_complete'].tolist()
-event_complete_default = selected_event_df["event_complete"]
-event_complete_default_idx = event_complete_options.index(event_complete_default)
+event_occurred_default_value = selected_event_df["event_occurred"]
+if event_occurred_default_value == 1:
+    event_occurred_default_idx = 0
+else:
+    event_occurred_default_idx = 1
 
 # Form
 with st.form("edit_event"):
@@ -65,13 +69,14 @@ with st.form("edit_event"):
     kids_menu = 1 if need_kids_menu == "Yes" else 0
     dietary_needs = st.text_area("Does anyone have dietary needs or preferences?", 
                                  value=selected_event_df["dietary_needs"])
-    event_complete = st.selectbox("Has this event already happened?",
+    event_occurred = st.selectbox("Has this event already happened?",
                                   ["Yes", "No"],
-                                  index=event_complete_default_idx,
+                                  index=event_occurred_default_idx,
                                   accept_new_options=False)
-    event_complete = 1 if event_complete == "Yes" else 0
+    event_occurred = 1 if event_occurred == "Yes" else 0
     event_notes = st.text_area("Any notes you want to make?", 
-                               value=selected_event_df["notes"])
+                               value=selected_event_df["event_notes"])
+    event_status = st.selectbox("Are the event details complete?", options=DEFAULT_STATUSES, value=selected_event_df['event_status'])
 
     # Save 
     if st.form_submit_button("Save changes"):
@@ -84,7 +89,8 @@ with st.form("edit_event"):
                   num_hearty_eaters=num_hearty_eaters,
                   need_kids_menu=kids_menu, 
                   dietary_needs=dietary_needs,
-                  event_complete=event_complete,
-                  event_notes=event_notes)
+                  event_occurred=event_occurred,
+                  event_notes=event_notes,
+                  event_status=event_status)
        st.switch_page(pages['events'])
        

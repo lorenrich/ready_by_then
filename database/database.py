@@ -27,8 +27,9 @@ def initialize_schema(conn):
         num_hearty_eaters INTEGER NOT NULL,
         need_kids_menu BOOLEAN NOT NULL,
         dietary_needs TEXT,
-        event_complete BOOLEAN DEFAULT 0,
-        event_notes TEXT
+        event_occurred BOOLEAN DEFAULT 0,
+        event_notes TEXT,
+        event_status TEXT NOT NULL DEFAULT 'Incomplete'
         );
     """)
 
@@ -38,6 +39,7 @@ def initialize_schema(conn):
         recipe_id INTEGER,
         host_prepares BOOLEAN DEFAULT 0,
         who_brings TEXT,
+        menu_status TEXT NOT NULL DEFAULT 'Incomplete',
         FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
         FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE
         );
@@ -55,7 +57,8 @@ def initialize_schema(conn):
         recipe_preheat_time INTEGER,
         recipe_cook_time INTEGER,
         recipe_source TEXT,
-        notes TEXT
+        recipe_notes TEXT,
+        recipe_status TEXT NOT NULL DEFAULT 'Incomplete'
         );
     """)
         
@@ -75,8 +78,11 @@ def initialize_schema(conn):
         CREATE TABLE IF NOT EXISTS recipe_components (
         parent_recipe_id INTEGER NOT NULL,
         component_recipe_id INTEGER NOT NULL,
-        FOREIGN KEY (parent_recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-        FOREIGN KEY (component_recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+        amount REAL,
+        unit TEXT,
+        PRIMARY KEY (parent_recipe_id, component_recipe_id)
+        FOREIGN KEY (parent_recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
+        FOREIGN KEY (component_recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT
         )
     """)
         
@@ -90,20 +96,62 @@ def initialize_schema(conn):
         ideal_start_time INTEGER,  -- e.g. 1
         ideal_start_units TEXT,  -- e.g. 'day' for 1 day before event
         apply_to_all BOOLEAN DEFAULT 0,
+        TEXT NOT NULL DEFAULT 'Incomplete'
         );
     """)
         
     conn.commit()
 
+DEFAULT_STATUSES = [
+    "Complete",
+    "Incomplete"
+]
+
+
+ALLOWED_COLUMNS = {
+    "recipes": {"recipe_type", "recipe_preheat_unit"},
+}
+
+
+def get_unique_records(conn, table_name, col_name):
+    if col_name not in ALLOWED_COLUMNS.get(table_name, set()):
+        raise ValueError(f"Not allowed: {table_name}.{col_name}")
+
+    rows = conn.execute(
+        f"""
+        SELECT DISTINCT {col_name}
+        FROM {table_name}
+        WHERE {col_name} IS NOT NULL AND {col_name} != ''
+        ORDER BY {col_name} COLLATE NOCASE
+        """
+    ).fetchall()
+    return [row[0] for row in rows]
+
+
+def update_and_default_selectbox(conn, table_name, col_name, selected_record_df, default_options):
+    # Get unique values from existing database table
+    entries = get_unique_records(conn=conn, table_name=table_name, col_name=col_name)
+
+    # Identify user selection
+    default_entry = selected_record_df[col_name]
+
+    # Guard against None values and entries missing from unique values
+    if default_entry and default_entry not in entries:
+        entries.append(default_entry)
+
+    # Ensure default options are in the list if they aren't found in table records
+    for i in default_options:
+        if i not in entries:
+            entries.append(i)
+
+    # Sort the list
+    entries = sorted(entries)
+
+    return entries
+
 
 '''
 Set table data restrictions - thoughts, not fully built into rest of code yet
-
-ALTER_RECIPES_TABLE = """
-    ALTER TABLE recipes
-    ADD CONSTRAINT dish_type
-    CHECK (dish_type IN ('Entree', 'Side dish', 'Salad', 'Soup', 'Dessert'));
-"""
 
 ALTER_INGREDIENTS_TABLE = """
     ALTER TABLE ingredients
