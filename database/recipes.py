@@ -15,6 +15,34 @@ DEFAULT_PREHEAT_UNITS = [
     'Fahrenheit'
 ]
 
+DEFAULT_RECIPE_SECTIONS = [
+    'Main ingredients',
+    'Sauce',
+    'Dressing',
+    'Garnish'
+]
+
+DEFAULT_INGREDIENT_NAMES = [
+    'Type to add new ingredient'
+]
+
+DEFAULT_UNITS = [
+    'cup(s)',
+    'Tbsp',
+    'tsp'
+]
+
+PREP_OPTIONS = [
+    'Day before',
+    'Day of',
+    'At Serving'
+]
+
+INGREDIENT_TYPE = [
+    'Ingredient',
+    'Recipe'
+]
+
 
 def get_recipes_for_display(conn):
     """
@@ -61,7 +89,6 @@ def get_selected_recipe(conn, recipe_id):
 
 
 def edit_recipe(conn, 
-                recipe_id, 
                 recipe_name,
                 recipe_type, 
                 recipe_yield,
@@ -72,7 +99,8 @@ def edit_recipe(conn,
                 recipe_cook_time,
                 recipe_source,
                 recipe_notes,
-                recipe_status
+                recipe_status,
+                recipe_id,   
                 ):
     """
     Modify content of a logged recipe record
@@ -83,8 +111,7 @@ def edit_recipe(conn,
         SET recipe_name = ?, recipe_type = ?, recipe_yield = ?, recipe_cooking_vessel = ?, recipe_preheat_temp = ?, recipe_preheat_unit = ?, recipe_preheat_time = ?, recipe_cook_time = ?, recipe_source = ?, recipe_notes = ?, recipe_status = ?
         WHERE recipe_id = ?;
         """,
-        (recipe_id,
-         recipe_name,
+        (recipe_name,
          recipe_type,
          recipe_yield,
          recipe_cooking_vessel,
@@ -94,7 +121,8 @@ def edit_recipe(conn,
          recipe_cook_time,
          recipe_source,
          recipe_notes,
-         recipe_status 
+         recipe_status,
+         recipe_id
          )
     )
     conn.commit()
@@ -145,5 +173,15 @@ def delete_recipe(conn, recipe_id):
                  )
     conn.commit()
     return cur.rowcount
+
+def resolve_recipe_timing(conn, recipe_id, section_id, section_name, ingredient_name):
+    conn.execute("""
+    SELECT i.ingredient_name, s.section_name,
+       COALESCE(s.prep_days_before, i.prep_days_before) AS effective_prep
+    FROM recipe_ingredients i
+    LEFT JOIN recipe_sections s ON i.section_id = s.section_id
+    WHERE i.recipe_id = ?
+    """)
+    conn.commit()
 
     

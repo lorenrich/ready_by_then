@@ -24,6 +24,7 @@ pg = st.navigation([
     pages['create_recipe'],
     pages['edit_recipe'],
     pages['add_ingredients'],
+    pages['edit_ingredients'],
     pages['custom_lists'],
     pages['custom_list_details'],
     pages['create_custom_list'],

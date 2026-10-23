@@ -47,6 +47,12 @@ preheat_units = update_and_default_selectbox(conn=conn,
                                              selected_record_df=selected_recipe_df,
                                              default_options=DEFAULT_PREHEAT_UNITS)
 
+recipe_status_default_value = selected_recipe_df["recipe_status"]
+if recipe_status_default_value == "Complete":
+    recipe_status_default_idx = 0
+else:
+    recipe_status_default_idx = 1
+
 # Identify default user selections
 default_recipe_type = selected_recipe_df['recipe_type']
 default_preheat_unit = selected_recipe_df['recipe_preheat_unit']
@@ -54,7 +60,7 @@ default_preheat_unit = selected_recipe_df['recipe_preheat_unit']
 # Form
 with st.form("edit_recipe"):
     recipe_id = st.text_input("Recipe ID", 
-                                   value=selected_recipe_df["recipe_id"], disabled=True)
+                                   value=recipe_id, disabled=True)
     recipe_name = st.text_input("Recipe name", 
                                value=selected_recipe_df["recipe_name"])
     recipe_type = st.selectbox(
@@ -80,23 +86,39 @@ with st.form("edit_recipe"):
     recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1, value=selected_recipe_df['recipe_cook_time'])
     recipe_source = st.text_input("Who or where is this recipe from?", value=selected_recipe_df['recipe_source'])
     recipe_notes = st.text_area("Any extra notes you want to add?", value=selected_recipe_df['recipe_notes'])
-    recipe_status = st.selectbox("Is this recipe now complete?", options=DEFAULT_STATUSES, value=selected_recipe_df['recipe_status'])
-    
-    # Save 
-    if st.form_submit_button("Save changes"):
-       edit_recipe(conn,
-                   recipe_id=recipe_id,
-                   recipe_name=recipe_name,
-                   recipe_type=recipe_type,
-                   recipe_yield=recipe_yield,
-                   recipe_cooking_vessel=recipe_cooking_vessel,
-                   recipe_preheat_temp=recipe_preheat_temp,
-                   recipe_preheat_unit=recipe_preheat_unit,
-                   recipe_preheat_time=recipe_preheat_time,
-                   recipe_cook_time=recipe_cook_time,
-                   recipe_source=recipe_source,
-                   recipe_notes=recipe_notes,
-                   recipe_status=recipe_status
-                  )
-       st.switch_page(pages['recipes'])
-       
+    recipe_status = st.selectbox("Is this recipe now complete?", options=DEFAULT_STATUSES, index=recipe_status_default_idx)
+
+
+    # Take user to add_ingredients or submit as-is
+    col1, col2 = st.columns([1, 7], gap="small")
+
+    with col1:
+        add_now = st.form_submit_button("Edit ingredients", type="primary")
+    with col2:
+        add_later = st.form_submit_button("I'll edit ingredients later")
+
+    if add_now or add_later:
+        if not recipe_name.strip():
+            st.error("Please give the recipe a name.")
+            st.stop()
+
+        edit_recipe(conn,
+                    recipe_name=recipe_name,
+                    recipe_type=recipe_type,
+                    recipe_yield=recipe_yield,
+                    recipe_cooking_vessel=recipe_cooking_vessel,
+                    recipe_preheat_temp=recipe_preheat_temp,
+                    recipe_preheat_unit=recipe_preheat_unit,
+                    recipe_preheat_time=recipe_preheat_time,
+                    recipe_cook_time=recipe_cook_time,
+                    recipe_source=recipe_source,
+                    recipe_notes=recipe_notes,
+                    recipe_status=recipe_status,
+                    recipe_id=recipe_id,
+                    )
+
+        if add_now:
+            updated_recipe_id = st.session_state["selected_recipe_id"]
+            st.switch_page(pages["add_ingredients"])
+        else:
+            st.switch_page(pages["recipes"])

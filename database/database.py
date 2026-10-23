@@ -85,6 +85,17 @@ def initialize_schema(conn):
         FOREIGN KEY (component_recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT
         )
     """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS recipe_sections (
+        section_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        recipe_id INTEGER NOT NULL,
+        section_name TEXT NOT NULL,
+        prep_days_before INTEGER,
+        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
+        UNIQUE (recipe_id, section_name)
+        );
+    """)
         
     conn.execute("""
         CREATE TABLE IF NOT EXISTS custom_lists (
