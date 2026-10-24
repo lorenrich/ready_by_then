@@ -32,11 +32,11 @@ DEFAULT_UNITS = [
     'tsp'
 ]
 
-PREP_OPTIONS = [
-    'Day before',
-    'Day of',
-    'At Serving'
-]
+PREP_OPTIONS = {
+    'Day before': 2,
+    'Day of': 1,
+    'At Serving': 0
+}
 
 INGREDIENT_TYPE = [
     'Ingredient',
@@ -166,15 +166,14 @@ def copy_recipe(conn,
 
 
 def delete_recipe(conn, recipe_id):
-    cur = conn.execute(
+    conn.execute(
         """
         DELETE FROM recipes WHERE recipe_id = ?
         """, (int(recipe_id),)
                  )
     conn.commit()
-    return cur.rowcount
 
-def resolve_recipe_timing(conn, recipe_id, section_id, section_name, ingredient_name):
+def resolve_recipe_timing(conn, recipe_id):
     conn.execute("""
     SELECT i.ingredient_name, s.section_name,
        COALESCE(s.prep_days_before, i.prep_days_before) AS effective_prep
@@ -182,6 +181,75 @@ def resolve_recipe_timing(conn, recipe_id, section_id, section_name, ingredient_
     LEFT JOIN recipe_sections s ON i.section_id = s.section_id
     WHERE i.recipe_id = ?
     """)
-    conn.commit()
 
-    
+def get_or_create_section(conn, recipe_id, name):
+    cursor = conn.execute(
+        """
+        SELECT section_id FROM recipe_sections WHERE recipe_id = ? AND section_name = ? COLLATE NOCASE
+        """, (recipe_id, name)
+    )
+    row = cursor.fetchone()
+    if row:
+        return row[0]
+    else:
+        cursor = conn.execute(
+            """
+            INSERT INTO recipe_sections (recipe_id, section_name) VALUES (?, ?)
+            """,
+            (recipe_id, name)
+        )
+        return cursor.lastrowid
+
+
+def get_or_create_stub(conn, name):
+    row = conn.execute(
+        """
+        SELECT recipe_id FROM recipes WHERE recipe_name = ? COLLATE NOCASE
+        """, (name.strip()),
+    ).fetchone()
+    if row:
+        return row[0]
+
+    cur = conn.execute(
+        """
+        INSERT INTO recipes (recipe_name, recipe_status) VALUES(?, 'Incomplete')
+        """, (name.strip()),
+    )
+    return cur.lastrowid
+
+
+def save_ingredients(conn, recipe_id, items):
+    recipe_id = int(recipe_id)
+    try:
+        # Delete any existing data
+        conn.execute("""DELETE from recipe_components WHERE parent_recipe_id = ?""", (int(recipe_id),))
+        conn.execute("""DELETE FROM recipe_ingredients WHERE recipe_id = ?""", (int(recipe_id),))
+        conn.execute("""DELETE FROM recipe_sections WHERE recipe_id = ?""", (int(recipe_id),))
+
+        for item in items:
+            section_id = get_or_create_section(conn, recipe_id, item["section"]) if item["section"] else None
+            if item["type"] == "Recipe":
+                component_id = get_or_create_stub(conn, item["name"])
+                if component_id == recipe_id:
+                    raise ValueError("A recipe can't be an ingredient of itself.")
+
+                # Insert into recipe_components
+                conn.execute(
+                    """
+                    INSERT INTO recipe_components (parent_recipe_id, component_recipe_id, section_id, amount, unit, prep_timing) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (recipe_id, component_id, section_id, item["amount"], item["unit"], item["prep"])
+                    
+                )
+            else:
+                # Insert into recipe_ingredients
+                conn.execute(
+                    """
+                    INSERT INTO recipe_ingredients (recipe_id, recipe_section, ingredient_name, amount, unit, prep_timing) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (recipe_id, section_id, item["name"], item["amount"], item["unit"], item["prep"]),
+                    )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise

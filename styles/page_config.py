@@ -72,6 +72,7 @@ buttons = {
 
     'recipes': dict(label="Recipes", type="primary", icon=":material/chef_hat:"),
     'create_recipe': dict(label='Create new recipe', type='primary', icon=":material/chef_hat:"),
+    'save_ingredients': dict(label='Sabe ingredients', type='primary', icon='Lmaterial/grocery:'),
 
     'help': dict(label="Help", type="primary", icon=":material/help:")
 }

@@ -66,11 +66,13 @@ def initialize_schema(conn):
         CREATE TABLE IF NOT EXISTS recipe_ingredients (
         ingredient_id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipe_id INTEGER NOT NULL,
+        section_id INTEGER,
         ingredient_name TEXT NOT NULL,
-        amount INTEGER,
+        amount REAL,
         unit TEXT,
-        prep_timing TEXT,
-        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE
+        prep_timing INTEGER,
+        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
+        FOREIGN KEY (section_id) REFERENCES recipe_sections(section_id) ON DELETE SET NULL
         );
     """)
 
@@ -78,11 +80,15 @@ def initialize_schema(conn):
         CREATE TABLE IF NOT EXISTS recipe_components (
         parent_recipe_id INTEGER NOT NULL,
         component_recipe_id INTEGER NOT NULL,
+        section_id INTEGER,
         amount REAL,
         unit TEXT,
-        PRIMARY KEY (parent_recipe_id, component_recipe_id)
+        prep_timing INTEGER,
+        PRIMARY KEY (parent_recipe_id, component_recipe_id),
+        CHECK (parent_recipe_id != component_recipe_id),
         FOREIGN KEY (parent_recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
-        FOREIGN KEY (component_recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT
+        FOREIGN KEY (component_recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT,
+        FOREIGN KEY (section_id) REFERENCES recipe_sections(section_id) ON DELETE SET NULL
         )
     """)
 
@@ -91,7 +97,7 @@ def initialize_schema(conn):
         section_id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipe_id INTEGER NOT NULL,
         section_name TEXT NOT NULL,
-        prep_days_before INTEGER,
+        prep_timing INTEGER,
         FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
         UNIQUE (recipe_id, section_name)
         );
