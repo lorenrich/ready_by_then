@@ -90,6 +90,7 @@ with st.form("copy_recipe"):
                      recipe_preheat_time=recipe_preheat_time,
                      recipe_cook_time=recipe_cook_time,
                      recipe_source=recipe_source,
-                     recipe_notes=recipe_notes)
+                     recipe_notes=recipe_notes,
+                     recipe_status=recipe_status)
        st.switch_page("pages/recipes.py")
        

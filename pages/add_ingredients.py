@@ -55,7 +55,7 @@ if st.session_state.get("rows_for_recipe") != recipe_id:
 
 
 for rid in st.session_state.rows:
-    c1, c2, c3, c4, c5, c6, c7 = st.columns([1.5, 2.5, 1.25, 1, 1.5, 1.25, 0.6])
+    c1, c2, c3, c4, c5, c6, c7 = st.columns([1.5, 2.5, 1.25, 1, 1.5, 1.25, 0.6], vertical_alignment="bottom")
 
     c1.selectbox("Section", 
                  options=DEFAULT_RECIPE_SECTIONS, 
@@ -148,5 +148,5 @@ if create_button(name='save_ingredients'):
 
 
     # st.selectbox("Ready to mark this recipe as complete?")  Does this make sense here?
-    # Need edit_ingredients page
+  
     

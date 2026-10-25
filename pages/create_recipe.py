@@ -26,7 +26,7 @@ with st.form("create_recipe"):
     st.write("Let's get started!")
     
     with st.expander("Instructions"):
-        st.write("Ready by Then needs your recipe details like cook time and ingredients but not your recipe steps like 'Add ingredients to bowl'.")
+        st.write('Ready by Then needs your recipe details like cook time and ingredients but not your recipe steps like "Add ingredients to bowl".')
         st.write("You can come back and edit a recipe at any time, even if it's marked complete.  We'll remind you when you have incomplete recipes.")
         st.write("Once you create a recipe, you can tag it to a menu from the Menu page.")
 
@@ -66,7 +66,7 @@ with st.form("create_recipe"):
             recipe_cook_time=recipe_cook_time,
             recipe_source=recipe_source,
             recipe_notes=recipe_notes,
-            recipe_status="incomplete",
+            recipe_status="Incomplete",
         )
 
         if add_now:
