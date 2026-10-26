@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-from database.database import get_connection
+from database.database import get_connection, update_and_default_selectbox
 from database.recipes import create_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
 from styles.page_config import setup_page_defaults, pages, buttons, create_button
 
@@ -17,9 +17,23 @@ conn = get_connection()
 # Set up pages
 setup_page_defaults()
 
+# Update page dropdowns
+recipe_types = update_and_default_selectbox(conn=conn, 
+                                            table_name='recipes', 
+                                            col_name='recipe_type', 
+                                            default_options=DEFAULT_RECIPE_TYPES)
+
+preheat_unit_types = update_and_default_selectbox(conn=conn, 
+                                                  table_name='recipes', 
+                                                  col_name='recipe_preheat_unit', 
+                                                  default_options=DEFAULT_PREHEAT_UNITS)
+
 # Title
 st.title("Create New Recipe")
 st.write(" ")
+
+if create_button(name='back'):
+        st.switch_page(pages['home'])
 
 # Form
 with st.form("create_recipe"):
@@ -31,11 +45,11 @@ with st.form("create_recipe"):
         st.write("Once you create a recipe, you can tag it to a menu from the Menu page.")
 
     recipe_name = st.text_input("Recipe Name")
-    recipe_type = st.selectbox("Recipe Type", DEFAULT_RECIPE_TYPES, index=None, accept_new_options=True)
+    recipe_type = st.selectbox("Recipe Type", recipe_types, index=None, accept_new_options=True)
     recipe_yield = st.number_input("Servings Yield", step=1)
     recipe_cooking_vessel = st.text_input("Where recipe is cooked (e.g. oven, air fryer)")
     recipe_preheat_temp = st.number_input("Preheat Temperature", step=1)
-    recipe_preheat_unit = st.selectbox("Preheat Unit", DEFAULT_PREHEAT_UNITS, index=None, accept_new_options=True)
+    recipe_preheat_unit = st.selectbox("Preheat Unit", preheat_unit_types, index=None, accept_new_options=True)
     recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1)
     recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1)
     recipe_source = st.text_input("Who or where is this recipe from?")

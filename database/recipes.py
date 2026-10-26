@@ -32,13 +32,13 @@ DEFAULT_UNITS = [
     'tsp'
 ]
 
-PREP_OPTIONS = {
+DEFAULT_PREP_OPTIONS = {
     'Day before': 2,
     'Day of': 1,
     'At Serving': 0
 }
 
-INGREDIENT_TYPE = [
+DEFAULT_INGREDIENT_TYPE = [
     'Ingredient',
     'Recipe'
 ]

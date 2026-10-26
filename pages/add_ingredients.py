@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 from collections import Counter
-from database.database import get_connection
-from database.recipes import get_selected_recipe, save_ingredients, DEFAULT_RECIPE_SECTIONS, DEFAULT_INGREDIENT_NAMES, DEFAULT_UNITS, PREP_OPTIONS, INGREDIENT_TYPE
+from database.database import get_connection, update_and_default_selectbox
+from database.recipes import get_selected_recipe, save_ingredients, DEFAULT_RECIPE_SECTIONS, DEFAULT_INGREDIENT_NAMES, DEFAULT_UNITS, DEFAULT_PREP_OPTIONS, DEFAULT_INGREDIENT_TYPE
 from styles.page_config import setup_page_defaults, pages, buttons, create_button
 
 # Connect to database
@@ -29,6 +29,25 @@ if selected_recipe_df.empty:
 
 # Set up pages
 setup_page_defaults()
+
+# Update page dropdowns
+# TODO if this page is also used to edit, include selected_df_col in the update_and_default_selectbox with a guard for "add" not "edit"
+recipe_sections = update_and_default_selectbox(conn=conn, 
+                                               table_name='recipe_sections', 
+                                               col_name='section_name', 
+                                               default_options=DEFAULT_RECIPE_SECTIONS)
+
+ingredient_names = update_and_default_selectbox(conn=conn, 
+                                                table_name='recipe_ingredients',
+                                                col_name='ingredient_name', 
+                                                default_options=DEFAULT_INGREDIENT_NAMES)
+
+amount_units = update_and_default_selectbox(conn=conn,
+                                            table_name='recipe_ingredients',
+                                            col_name='unit',
+                                            default_options=DEFAULT_UNITS)
+
+
 
 # Title
 st.title("Add Ingredients")
@@ -58,21 +77,21 @@ for rid in st.session_state.rows:
     c1, c2, c3, c4, c5, c6, c7 = st.columns([1.5, 2.5, 1.25, 1, 1.5, 1.25, 0.6], vertical_alignment="bottom")
 
     c1.selectbox("Section", 
-                 options=DEFAULT_RECIPE_SECTIONS, 
+                 options=recipe_sections, 
                  index=None, 
                  accept_new_options=True,
                  key=f"section_{rid}", 
                  label_visibility="visible" if rid == st.session_state.rows[0] else "collapsed")
     
     c2.selectbox("Ingredient", 
-                 options=DEFAULT_INGREDIENT_NAMES, 
+                 options=ingredient_names, 
                  index=None, 
                  accept_new_options=True, 
                  key=f"name_{rid}",
                  label_visibility="visible" if rid == st.session_state.rows[0] else "collapsed")
 
     c3.selectbox("Type",
-                 options=INGREDIENT_TYPE,
+                 options=DEFAULT_INGREDIENT_TYPE,
                  accept_new_options=False,
                  key=f"type_{rid}",
                  label_visibility="visible" if rid == st.session_state.rows[0] else "collapsed")
@@ -84,14 +103,14 @@ for rid in st.session_state.rows:
                     label_visibility="visible" if rid == st.session_state.rows[0] else "collapsed")
     
     c5.selectbox("Unit", 
-                 options=DEFAULT_UNITS, 
+                 options=amount_units, 
                  index=None, 
                  accept_new_options=True, 
                  key=f"unit_{rid}",
                  label_visibility="visible" if rid == st.session_state.rows[0] else "collapsed")
     
     c6.selectbox("Prep timing", 
-                 list(PREP_OPTIONS), 
+                 list(DEFAULT_PREP_OPTIONS), 
                  index=None, 
                  key=f"prep_{rid}",
                  label_visibility="visible" if rid == st.session_state.rows[0] else "collapsed")
@@ -120,7 +139,7 @@ if create_button(name='save_ingredients'):
             "type": st.session_state[f"type_{rid}"],
             "amount": st.session_state[f"amount_{rid}"],
             "unit": st.session_state[f"unit_{rid}"],
-            "prep": PREP_OPTIONS.get(st.session_state.get(f"prep_{rid}")),
+            "prep": DEFAULT_PREP_OPTIONS.get(st.session_state.get(f"prep_{rid}")),
         })
 
     # Guard against no data

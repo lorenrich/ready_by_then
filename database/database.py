@@ -4,6 +4,7 @@ Database connection and schema
 # Import
 import sqlite3
 import os
+import pandas as pd
 
 # Identify directory path
 DB_PATH = "ready_by_then.db"
@@ -127,6 +128,8 @@ DEFAULT_STATUSES = [
 
 ALLOWED_COLUMNS = {
     "recipes": {"recipe_type", "recipe_preheat_unit"},
+    "recipe_ingredients": {"ingredient_name", "unit"},
+    "recipe_sections": {"section_name"}
 }
 
 
@@ -145,26 +148,30 @@ def get_unique_records(conn, table_name, col_name):
     return [row[0] for row in rows]
 
 
-def update_and_default_selectbox(conn, table_name, col_name, selected_record_df, default_options):
+def update_and_default_selectbox(conn, table_name, col_name, default_options, selected_record_df=None):
+    """
+    Remember to add any new fields to ALLOWED_COLUMNS in db.py or this will throw a ValueError.
+    """
     # Get unique values from existing database table
     entries = get_unique_records(conn=conn, table_name=table_name, col_name=col_name)
 
     # Identify user selection
-    default_entry = selected_record_df[col_name]
+    options = list(default_options)
+    if selected_record_df is not None:
+        current = selected_record_df[col_name]
+        if pd.notna(current) and current:
+            options.append(current)
 
-    # Guard against None values and entries missing from unique values
-    if default_entry and default_entry not in entries:
-        entries.append(default_entry)
+    # Drop entries to lowercase
+    seen = {e.strip().lower() for e in entries}
 
     # Ensure default options are in the list if they aren't found in table records
-    for i in default_options:
-        if i not in entries:
-            entries.append(i)
+    for o in options:
+        if o.strip().lower() not in seen:
+            entries.append(o.strip())
+            seen.add(o.strip().lower())
 
-    # Sort the list
-    entries = sorted(entries)
-
-    return entries
+    return sorted(entries, key=str.lower)
 
 
 '''

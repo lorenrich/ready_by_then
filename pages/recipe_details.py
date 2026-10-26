@@ -86,7 +86,10 @@ cooktops = [
         'stove'
     ]
 
-cooking_vessel = selected_recipe_df['recipe_cooking_vessel'].lower()
+if selected_recipe_df['recipe_cooking_vessel']:
+    cooking_vessel = selected_recipe_df['recipe_cooking_vessel'].lower()
+else:
+    cooking_vessel = None
 
 # Write recipe details to page
 recipe_info_col, recipe_ingredient_col = st.columns(2, border=True)
@@ -107,12 +110,13 @@ with recipe_info_col:
         st.write(selected_recipe_df['recipe_type'] if selected_recipe_df['recipe_type'] else "&nbsp;")
         st.write(selected_recipe_df['recipe_yield'] if selected_recipe_df['recipe_yield'] else "&nbsp;")
 
-        if cooking_vessel == 'oven':
+        if not cooking_vessel:
+            st.write("&nbsp;")
+        elif cooking_vessel == 'oven':
             st.write(f"Bake at {selected_recipe_df['recipe_preheat_temp']} degrees {selected_recipe_df["recipe_preheat_unit"]} in {selected_recipe_df["recipe_cooking_vessel"]} for {selected_recipe_df['recipe_cook_time']}")
         elif cooking_vessel in cooktops:
             st.write(f"Cook on stove for {selected_recipe_df['recipe_cook_time']} (includes preheat time)")
-        elif not cooking_vessel:
-            st.write("&nbsp;")
+            
 
         st.write(selected_recipe_df["recipe_source"] if selected_recipe_df['recipe_source'] else "&nbsp;")
         st.write(selected_recipe_df['recipe_notes'] if selected_recipe_df['recipe_notes'] else "&nbsp;")
@@ -129,9 +133,13 @@ with recipe_ingredient_col:
         if selected_recipe_ingredients_df is None:
             st.markdown("*No ingredients listed.  Select **Edit** to start adding.*")
         else:
-            st.write(len(selected_recipe_ingredients_df))
-            for i in selected_recipe_ingredients_df['ingredient_name']:
-                st.write(f"{selected_recipe_ingredients_df['ingredient_name']}, {selected_recipe_ingredients_df['amount']} {selected_recipe_ingredients_df['unit']}")
+            for row in selected_recipe_ingredients_df.itertuples():
+                parts = [row.ingredient_name]
+                if pd.notna(row.amount):
+                    parts.append(f"{row.amount:g}")
+                if pd.notna(row.unit):
+                    parts.append(row.unit)
+                st.write(" ".join(parts))
 
 st.space("small")
 
