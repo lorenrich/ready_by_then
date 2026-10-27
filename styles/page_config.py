@@ -41,7 +41,7 @@ buttons = {
     'custom_lists': dict(label="Custom Lists", type="primary", icon=":material/list_alt:"),
 
     'events': dict(label="Events", type="primary", icon=":material/celebration:"),
-    'create_event': dict(label="Create new event", type="primary", icon=":material/event:"),
+    'create_event': dict(label="Create new event", type="primary", icon=":material/add:"),
 
     'recipes': dict(label="Recipes", type="primary", icon=":material/chef_hat:"),
     'create_recipe': dict(label='Create new recipe', type='primary', icon=":material/chef_hat:"),
@@ -94,10 +94,59 @@ def create_page_header(name, dark_color, light_color):
         box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
     }}
     .st-key-{name} p {{
-        color: white;
+        color: #2E1A5E;
         font-size: 36px;
         text-align: left;
         margin: 0;
+    }}
+    </style>
+    """
+
+
+CIRCULAR_ICONS = {
+    "events": 'assets/calendar_add_circle.png',
+}
+
+
+def create_subheader(text):
+    st.markdown(f"""<h3 style="text-align: center; font-size: 20px; font-color: #2E1A5E; text-align: center;">{text}</h3>""", unsafe_allow_html=True)
+
+
+def no_data_container(key, title, subtitle, icon):
+    st.html(f"""
+    <style>
+    .st-key-{key} .hdr {{
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: #2E1A5E;
+    }}
+    .st-key-{key} .hdr svg,
+    .st-key-{key} .hdr img {{ width: 56px; height: 56px; }}
+    .st-key-{key} .hdr-title {{ font-size: 40px; font-weight: 600; line-height: 1.1; }}
+    .st-key-{key} .hdr-sub {{ font-size: 18px; opacity: 0.85; }}
+    </style>
+    """)
+    with st.container(key=key):
+        st.html(f"""
+        <div class="hdr">
+            {CIRCULAR_ICONS.get(icon, "")}
+            <div>
+                <div class="hdr-title">{title}</div>
+                <div class="hdr-sub">{subtitle}</div>
+            </div>
+        </div>
+        """)
+
+
+def create_no_entries_container(name):
+    return f"""
+    <style>
+    .st-key-{name} {{
+        background: #FFFFFF;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
     }}
     </style>
     """

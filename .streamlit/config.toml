@@ -2,10 +2,12 @@
 toolbarMode = "auto"
 
 [theme]
-base = "dark"
+base = "light"
 backgroundColor = "#9D6EF7"
 headingFont = "PT Sans:https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
 headingFontSizes = "4rem"
+primaryColor = "#E64BA8"
+textColor = "#2E1A5E"
 
 [theme.sidebar]
 backgroundColor = "#854DF5"
