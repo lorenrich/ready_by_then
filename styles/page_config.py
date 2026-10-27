@@ -28,6 +28,28 @@ pages = {
     'help': st.Page(page="pages/help.py", title="Help", icon=":material/help:")
 }
 
+buttons = {
+    # Basic buttons
+    'back': dict(label="Back", type="secondary", icon=":material/arrow_back_ios_new:"),
+    'cancel': dict(label="Cancel", type="secondary"),
+    'confirm_delete': dict(label="Yes, delete", type='primary'),
+    'copy': dict(label="Copy", type="secondary"),
+    'delete': dict(label="Delete", type="secondary"),
+    'edit': dict(label="Edit", type="secondary"),
+
+    # Page buttons
+    'custom_lists': dict(label="Custom Lists", type="primary", icon=":material/list_alt:"),
+
+    'events': dict(label="Events", type="primary", icon=":material/celebration:"),
+    'create_event': dict(label="Create new event", type="primary", icon=":material/event:"),
+
+    'recipes': dict(label="Recipes", type="primary", icon=":material/chef_hat:"),
+    'create_recipe': dict(label='Create new recipe', type='primary', icon=":material/chef_hat:"),
+    'save_ingredients': dict(label='Save ingredients', type='primary', icon=':material/grocery:'),
+
+    'help': dict(label="Help", type="primary", icon=":material/help:")
+}
+
 
 def setup_page_defaults():    
     # Custom page and header config shared on all pages
@@ -54,31 +76,29 @@ def setup_page_defaults():
         unsafe_allow_html=True,
     )
 
-# Buttons (note, cannot use form_button here)
-buttons = {
-    # Basic buttons
-    'back': dict(label="Back", type="secondary", icon=":material/arrow_back_ios_new:"),
-    'cancel': dict(label="Cancel", type="secondary"),
-    'confirm_delete': dict(label="Yes, delete", type='primary'),
-    'copy': dict(label="Copy", type="secondary"),
-    'delete': dict(label="Delete", type="secondary"),
-    'edit': dict(label="Edit", type="secondary"),
-
-    # Page buttons
-    'custom_lists': dict(label="Custom Lists", type="primary", icon=":material/list_alt:"),
-
-    'events': dict(label="Events", type="primary", icon=":material/celebration:"),
-    'create_event': dict(label="Create new event", type="primary", icon=":material/event:"),
-
-    'recipes': dict(label="Recipes", type="primary", icon=":material/chef_hat:"),
-    'create_recipe': dict(label='Create new recipe', type='primary', icon=":material/chef_hat:"),
-    'save_ingredients': dict(label='Save ingredients', type='primary', icon=':material/grocery:'),
-
-    'help': dict(label="Help", type="primary", icon=":material/help:")
-}
 
 def create_button(name, **overrides):
     cfg = {**buttons[name], **overrides}
     label = cfg.pop("label")
     cfg.setdefault("key", f"btn_{name}")
     return st.button(label, **cfg)
+
+
+def create_page_header(name, dark_color, light_color):
+    return f"""
+    <style>
+    .st-key-{name} {{
+        background: linear-gradient(to top, {dark_color} 0%, {light_color} 100%);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
+    }}
+    .st-key-{name} p {{
+        color: white;
+        font-size: 36px;
+        text-align: left;
+        margin: 0;
+    }}
+    </style>
+    """
+

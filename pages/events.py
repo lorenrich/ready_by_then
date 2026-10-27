@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 from database.database import get_connection
 from database.events import get_events_for_display
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from styles.page_config import setup_page_defaults, pages, buttons, create_button, create_page_header
 
 # Create the connection to the database
 conn = get_connection()
@@ -21,8 +21,14 @@ setup_page_defaults()
 # Read in dataframe
 df = get_events_for_display(conn=conn)
 
-# Title
-st.title("Events")
+# Page header
+st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
+
+header_container = st.container(key='events_page_header')
+
+with header_container:
+     st.write('Events')
+
 st.space("small")
 
 # Buttons
