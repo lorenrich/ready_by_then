@@ -85,7 +85,7 @@ with st.form("create_recipe"):
 
         if add_now:
             st.session_state["selected_recipe_id"] = new_recipe_id
-            st.switch_page(pages["add_ingredients"])
+            st.switch_page(pages["ingredients"])
         else:
             st.switch_page(pages["recipes"])
        

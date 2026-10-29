@@ -119,6 +119,6 @@ with st.form("edit_recipe"):
 
         if add_now:
             updated_recipe_id = st.session_state["selected_recipe_id"]
-            st.switch_page(pages["edit_ingredients"])
+            st.switch_page(pages["ingredients"])
         else:
             st.switch_page(pages["recipes"])

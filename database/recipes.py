@@ -38,6 +38,8 @@ DEFAULT_PREP_OPTIONS = {
     'At Serving': 0
 }
 
+PREP_LABELS = {v: k for k, v in DEFAULT_PREP_OPTIONS.items()}
+
 DEFAULT_INGREDIENT_TYPE = [
     'Ingredient',
     'Recipe'
@@ -90,10 +92,37 @@ def get_selected_recipe(conn, recipe_id):
 
 
 def get_selected_recipe_ingredients(conn, recipe_id):
-    df = pd.read_sql_query(
-        "SELECT * FROM recipe_ingredients WHERE recipe_id = ?", conn, params=(recipe_id,)
-    )
-    return df.iloc[0] if not df.empty else None
+    recipe_id = int(recipe_id)
+    return conn.execute(
+        """
+        SELECT i.ingredient_name,
+                s.section_name,
+                'Ingredient',
+                i.amount,
+                i.unit,
+                i.prep_timing,
+                NULL
+        FROM recipe_ingredients i
+        LEFT JOIN recipe_sections s on i.section_id = s.section_id
+        WHERE i.recipe_id = ?
+
+        UNION ALL
+
+        SELECT r.recipe_name,
+                s.section_name,
+                'Recipe',
+                c.amount,
+                c.unit,
+                c.prep_timing,
+                c.component_recipe_id
+        FROM recipe_components c
+        JOIN recipes r ON r.recipe_id = c.component_recipe_id
+        LEFT JOIN recipe_sections s ON c.section_ID = s.section_ID
+        WHERE c.parent_recipe_id = ?
+        ORDER BY 2, 3
+        """,
+        (recipe_id, recipe_id),
+    ).fetchall()
 
 
 def edit_recipe(conn, 

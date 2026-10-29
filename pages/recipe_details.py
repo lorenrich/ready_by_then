@@ -32,6 +32,26 @@ def confirm_delete(recipe_id):
         if create_button(name="cancel"):
             st.rerun()
 
+
+def format_item(name, amount, unit):
+    parts = []
+    if amount is not None:
+        parts.append(f"{amount:g}")
+    if unit:
+        parts.append(unit)
+    quantity = " ".join(parts)
+    return f"{name}, {quantity}" if quantity else name
+
+
+def section_sort_key(section_name):
+    lowered = section_name.lower()
+    if lowered == "main":
+        return (0, lowered)
+    if lowered.startswith("garnish"):
+        return (2, lowered)
+    return (1, lowered)
+
+
 # Connect to database
 conn = get_connection()
 
@@ -43,7 +63,7 @@ recipe_id = st.session_state.get("selected_recipe_id")
 
 # Create dataframes
 selected_recipe_df = get_selected_recipe(conn=conn, recipe_id=recipe_id) if recipe_id is not None else None
-selected_recipe_ingredients_df = get_selected_recipe_ingredients(conn=conn, recipe_id=recipe_id) if recipe_id is not None else None
+selected_recipe_ingredients = get_selected_recipe_ingredients(conn=conn, recipe_id=recipe_id) if recipe_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected recipe
 if recipe_id is None:
@@ -127,19 +147,30 @@ with recipe_ingredient_col:
     st.markdown("**Ingredients**")
     st.space("small")
 
-    ingredient_col1, ingredient_col2 = st.columns([1, 7], gap="small")  # ingredient_col1 intentionally left blank
+    sections = {}
+    for name, section, item_type, amount, unit, prep, component_id in selected_recipe_ingredients:
+        sections.setdefault(section or "Main", []).append(
+            (name, item_type, amount, unit, component_id)
+        )
 
-    with ingredient_col2:
-        if selected_recipe_ingredients_df is None:
-            st.markdown("*No ingredients listed.  Select **Edit** to start adding.*")
-        else:
-            for row in selected_recipe_ingredients_df.itertuples():
-                parts = [row.ingredient_name]
-                if pd.notna(row.amount):
-                    parts.append(f"{row.amount:g}")
-                if pd.notna(row.unit):
-                    parts.append(row.unit)
-                st.write(" ".join(parts))
+    for section_name in sorted(sections, key=section_sort_key):
+        label_col, items_col = st.columns([1, 4])
+        label_col.markdown(f"**{section_name}**")
+        with items_col:
+            for name, item_type, amount, unit, component_id in sections[section_name]:
+                if item_type == "Recipe":
+                    with st.expander(f"{format_item(name, amount, unit)} (see recipe)"):
+                        component_ingredients = get_selected_recipe_ingredients(conn, component_id)
+                        if len(component_ingredients) == 0:
+                            st.caption("No ingredients have been added.")
+                        else:
+                            for sub_name, sub_section, sub_item_type, sub_amount, sub_unit, sub_prep, sub_component_id in component_ingredients:
+                                st.write(format_item(sub_name, sub_amount, sub_unit))
+                            if st.button('Go to Recipe', key=f"open_{component_id}"):
+                                st.session_state["selected_recipe_id"] = component_id
+                                st.rerun()
+                else:
+                    st.write(format_item(name, amount, unit))
 
 st.space("small")
 
