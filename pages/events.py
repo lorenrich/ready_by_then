@@ -11,8 +11,13 @@ import pandas as pd
 from database.database import get_connection
 from database.events import get_events_for_display
 from styles.page_config import (
-     setup_page_defaults, 
-     PAGES, create_button, create_page_header, create_no_entries_container, CIRCULAR_ICONS, create_subheader
+     CIRCULAR_ICONS,
+     PAGES, 
+     setup_page_defaults,
+     create_button, 
+     create_page_header, 
+     create_no_records_container,  
+     fill_no_records_container
 )
 
 # Create the connection to the database
@@ -35,20 +40,17 @@ with header_container:
 
 # No events page
 if df.empty:
-    st.html(create_no_entries_container("no_events"))
-    blank_container = st.container(height=250, key="no_events", horizontal_alignment='center')
 
-    with blank_container:
-        col1, col2, col3 = st.columns(3)
+    st.html(create_no_records_container('no_events'))
+    blank_container = st.container(height=250, key='no_events', horizontal_alignment='center')
 
-        with col2:
-            st.image(CIRCULAR_ICONS['events'], width=50)
+    fill_no_records_container(container=blank_container,
+                              icon_name='events',
+                              header_val='Create your first event',
+                              caption_val='Plan menus, guests, and to-do lists all in one place',
+                              button_name='create_event',
+                              page_redirect='create_event')
 
-            create_subheader('Create your first event')
-            st.caption("Plan menus, guests, and to-do lists all in one place")
-
-            if create_button(name='create_event'):
-                st.switch_page(PAGES['create_event'])
     
 else:
     # Buttons

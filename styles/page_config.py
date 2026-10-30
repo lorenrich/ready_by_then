@@ -53,6 +53,10 @@ BUTTONS = {
     'help': dict(label="Help", type="primary", icon=":material/help:")
 }
 
+CIRCULAR_ICONS = {
+    "events": 'assets/circular_calendar.png',
+}
+
 
 def setup_page_defaults():    
     # Custom page and header config shared on all pages
@@ -87,7 +91,40 @@ def create_button(name, **overrides):
     return st.button(label, **cfg)
 
 
+def create_big_button(key, label, dark_color, light_color, height=250):
+    st.html(f"""
+    <style>
+    .st-key-{key} button {{
+        height: {height}px;
+        background: linear-gradient(to top, {dark_color} 0%, {light_color} 100%) !important;
+        border: none !important;
+        border-radius: 10px;
+        box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
+        transition: transform 0.15s, box-shadow 0.15s;
+    }}
+    .st-key-{key} button:hover {{
+        transform: translateY(-3px);
+        box-shadow: 5px 9px 24px rgba(0, 0, 0, 0.22);
+    }}
+    .st-key-{key} button:focus,
+    .st-key-{key} button:active {{
+        border: none !important;
+        color: white !important;
+    }}
+    .st-key-{key} button p {{
+        color: white;
+        font-size: 48px;
+        margin: 0;
+    }}
+    </style>
+    """)
+    return st.button(label, key=key, width="stretch")
+
+
 def create_page_header(name, dark_color, light_color):
+    '''
+    Header bars with color gradient
+    '''
     return f"""
     <style>
     .st-key-{name} {{
@@ -106,47 +143,16 @@ def create_page_header(name, dark_color, light_color):
     """
 
 
-CIRCULAR_ICONS = {
-    "events": 'assets/calendar_add_circle.png',
-}
-
-
 def create_subheader(text):
-    st.markdown(f"""<h3 style="text-align: center; font-size: 20px; font-color: #2E1A5E; text-align: center;">{text}</h3>""", unsafe_allow_html=True)
+    st.markdown(f"""<h3 style="text-align: center; font-size: 20px; font-color: #2E1A5E;">{text}</h3>""", unsafe_allow_html=True)
 
 
-def no_data_container(key, title, subtitle, icon):
-    st.html(f"""
-    <style>
-    .st-key-{key} .hdr {{
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        color: #2E1A5E;
-    }}
-    .st-key-{key} .hdr svg,
-    .st-key-{key} .hdr img {{ width: 56px; height: 56px; }}
-    .st-key-{key} .hdr-title {{ font-size: 40px; font-weight: 600; line-height: 1.1; }}
-    .st-key-{key} .hdr-sub {{ font-size: 18px; opacity: 0.85; }}
-    </style>
-    """)
-    with st.container(key=key):
-        st.html(f"""
-        <div class="hdr">
-            {CIRCULAR_ICONS.get(icon, "")}
-            <div>
-                <div class="hdr-title">{title}</div>
-                <div class="hdr-sub">{subtitle}</div>
-            </div>
-        </div>
-        """)
-
-
-def create_no_entries_container(name):
+def create_no_records_container(name):
     return f"""
     <style>
     .st-key-{name} {{
         background: #FFFFFF;
+        align-items: center;
         padding: 20px;
         border-radius: 10px;
         box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
@@ -154,3 +160,12 @@ def create_no_entries_container(name):
     </style>
     """
 
+def fill_no_records_container(container, icon_name, header_val, caption_val, button_name, page_redirect):
+        with container:
+            st.image(CIRCULAR_ICONS[icon_name], width=50)
+
+            create_subheader(header_val)
+            st.caption(caption_val, text_alignment="center")
+
+            if create_button(name=button_name):
+                st.switch_page(PAGES[page_redirect])
