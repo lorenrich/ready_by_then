@@ -36,13 +36,31 @@ def initialize_schema(conn):
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS menus (
-        event_id INTEGER,
-        recipe_id INTEGER,
-        host_prepares BOOLEAN DEFAULT 0,
-        who_brings TEXT,
-        menu_status TEXT NOT NULL DEFAULT 'Incomplete',
+        menu_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        menu_name TEXT NOT NULL,
+        menu_notes TEXT,
+        menu_status TEXT NOT NULL DEFAULT 'Incomplete'
+        );
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS menu_recipes (
+        menu_id INTEGER NOT NULL,
+        recipe_id INTEGER NOT NULL,
+        course TEXT,
+        PRIMARY KEY (menu_id, recipe_id)
+        FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
+        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT
+        );
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS event_menus (
+        event_id INTEGER NOT NULL,
+        menu_id INTEGER NOT NULL,
+        PRIMARY KEY (event_id, menu_id)
         FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
-        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE
+        FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE
         );
     """)
         

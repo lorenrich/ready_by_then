@@ -18,7 +18,7 @@ from database.recipes import (get_selected_recipe,
                               DEFAULT_PREP_OPTIONS, 
                               DEFAULT_INGREDIENT_TYPE,
                               PREP_LABELS)
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from styles.page_config import setup_page_defaults, PAGES, create_button
 
 # Connect to database
 conn = get_connection()
@@ -26,7 +26,7 @@ conn = get_connection()
 # Identify selected recipe and filter dataframe.  Guard against user accessing page without being passed a recipe_id
 if st.session_state.get("selected_recipe_id") is None:
     st.warning("That recipe couldn't be found.  It may have been deleted.")
-    st.page_link(pages['recipes'], label="<- Back to Recipes")
+    st.page_link(PAGES['recipes'], label="<- Back to Recipes")
     st.stop()
 
 else:
@@ -37,7 +37,7 @@ selected_recipe_df = get_selected_recipe(conn=conn, recipe_id=recipe_id)
 
 if selected_recipe_df is None:
     st.warning("That recipe couldn't be found.  It may have been deleted.")
-    st.page_link(pages['recipes'], label="<- Back to Recipes")
+    st.page_link(PAGES['recipes'], label="<- Back to Recipes")
     st.stop()
 
 # Set up page
@@ -196,7 +196,7 @@ if create_button(name='save_ingredients'):
         # Start the next visit cleanly
         st.session_state.rows_for_recipe = None
 
-        st.switch_page(pages['recipe_details'])
+        st.switch_page(PAGES['recipe_details'])
     else:
         st.warning("It looks like you have duplicate ingredients in your recipe. Remove or combine them before saving.")
 

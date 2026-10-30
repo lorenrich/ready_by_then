@@ -4,7 +4,7 @@ Streamlit app
 # Import
 import streamlit as st
 from database.database import get_connection
-from styles.page_config import pages
+from styles.page_config import PAGES
 
 # Connect to database
 conn = get_connection()
@@ -12,39 +12,41 @@ conn = get_connection()
 
 # Site navigation
 pg = st.navigation([
-    pages['home'],
-    pages['events'],
-    pages['event_details'],
-    pages['copy_event'],
-    pages['create_event'],
-    pages['edit_event'],
-    pages['recipes'],
-    pages['recipe_details'],
-    pages['copy_recipe'],
-    pages['create_recipe'],
-    pages['edit_recipe'],
-    pages['ingredients'],
-    pages['custom_lists'],
-    pages['custom_list_details'],
-    pages['create_custom_list'],
-    pages['edit_custom_list'],
-    pages['help']
+    PAGES['home'],
+    PAGES['events'],
+    PAGES['event_details'],
+    PAGES['copy_event'],
+    PAGES['create_event'],
+    PAGES['edit_event'],
+    PAGES['menus'],
+    PAGES['create_menu'],
+    PAGES['recipes'],
+    PAGES['recipe_details'],
+    PAGES['copy_recipe'],
+    PAGES['create_recipe'],
+    PAGES['edit_recipe'],
+    PAGES['ingredients'],
+    PAGES['custom_lists'],
+    PAGES['custom_list_details'],
+    PAGES['create_custom_list'],
+    PAGES['edit_custom_list'],
+    PAGES['help']
 ], position="hidden")
 
 # Sidebar config
 with st.sidebar:
-    st.page_link(pages['home'])
+    st.page_link(PAGES['home'])
 
-    st.page_link(pages['events'])
-    if pg in (pages['events'], pages['create_event']):
-        st.page_link(pages['event_details'], label="Event Details")
-        st.page_link(pages['create_event'], label="Create Event")
+    st.page_link(PAGES['events'])
+    if pg in (PAGES['events'], PAGES['create_event']):
+        st.page_link(PAGES['event_details'], label="Event Details")
+        st.page_link(PAGES['create_event'], label="Create Event")
         
-    st.page_link(pages['recipes'])
+    st.page_link(PAGES['recipes'])
 
-    st.page_link(pages['custom_lists'])
+    st.page_link(PAGES['custom_lists'])
 
-    st.page_link(pages['help'])
+    st.page_link(PAGES['help'])
 
 
 # Run

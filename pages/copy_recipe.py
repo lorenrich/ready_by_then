@@ -7,11 +7,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-import pandas as pd
 from database.database import get_connection, update_and_default_selectbox, DEFAULT_STATUSES
 from database.recipes import get_selected_recipe, create_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
 from pages.recipe_details import recipe_id as copied_recipe_id
-from styles.page_config import setup_page_defaults, pages
+from styles.page_config import setup_page_defaults, PAGES
 
 # Connect to database
 conn = get_connection()
@@ -25,7 +24,7 @@ selected_recipe_df = get_selected_recipe(conn=conn, recipe_id=copied_recipe_id) 
 # Guard against empty dataframe else filter it to the selected recipe
 if selected_recipe_df.empty:
     st.warning("That recipe couldn't be found.  It may have been deleted.")
-    st.page_link(pages['recipes'], label="<- Back to Recipes")
+    st.page_link(PAGES['recipes'], label="<- Back to Recipes")
     st.stop()
 
 # Title
@@ -92,5 +91,5 @@ with st.form("copy_recipe"):
                      recipe_source=recipe_source,
                      recipe_notes=recipe_notes,
                      recipe_status=recipe_status)
-       st.switch_page("pages/recipes.py")
+       st.switch_page("PAGES/recipes.py")
        

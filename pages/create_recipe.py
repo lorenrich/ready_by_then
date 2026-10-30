@@ -9,12 +9,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 from database.database import get_connection, update_and_default_selectbox
 from database.recipes import create_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from styles.page_config import setup_page_defaults, PAGES, create_button
 
 # Connect to database
 conn = get_connection()
 
-# Set up pages
+# Set up page
 setup_page_defaults()
 
 # Update page dropdowns
@@ -33,7 +33,7 @@ st.title("Create New Recipe")
 st.write(" ")
 
 if create_button(name='back'):
-        st.switch_page(pages['home'])
+        st.switch_page(PAGES['home'])
 
 # Form
 with st.form("create_recipe"):
@@ -85,7 +85,7 @@ with st.form("create_recipe"):
 
         if add_now:
             st.session_state["selected_recipe_id"] = new_recipe_id
-            st.switch_page(pages["ingredients"])
+            st.switch_page(PAGES["ingredients"])
         else:
-            st.switch_page(pages["recipes"])
+            st.switch_page(PAGES["recipes"])
        

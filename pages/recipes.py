@@ -10,12 +10,12 @@ import streamlit as st
 import pandas as pd
 from database.database import get_connection
 from database.recipes import get_recipes_for_display
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from styles.page_config import setup_page_defaults, PAGES, create_button
 
 # Create the connection to the database
 conn = get_connection()
 
-# Set up page defaults
+# Set up page
 setup_page_defaults()
 
 # Read in dataframe
@@ -29,10 +29,10 @@ st.space("small")
 col1, col2 = st.columns([1, 8], gap="small")
 with col1:
     if create_button(name='back'):
-        st.switch_page(pages['home'])
+        st.switch_page(PAGES['home'])
 with col2:
     if create_button(name='create_recipe'):
-            st.switch_page(pages['create_recipe'])
+            st.switch_page(PAGES['create_recipe'])
 
 # Table of events
 if df.empty:
@@ -50,4 +50,4 @@ else:
     selected = recipe_table.selection.rows
     if selected:
         st.session_state["selected_recipe_id"] = int(df.iloc[selected[0]]["Recipe ID"])
-        st.switch_page(pages['recipe_details'])
+        st.switch_page(PAGES['recipe_details'])

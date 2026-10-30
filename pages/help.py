@@ -7,5 +7,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-from ready_by_then.database.database import get_connection
-from events import create_event
+from styles.page_config import setup_page_defaults, PAGES, create_button
+
+# Set up page
+setup_page_defaults()
+
+st.write ("Coming soon!")

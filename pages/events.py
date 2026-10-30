@@ -12,13 +12,13 @@ from database.database import get_connection
 from database.events import get_events_for_display
 from styles.page_config import (
      setup_page_defaults, 
-     pages, buttons, create_button, create_page_header, no_data_container, create_no_entries_container, CIRCULAR_ICONS, create_subheader
+     PAGES, create_button, create_page_header, create_no_entries_container, CIRCULAR_ICONS, create_subheader
 )
 
 # Create the connection to the database
 conn = get_connection()
 
-# Set up page defaults
+# Set up page
 setup_page_defaults()
 
 # Read in dataframe
@@ -48,17 +48,17 @@ if df.empty:
             st.caption("Plan menus, guests, and to-do lists all in one place")
 
             if create_button(name='create_event'):
-                st.switch_page(pages['create_event'])
+                st.switch_page(PAGES['create_event'])
     
 else:
     # Buttons
     col1, col2 = st.columns([1, 11])
     with col1:
         if create_button(name='back'):
-            st.switch_page(pages['home'])
+            st.switch_page(PAGES['home'])
     with col2:
         if create_button(name='create_event'):
-                st.switch_page(pages['create_event'])
+                st.switch_page(PAGES['create_event'])
 
     # Data table
     event_table = st.dataframe(
@@ -71,4 +71,4 @@ else:
     selected = event_table.selection.rows
     if selected:
         st.session_state["selected_event_id"] = int(df.iloc[selected[0]]["Event ID"])
-        st.switch_page(pages['event_details'])
+        st.switch_page(PAGES['event_details'])

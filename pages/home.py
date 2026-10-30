@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from styles.page_config import setup_page_defaults, PAGES
 
 def big_button(key, label, dark_color, light_color, height=250):
     st.html(f"""
@@ -38,7 +38,7 @@ def big_button(key, label, dark_color, light_color, height=250):
     """)
     return st.button(label, key=key, width="stretch")
 
-
+# Set up page
 setup_page_defaults()
 
 # Structure containers to hold home page objects
@@ -56,12 +56,12 @@ with home_row1_col2:
 
     with home_button1:
         if big_button('event', 'Events', '#FE936A', '#FFAD94'):
-            st.switch_page(pages['events'])
+            st.switch_page(PAGES['events'])
 
 
     with home_button2:
         if big_button('menu', 'Menus', '#45A5ED', '#8FC9F4'):
-            st.switch_page(pages['menus'])
+            st.switch_page(PAGES['menus'])
 
 
 home_row2_col1, home_row2_col2 = st.columns(2, gap="small")
@@ -72,8 +72,8 @@ with home_row2_col2:
 
     with home_button3:
         if big_button('Recipes', 'Recipes', '#CC0099', '#FF85DF'):
-            st.switch_page(pages['recipes'])
+            st.switch_page(PAGES['recipes'])
 
     with home_button4:
          if big_button('custom_lists', 'Task Lists', '#7EC234', '#BCE292'):
-              st.switch_page(pages['custom_lists'])
+              st.switch_page(PAGES['custom_lists'])

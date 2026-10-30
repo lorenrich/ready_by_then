@@ -11,7 +11,7 @@ import pandas as pd
 from database.database import get_connection, DEFAULT_STATUSES
 from database.events import get_selected_event, create_event
 from pages.event_details import event_id as copied_event_id
-from styles.page_config import setup_page_defaults, pages
+from styles.page_config import setup_page_defaults, PAGES
 
 # Connect to database
 conn = get_connection()
@@ -25,7 +25,7 @@ selected_event_df = get_selected_event(conn=conn, event_id=copied_event_id) if c
 # Guard against empty dataframe else filter it to the selected event
 if selected_event_df.empty:
     st.warning("That event couldn't be found.  It may have been deleted.")
-    st.page_link(pages['events'], label="<- Back to Events")
+    st.page_link(PAGES['events'], label="<- Back to Events")
     st.stop()
 
 # Title
@@ -87,5 +87,5 @@ with st.form("copy_event"):
                   event_occurred=event_occurred,
                   event_notes=event_notes,
                   event_status=event_status)
-       st.switch_page(pages['events'])
+       st.switch_page(PAGES['events'])
        

@@ -2,13 +2,16 @@
 import streamlit as st
 
 # Pages
-pages = {
+PAGES = {
     'home': st.Page("pages/home.py", title="Home", icon=":material/home:", url_path="home", default=True),
     'events': st.Page("pages/events.py", title="Events", icon=":material/event:", url_path="events"),
     'event_details': st.Page("pages/event_details.py", title="Event Details", url_path="event_details"),
     'copy_event': st.Page("pages/copy_event.py", title="Create Event Copy", url_path="copy_event"),
     'create_event': st.Page("pages/create_event.py", title="Create Event", url_path="create_event"),
     'edit_event': st.Page("pages/edit_event.py", title="Edit Event", url_path="edit_event"),
+
+    'menus': st.Page("pages/menus.py", title='Menus', url_path="menus"),
+    'create_menu': st.Page("pages/create_menu.py", title='Create Menu', url_path="create_menu"),
 
     'recipes': st.Page("pages/recipes.py", title="Recipes", icon=":material/chef_hat:", url_path="recipes"),
     'recipe_details': st.Page("pages/recipe_details.py", title="Recipe Details", url_path="recipe_details"),
@@ -28,7 +31,7 @@ pages = {
     'help': st.Page(page="pages/help.py", title="Help", icon=":material/help:")
 }
 
-buttons = {
+BUTTONS = {
     # Basic buttons
     'back': dict(label="Back", type="secondary", icon=":material/arrow_back_ios_new:"),
     'cancel': dict(label="Cancel", type="secondary"),
@@ -78,7 +81,7 @@ def setup_page_defaults():
 
 
 def create_button(name, **overrides):
-    cfg = {**buttons[name], **overrides}
+    cfg = {**BUTTONS[name], **overrides}
     label = cfg.pop("label")
     cfg.setdefault("key", f"btn_{name}")
     return st.button(label, **cfg)

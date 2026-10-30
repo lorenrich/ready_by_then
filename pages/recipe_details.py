@@ -10,8 +10,8 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from database.database import get_connection
-from database.recipes import get_selected_recipe, get_selected_recipe_ingredients, copy_recipe, delete_recipe
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from database.recipes import get_selected_recipe, get_selected_recipe_ingredients, delete_recipe
+from styles.page_config import setup_page_defaults, PAGES, create_button
 
 @st.dialog("Delete recipe?")
 def confirm_delete(recipe_id):
@@ -25,7 +25,7 @@ def confirm_delete(recipe_id):
                 st.error("This recipe is used as a component in another recipe. Remove it there first.")
                 st.stop()
             if deleted:
-                st.switch_page(pages["recipes"])
+                st.switch_page(PAGES["recipes"])
             else:
                 st.error("Nothing was deleted. The recipe may already be gone.")
     with col2:
@@ -55,7 +55,7 @@ def section_sort_key(section_name):
 # Connect to database
 conn = get_connection()
 
-# Set up page defaults
+# Set up page
 setup_page_defaults()
 
 # Identify selected recipe and filter dataframe
@@ -71,12 +71,12 @@ if recipe_id is None:
 
 if selected_recipe_df is None:
     st.warning("That recipe couldn't be found.  It may have been deleted.")
-    st.page_link(pages['recipes'], label="<- Back to Recipes")
+    st.page_link(PAGES['recipes'], label="<- Back to Recipes")
     st.stop()
 
 # Page navigation
 if create_button(name='back'):
-    st.switch_page(pages['recipes'])
+    st.switch_page(PAGES['recipes'])
 
 # Title
 st.title("Recipe Details")
@@ -87,11 +87,11 @@ button_col_1, button_col_2, button_col_3 = st.columns(3, gap="small", vertical_a
 
 with button_col_1:
     if create_button(name='edit'):
-        st.switch_page(pages['edit_recipe'])
+        st.switch_page(PAGES['edit_recipe'])
 
 with button_col_2:
     if create_button(name='copy'):
-        st.switch_page(pages['copy_recipe'])
+        st.switch_page(PAGES['copy_recipe'])
     
 with button_col_3:
     if create_button(name='delete'):

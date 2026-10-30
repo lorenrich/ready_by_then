@@ -7,10 +7,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-import pandas as pd
 from database.database import get_connection
-from database.events import get_selected_event, copy_event, delete_event
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from database.events import get_selected_event, delete_event
+from styles.page_config import setup_page_defaults, PAGES, create_button
 
 @st.dialog("Delete event?")
 def confirm_delete(event_id):
@@ -20,7 +19,7 @@ def confirm_delete(event_id):
         if create_button(name="confirm_delete"):
             deleted = delete_event(conn, event_id=event_id)
             if deleted:
-                st.switch_page(pages["events"])
+                st.switch_page(PAGES["events"])
             else:
                 st.error("Nothing was deleted. The event may already be gone.")
     with col2:
@@ -30,7 +29,7 @@ def confirm_delete(event_id):
 # Connect to database
 conn = get_connection()
 
-# Set up page defaults
+# Set up page
 setup_page_defaults()
 
 # Identify selected event and filter dataframe
@@ -45,12 +44,12 @@ if event_id is None:
 
 if selected_event_df is None:
     st.warning("That event couldn't be found.  It may have been deleted.")
-    st.page_link(pages['events'], label="<- Back to Events")
+    st.page_link(PAGES['events'], label="<- Back to Events")
     st.stop()
 
 # Page navigation
 if create_button(name='back'):
-    st.switch_page(pages['events'])
+    st.switch_page(PAGES['events'])
 
 # Title
 st.title("Event Details")
@@ -61,11 +60,11 @@ button_col_1, button_col_2, button_col_3 = st.columns(3, gap="small", vertical_a
 
 with button_col_1:
     if create_button(name='edit'):
-        st.switch_page(pages['edit_event'])
+        st.switch_page(PAGES['edit_event'])
 
 with button_col_2:
     if create_button(name='copy'):
-        st.switch_page(pages['copy_event'])
+        st.switch_page(PAGES['copy_event'])
     
 with button_col_3:
     if create_button(name='delete'):

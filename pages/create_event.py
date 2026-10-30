@@ -9,12 +9,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 from database.database import get_connection, DEFAULT_STATUSES
 from database.events import create_event
-from styles.page_config import setup_page_defaults, pages, buttons, create_button
+from styles.page_config import setup_page_defaults, PAGES, create_button
 
 # Connect to database
 conn = get_connection()
 
-# Set up pages
+# Set up page
 setup_page_defaults()
 
 # Title
@@ -22,7 +22,7 @@ st.title("Create New Event")
 st.write(" ")
 
 if create_button(name='back'):
-    st.switch_page(pages['events'])
+    st.switch_page(PAGES['events'])
 
 # Form
 with st.form("create_event"):
@@ -62,5 +62,5 @@ with st.form("create_event"):
                     event_occurred=event_occurred,
                     event_notes=event_notes,
                     event_status=event_status)
-       st.switch_page(pages['events'])
+       st.switch_page(PAGES['events'])
        

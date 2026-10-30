@@ -4,6 +4,7 @@ Createand modify events data
 # Import
 import pandas as pd
 
+
 def get_events_for_display(conn):
     """
     Pull slimmed down version of table for summary display on events page
