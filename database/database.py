@@ -128,15 +128,15 @@ def initialize_schema(conn):
         list_name TEXT NOT NULL,
         item_name TEXT NOT NULL,
         need_to_buy BOOLEAN DEFAULT 0,
-        advance_prep_okay BOOLEAN DEFAULT 0,
-        ideal_start_time INTEGER,  -- e.g. 1
-        ideal_start_units TEXT,  -- e.g. 'day' for 1 day before event
+        prep_timing INTEGER,
         apply_to_all BOOLEAN DEFAULT 0,
-        TEXT NOT NULL DEFAULT 'Incomplete'
+        list_notes TEXT,
+        list_status TEXT NOT NULL DEFAULT 'Incomplete'
         );
     """)
         
     conn.commit()
+
 
 DEFAULT_STATUSES = [
     "Complete",
@@ -190,20 +190,3 @@ def update_and_default_selectbox(conn, table_name, col_name, default_options, se
             seen.add(o.strip().lower())
 
     return sorted(entries, key=str.lower)
-
-
-'''
-Set table data restrictions - thoughts, not fully built into rest of code yet
-
-ALTER_INGREDIENTS_TABLE = """
-    ALTER TABLE ingredients
-    ADD CONSTRAINT prep_timing_value
-    CHECK (prep_timing IN ('day before', 'day of', 'at cook time'));
-"""
-
-ALTER_CUSTOM_LIST_TABLE = """
-    ALTER TABLE custom_lists
-    ADD CONSTRAINT ideal_start_units
-    CHECK (ideal_start_units IN ('minutes', 'hours', 'days', 'weeks', 'months'));
-"""
-'''

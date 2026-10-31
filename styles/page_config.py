@@ -42,6 +42,7 @@ BUTTONS = {
 
     # Page buttons
     'custom_lists': dict(label="Custom Lists", type="primary", icon=":material/list_alt:"),
+    'create_list': dict(label="Create List", type="primary", icon=':material/add:'),
 
     'events': dict(label="Events", type="primary", icon=":material/celebration:"),
     'create_event': dict(label="Create new event", type="primary", icon=":material/add:"),
@@ -50,11 +51,16 @@ BUTTONS = {
     'create_recipe': dict(label='Create new recipe', type='primary', icon=":material/chef_hat:"),
     'save_ingredients': dict(label='Save ingredients', type='primary', icon=':material/grocery:'),
 
+    'create_menu': dict(label="Create Menu", type="primary", icon=":material/add:"),
+
     'help': dict(label="Help", type="primary", icon=":material/help:")
 }
 
 CIRCULAR_ICONS = {
     "events": 'assets/circular_calendar.png',
+    "menus": 'assets/circular_menu.png',
+    "recipes": 'assets/circular_recipe.png',
+    "lists": 'assets/circular_list.png'
 }
 
 

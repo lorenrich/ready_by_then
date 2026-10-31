@@ -11,7 +11,6 @@ import pandas as pd
 from database.database import get_connection
 from database.events import get_events_for_display
 from styles.page_config import (
-     CIRCULAR_ICONS,
      PAGES, 
      setup_page_defaults,
      create_button, 
@@ -51,7 +50,7 @@ if df.empty:
                               button_name='create_event',
                               page_redirect='create_event')
 
-    
+# List recorded events    
 else:
     # Buttons
     col1, col2 = st.columns([1, 11])
