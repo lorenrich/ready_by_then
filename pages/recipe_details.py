@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from database.database import get_connection
-from database.recipes import get_selected_recipe, get_selected_recipe_ingredients, delete_recipe
+from database.recipes import get_selected_recipe, get_selected_recipe_ingredients, delete_recipe, get_recipe_usage
 from styles.page_config import setup_page_defaults, PAGES, create_button
 
 @st.dialog("Delete recipe?")
@@ -22,8 +22,10 @@ def confirm_delete(recipe_id):
             try:
                 deleted = delete_recipe(conn, recipe_id=recipe_id)
             except sqlite3.IntegrityError:
-                st.error("This recipe is used as a component in another recipe. Remove it there first.")
-                st.stop()
+                parents, events = get_recipe_usage(conn, recipe_id)
+                if parents:
+                    st.error("This recipe is used in: " + ", ".join(name for _, name in parents) + ". Remove it there first.")
+                    st.stop()
             if deleted:
                 st.switch_page(PAGES["recipes"])
             else:

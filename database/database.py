@@ -48,7 +48,7 @@ def initialize_schema(conn):
         menu_id INTEGER NOT NULL,
         recipe_id INTEGER NOT NULL,
         course TEXT,
-        PRIMARY KEY (menu_id, recipe_id)
+        PRIMARY KEY (menu_id, recipe_id),
         FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
         FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT
         );
@@ -58,7 +58,7 @@ def initialize_schema(conn):
         CREATE TABLE IF NOT EXISTS event_menus (
         event_id INTEGER NOT NULL,
         menu_id INTEGER NOT NULL,
-        PRIMARY KEY (event_id, menu_id)
+        PRIMARY KEY (event_id, menu_id),
         FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
         FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE
         );
@@ -121,14 +121,12 @@ def initialize_schema(conn):
         UNIQUE (recipe_id, section_name)
         );
     """)
+
         
     conn.execute("""
         CREATE TABLE IF NOT EXISTS custom_lists (
-        list_id INTEGER PRIMARY KEY,
+        list_id INTEGER PRIMARY KEY AUTOINCREMENT,
         list_name TEXT NOT NULL,
-        item_name TEXT NOT NULL,
-        need_to_buy BOOLEAN DEFAULT 0,
-        prep_timing INTEGER,
         apply_to_all BOOLEAN DEFAULT 0,
         list_notes TEXT,
         list_status TEXT NOT NULL DEFAULT 'Incomplete'
@@ -136,6 +134,17 @@ def initialize_schema(conn):
     """)
         
     conn.commit()
+
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS list_items (
+        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_name TEXT NOT NULL,
+        need_to_buy BOOLEAN DEFAULT 0,
+        prep_timing INTEGER,
+        FOREIGN KEY (list_id) REFERENCES custom_list(list_id) ON DELETE CASCADE
+        );
+    """)
 
 
 DEFAULT_STATUSES = [

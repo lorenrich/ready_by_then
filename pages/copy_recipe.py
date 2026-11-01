@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 from database.database import get_connection, update_and_default_selectbox, DEFAULT_STATUSES
-from database.recipes import get_selected_recipe, create_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
+from database.recipes import get_selected_recipe, copy_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
 from pages.recipe_details import recipe_id as copied_recipe_id
 from styles.page_config import setup_page_defaults, PAGES
 
@@ -79,17 +79,19 @@ with st.form("copy_recipe"):
 
     # Save 
     if st.form_submit_button("Save changes"):
-       create_recipe(conn,
-                     recipe_name=recipe_name, 
-                     recipe_type=recipe_type,
-                     recipe_yield=recipe_yield,
-                     recipe_cooking_vessel=recipe_cooking_vessel,
-                     recipe_preheat_temp=recipe_preheat_temp,
-                     recipe_preheat_unit=recipe_preheat_unit,
-                     recipe_preheat_time=recipe_preheat_time,
-                     recipe_cook_time=recipe_cook_time,
-                     recipe_source=recipe_source,
-                     recipe_notes=recipe_notes,
-                     recipe_status=recipe_status)
-       st.switch_page("PAGES/recipes.py")
+        copy_recipe(conn=conn,
+                    source_recipe_id=copied_recipe_id,
+                    recipe_name=recipe_name, 
+                    recipe_type=recipe_type,
+                    recipe_yield=recipe_yield,
+                    recipe_cooking_vessel=recipe_cooking_vessel,
+                    recipe_preheat_temp=recipe_preheat_temp,
+                    recipe_preheat_unit=recipe_preheat_unit,
+                    recipe_preheat_time=recipe_preheat_time,
+                    recipe_cook_time=recipe_cook_time,
+                    recipe_source=recipe_source,
+                    recipe_notes=recipe_notes,
+                    recipe_status=recipe_status
+                    )
+        st.switch_page(PAGES['recipes'])
        

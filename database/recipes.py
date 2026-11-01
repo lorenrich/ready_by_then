@@ -64,6 +64,25 @@ def get_recipes_for_display(conn):
     return df
 
 
+def get_recipes_for_menu_selection(conn):
+    """
+    Pull recipes from database to allow user to tag to menu
+    """
+    df = pd.read_sql_query(
+        '''
+        SELECT
+            recipe_id AS "Recipe ID",
+            recipe_name AS "Recipe",
+            recipe_type AS "Type"
+        FROM recipes
+        ''', conn,
+    )
+
+    df["Add to Menu"] = False
+
+    return df
+
+
 def create_recipe(conn,
                   recipe_name,
                   recipe_type, 
@@ -165,41 +184,80 @@ def edit_recipe(conn,
     conn.commit()
 
 
-def copy_recipe(conn,
-                recipe_name,
-                recipe_type,
+def copy_recipe(conn, 
+                source_recipe_id, 
+                recipe_name, 
+                recipe_type, 
                 recipe_yield,
-                recipe_cooking_vessel,
-                recipe_preheat_temp,
+                recipe_cooking_vessel, 
+                recipe_preheat_temp, 
                 recipe_preheat_unit,
-                recipe_preheat_time,
-                recipe_cook_time,
+                recipe_preheat_time, 
+                recipe_cook_time, 
                 recipe_source,
-                recipe_notes,
-                recipe_status
-                ):
+                recipe_notes, 
+                recipe_status):
     """
-    Duplicate a logged recipe record and assign a new recipe_id
+    Duplicate a recipe with its sections, ingredients, and components and return the new recipe_id.
     """
-    conn.execute(
-        """
-        INSERT INTO recipes
-        VALUES recipe_id = ?, recipe_type = ?, recipe_yield = ?, recipe_cooking_vessel = ?, recipe_preheat_temp = ?, recipe_preheat_unit = ?, recipe_preheat_time = ?, recipe_cook_time = ?, recipe_source = ?, recipe_notes = ?, recipe_status = ?;
-        """,
-        ()
-    )
-    conn.commit(recipe_name,
-                recipe_type,
-                recipe_yield,
-                recipe_cooking_vessel,
-                recipe_preheat_temp,
-                recipe_preheat_unit,
-                recipe_preheat_time,
-                recipe_cook_time,
-                recipe_source,
-                recipe_notes,
-                recipe_status
-                )
+    source_recipe_id = int(source_recipe_id)
+    try:
+        # Copy the recipe row
+        cur = conn.execute(
+            """
+            INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel,
+                                recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time,
+                                recipe_cook_time, recipe_source, recipe_notes, recipe_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel,
+            recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time,
+            recipe_cook_time, recipe_source, recipe_notes, recipe_status),
+        )
+        new_id = cur.lastrowid
+
+        # Copy the sections
+        conn.execute(
+            """
+            INSERT INTO recipe_sections (recipe_id, section_name, prep_timing)
+            SELECT ?, section_name, prep_timing
+            FROM recipe_sections
+            WHERE recipe_id = ?
+            """,
+            (new_id, source_recipe_id),
+        )
+
+        # Copy the ingredients
+        conn.execute(
+            """
+            INSERT INTO recipe_ingredients (recipe_id, section_id, ingredient_name, amount, unit, prep_timing)
+            SELECT ?, ns.section_id, i.ingredient_name, i.amount, i.unit, i.prep_timing
+            FROM recipe_ingredients i
+            LEFT JOIN recipe_sections os ON os.section_id = i.section_id
+            LEFT JOIN recipe_sections ns ON ns.recipe_id = ? AND ns.section_name = os.section_name
+            WHERE i.recipe_id = ?
+            """,
+            (new_id, new_id, source_recipe_id),
+        )
+
+        # Copy the components
+        conn.execute(
+            """
+            INSERT INTO recipe_components (parent_recipe_id, component_recipe_id, section_id, amount, unit, prep_timing)
+            SELECT ?, c.component_recipe_id, ns.section_id, c.amount, c.unit, c.prep_timing
+            FROM recipe_components c
+            LEFT JOIN recipe_sections os ON os.section_id = c.section_id
+            LEFT JOIN recipe_sections ns ON ns.recipe_id = ? AND ns.section_name = os.section_name
+            WHERE c.parent_recipe_id = ?
+            """,
+            (new_id, new_id, source_recipe_id),
+        )
+
+        conn.commit()
+        return new_id
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def delete_recipe(conn, recipe_id):
@@ -210,6 +268,32 @@ def delete_recipe(conn, recipe_id):
                  )
     conn.commit()
     return cursor.rowcount
+
+def get_recipe_usage(conn, recipe_id):
+    recipe_id = int(recipe_id)
+    parents = conn.execute(
+        """
+        SELECT r.recipe_id, r.recipe_name
+        FROM recipe_components c
+        JOIN recipes r ON r.recipe_id = c.parent_recipe_id
+        WHERE c.component_recipe_id = ?
+        ORDER BY r.recipe_name
+        """,
+        (recipe_id,),
+    ).fetchall()
+
+    events = conn.execute(
+        """
+        SELECT e.event_id, e.name
+        FROM menus m
+        JOIN events e ON e.event_id = m.event_id
+        WHERE m.recipe_id = ?
+        ORDER BY e.name
+        """,
+        (recipe_id,),
+    ).fetchall()
+
+    return parents, events
 
 
 def resolve_recipe_timing(conn, recipe_id):

@@ -13,7 +13,7 @@ from styles.page_config import setup_page_defaults, PAGES, create_button
 
 @st.dialog("Delete event?")
 def confirm_delete(event_id):
-    st.write("This permanently deletes the event and its menu. This action cannot be undone.")
+    st.write("This permanently deletes the event. This action cannot be undone.")
     col1, col2 = st.columns(2)
     with col1:
         if create_button(name="confirm_delete"):

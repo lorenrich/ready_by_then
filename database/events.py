@@ -68,29 +68,38 @@ def edit_event(conn, event_id, event_name, event_date, num_adults, num_kids, num
     conn.commit()
 
 
-def copy_event(conn, 
-               event_id, 
-               event_name, 
-               event_date, 
-               num_adults, 
-               num_kids, 
-               num_hearty_eaters, 
-               need_kids_menu, 
-               dietary_needs, 
-               event_occurred, 
-               event_notes,
-               event_status):
+def copy_event(conn, event_id):
     """
-    Duplicate a logged event record and assign a new event_id
+    Duplicate an event and link the copy to the same menus. Returns the new event_id.
     """
-    conn.execute(
-        """
-        INSERT INTO events
-        VALUES event_id = ?, event_name = ?, event_date = ?, num_adults = ?, num_kids = ?, num_hearty_eaters = ?, need_kids_menu = ?, dietary_needs = ?, event_occurred = ?, event_notes = ?, event_status = ?;
-        """,
-        (event_id, event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status)
-    )
-    conn.commit()
+    event_id = int(event_id)
+    try:
+        cur = conn.execute(
+            """
+            INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters,
+                                need_kids_menu, dietary_needs, event_occurred, event_notes, event_status)
+            SELECT 'Copy of ' || event_name, event_date, num_adults, num_kids, num_hearty_eaters,
+                   need_kids_menu, dietary_needs, 0, event_notes, event_status
+            FROM events
+            WHERE event_id = ?
+            """,
+            (event_id,),
+        )
+        new_id = cur.lastrowid
+
+        conn.execute(
+            """
+            INSERT INTO event_menus (event_id, menu_id)
+            SELECT ?, menu_id FROM event_menus WHERE event_id = ?
+            """,
+            (new_id, event_id),
+        )
+
+        conn.commit()
+        return new_id
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def delete_event(conn, event_id):
