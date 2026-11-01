@@ -47,6 +47,12 @@ if event_occurred_default_value == 1:
 else:
     event_occurred_default_idx = 1
 
+event_status_default_value = selected_event_df['event_status']
+if event_status_default_value == 'Complete':
+    event_status_default_idx = 0
+else:
+    event_status_default_idx = 1
+
 # Form
 with st.form("edit_event"):
     event_id = st.text_input("Event ID", 
@@ -76,7 +82,10 @@ with st.form("edit_event"):
     event_occurred = 1 if event_occurred == "Yes" else 0
     event_notes = st.text_area("Any notes you want to make?", 
                                value=selected_event_df["event_notes"])
-    event_status = st.selectbox("Are the event details complete?", options=DEFAULT_STATUSES, value=selected_event_df['event_status'])
+    event_status = st.selectbox("Are the event details complete?", 
+                                options=DEFAULT_STATUSES,
+                                index=event_status_default_idx,
+                                accept_new_options=False)
 
     # Save 
     if st.form_submit_button("Save changes"):
