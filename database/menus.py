@@ -4,6 +4,16 @@ Create and modify menu data
 # Import
 import pandas as pd
 
+# Constants
+COURSES = [
+    "Appetizer",
+    "Main",
+    "Side",
+    "Dessert",
+    "Drink",
+    "Other"
+]
+
 def create_menu(conn,
                 menu_name,
                 menu_notes,
@@ -77,7 +87,7 @@ def edit_menu(conn,
         )
     conn.commit()
     return cursor.rowcount
-
+ 
 
 def copy_menu(conn, menu_id):
     """
@@ -124,17 +134,12 @@ def delete_menu(conn, menu_id):
 def save_menu(conn, menu_id, recipes):
     menu_id = int(menu_id)
     try:
-        # Delete any existing data
-        conn.execute("""DELETE from menus WHERE menu_id = ?""", (int(menu_id),))
-
-        for recipe in recipes:
-            # Insert into menu_recipes
+        conn.execute("DELETE FROM menu_recipes WHERE menu_id = ?", (menu_id,))
+        for item in recipes:
             conn.execute(
-                """
-                INSERT INTO menu_recipes (menu_id, recipe_id, course) VALUES (?, ?, ?)
-                """,
-                (menu_id, recipe_id, course),
-                )
+                "INSERT INTO menu_recipes (menu_id, recipe_id, course) VALUES (?, ?, ?)",
+                (menu_id, int(item["recipe_id"]), item["course"]),
+            )
         conn.commit()
     except Exception:
         conn.rollback()

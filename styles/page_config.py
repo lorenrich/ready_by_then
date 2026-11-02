@@ -52,6 +52,7 @@ BUTTONS = {
     'save_ingredients': dict(label='Save ingredients', type='primary', icon=':material/grocery:'),
 
     'create_menu': dict(label="Create new menu", type="primary", icon=":material/add:"),
+    'save_menu': dict(label="Save menu", type='primary', icon=':material/menu_book_2:'),
 
     'help': dict(label="Help", type="primary", icon=":material/help:")
 }

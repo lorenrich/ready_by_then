@@ -33,9 +33,6 @@ header_container = st.container(key='menus_page_header')
 with header_container:
      st.write(':material/yoshoku: Menus')
 
-if create_button(name='back'):
-    st.switch_page(PAGES['menus'])
-
 # No menus page
 if df.empty:
 
