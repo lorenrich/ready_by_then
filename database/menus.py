@@ -60,7 +60,7 @@ def get_selected_menu_recipes(conn, menu_id):
         WHERE mr.menu_id = ?
         ORDER BY mr.course, r.recipe_name
         """,
-        (menu_id, menu_id),
+        (menu_id,),
     ).fetchall()
 
 

@@ -126,4 +126,3 @@ if create_button(name='save_menu'):
               recipes=items)
 
     st.switch_page(PAGES['menus'])
-
