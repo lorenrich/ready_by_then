@@ -125,4 +125,7 @@ if create_button(name='save_menu'):
               menu_id=menu_id,
               recipes=items)
 
+    # Clear existing values
+    st.session_state.menu_id = None
+
     st.switch_page(PAGES['menus'])

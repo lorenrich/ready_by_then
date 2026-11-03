@@ -65,7 +65,7 @@ st.write(" ")
 
 # Ingredient entry
 with st.expander("Instructions"):
-    st.write("Enter your ingredients and their amounts.  If an item isn't in the dropdown, type to enter a new option.")
+    st.write("Enter your ingredients and their amounts.  If an item isn't in the dropdown, type to enter a new option and press Enter.")
     st.write('Recipes sometimes include other recipes.  When this happens, set the ingredient type to "Recipe".  For example, if '\
             'Chicken Soup contains "Homemade Broth" as a recipe within the recipe, Ready by Then will log "Homemade Broth" as a recipe for '\
             "you to complete later.")

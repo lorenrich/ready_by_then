@@ -7,8 +7,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
+from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection
-from database.menus import get_selected_menu, get_selected_menu_recipes, edit_menu, save_menu
+from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, edit_menu, save_menu
+from database.recipes import get_recipes_for_menu_selection
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 # Connect to database
@@ -26,6 +28,7 @@ if "menu_recipe_ids" not in st.session_state:
 # Create dataframes
 selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
+recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
 
 # Guard against empty dataframe else filter it to the selected menu
 if menu_id is None:
@@ -36,22 +39,51 @@ if selected_menu_df is None:
     st.page_link(PAGES['menus'], label="<- Back to Menus")
     st.stop()
 
+# Determine if initializing is needed
+needs_init = (st.session_state.get("menu_for_id") != menu_id or "edit_menu_notes" not in st.session_state)
+
+# Seed existing recipes tagged to menu
+if needs_init:
+    # Clear leftovers from any previously viewed menu
+    stale = [k for k in st.session_state.keys()
+            if k.startswith("course_") or k.startswith("menu_editor_") or k == "editor_base_df"]
+    for key in stale:
+        del st.session_state[key]
+
+    # Load the saved recipe IDs into the list
+    st.session_state.menu_recipe_ids = [int(rid) for rid, name, status, course in selected_menu_recipes]
+
+    # Seed each saved course into its widget key
+    for rid, name, status, course in selected_menu_recipes:
+        if course in COURSES:
+            st.session_state[f"course_{int(rid)}"] = course
+
+    st.session_state.menu_for_id = menu_id
+
+# Remaining user selections
+menu_name = selected_menu_df['menu_name']
+menu_notes = selected_menu_df['menu_notes']
+
+if selected_menu_df['menu_status'] == 'Complete':
+    menu_status_idx = 0
+else:
+    menu_status_idx = 1
+
 # Page navigation
 if create_button(name='back'):
+    # Clear fields
+    st.session_state.menu_for_id = None
     st.switch_page(PAGES['menus'])
 
 # Title
-st.title("Menu Details")
+st.title("Edit Menu")
 st.space("small")
 
-# Display existing menu data TODO working on
-menu_name = st.text_input("Menu name")
+# Display existing menu data
+menu_name = st.text_input("Menu name", value=menu_name)
 st.space("small")
 
-# Recipe selector
-recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
-
-st.write("Select your recipes")
+st.write("Edit your recipes")
 
 search_col1, search_col2 = st.columns(2)
 
@@ -120,20 +152,27 @@ counts = Counter(st.session_state.get(f"course_{int(r)}") for r in st.session_st
 st.caption("  ·  ".join(f"{c}: {counts.get(c, 0)}" for c in COURSES))
 
 # Rest of user input
-menu_notes = st.text_area("Any notes you want to make?")
-menu_status = st.selectbox("Is the menu complete?", options=DEFAULT_STATUSES, index=1)
+menu_notes = st.text_area("Any notes you want to make?", value=menu_notes, key="edit_menu_notes")
+menu_status = st.selectbox("Is the menu complete?", options=DEFAULT_STATUSES, index=menu_status_idx)
 
 # Save entries to table
 if create_button(name='save_menu'):
+    if not menu_name.strip():
+        st.error("Please give the menu a name")
+        st.stop()
 
-    menu_id = edit_menu(conn=conn,
-                          menu_name=menu_name,
-                          menu_notes=menu_notes,
-                          menu_status=menu_status)
+    edit_menu(conn=conn,
+              menu_name=menu_name,
+              menu_notes=menu_notes,
+              menu_status=menu_status,
+              menu_id=menu_id)
 
     save_menu(conn=conn,
               menu_id=menu_id,
               recipes=items)
 
-    st.switch_page(PAGES['menus'])
+    # Clear existing values
+    st.session_state.menu_for_id = None
 
+    st.switch_page(PAGES['menus'])
+    

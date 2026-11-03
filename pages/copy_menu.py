@@ -14,4 +14,3 @@ conn = get_connection()
 # Set up page
 setup_page_defaults()
 
-st.write("Coming soon!")

@@ -79,11 +79,7 @@ def edit_menu(conn,
         SET menu_name = ?, menu_notes = ?, menu_status = ?
         WHERE menu_id = ?;
         """,
-        (int(menu_name),
-         menu_notes,
-         menu_status,
-         menu_id
-         )
+        (menu_name, menu_notes, menu_status, menu_id)
         )
     conn.commit()
     return cursor.rowcount
