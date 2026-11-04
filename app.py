@@ -23,6 +23,7 @@ pg = st.navigation([
     PAGES['copy_menu'],
     PAGES['edit_menu'],
     PAGES['create_menu'],
+    PAGES['event_menus'],
     PAGES['recipes'],
     PAGES['recipe_details'],
     PAGES['copy_recipe'],

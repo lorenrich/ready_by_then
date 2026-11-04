@@ -3,6 +3,7 @@ Create and modify menu data
 '''
 # Import
 import pandas as pd
+import streamlit as st
 
 # Constants
 COURSES = [
@@ -78,6 +79,40 @@ def get_menu_events(conn, menu_id):
     ).fetchall()
 
     return events
+
+
+def get_event_menus(conn, event_id):
+    event_id = int(event_id)
+    event_menus = conn.execute(
+    """
+    SELECT m.menu_id, m.menu_name, m.menu_status
+    FROM event_menus em
+    JOIN menus m ON m.menu_id = em.menu_id
+    WHERE em.event_id = ?
+    ORDER BY m.menu_name
+    """,
+    (event_id,),
+    ).fetchall()
+
+    return event_menus
+
+
+def add_menu_to_event(conn, event_id, menu_id):
+    cursor = conn.execute(
+        "DELETE FROM event_menus (event_id, menu_id) VALUES (?, ?)",
+        (int(event_id), int(menu_id)),
+    )
+    conn.commit()
+    return cursor.rowcount
+
+
+def remove_menu_from_event(conn, event_id, menu_id):
+    cursor = conn.execute(
+        "INSERT OR IGNORE INTO event_menus (event_id, menu_id) VALUES (?, ?)",
+        (int(event_id), int(menu_id)),
+    )
+    conn.commit()
+    return cursor.rowcount
 
 
 def edit_menu(conn,
@@ -167,3 +202,33 @@ def save_menu(conn, menu_id, recipes):
         conn.rollback()
         raise
 
+
+def format_item(recipe_name, recipe_status):
+    if recipe_status == 'Complete':
+        return recipe_name
+    else:
+        return f"{recipe_name} ({recipe_status})"
+
+
+def render_menu(recipes):
+    """recipes: list of (recipe_id, recipe_name, recipe_status, course) tuples"""
+    if not recipes:
+        st.caption("No recipes on this menu yet.")
+        return
+
+    if not any(course for _, _, _, course in recipes):
+        for _, name, status, _ in recipes:
+            st.write(format_item(recipe_name=name, recipe_status=status))
+        return
+
+    by_course = {}
+    for _, name, status, course in recipes:
+        by_course.setdefault(course or "Unassigned", []).append((name, status))
+
+    order = [c for c in COURSES if c in by_course] + [c for c in by_course if c not in COURSES]
+    for course in order:
+        label_col, items_col = st.columns([1, 4])
+        label_col.markdown(f"**{course}**")
+        with items_col:
+            for name, status in by_course[course]:
+                st.write(format_item(recipe_name=name, recipe_status=status))

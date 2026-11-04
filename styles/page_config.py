@@ -16,6 +16,8 @@ PAGES = {
     'create_menu': st.Page("pages/create_menu.py", title='Create Menu', url_path="create_menu"),
     "edit_menu": st.Page("pages/edit_menu.py", title="Edit Menu", url_path="edit_menu"),
 
+    "event_menus": st.Page("pages/event_menus.py", title="Add Event Menus", url_path="event_menus"),
+
     'recipes': st.Page("pages/recipes.py", title="Recipes", icon=":material/chef_hat:", url_path="recipes"),
     'recipe_details': st.Page("pages/recipe_details.py", title="Recipe Details", url_path="recipe_details"),
     'copy_recipe': st.Page("pages/copy_recipe.py", title="Create Recipe Copy", url_path="copy_recipe"),
@@ -57,6 +59,8 @@ BUTTONS = {
     'create_menu': dict(label="Create new menu", type="primary", icon=":material/add:"),
     'save_menu': dict(label="Save menu", type='primary', icon=':material/menu_book_2:'),
     'add_recipes_to_menu': dict(label="Add recipes", type="primary", icon=":material/add:"),
+
+    'add_menu_to_event': dict(label="Add menu to event", type="primary", icon=":material/add:"),
 
     'help': dict(label="Help", type="primary", icon=":material/help:")
 }

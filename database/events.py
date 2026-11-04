@@ -46,11 +46,12 @@ def create_event(conn,
                  event_occurred,
                  event_notes,
                  event_status):
-    conn.execute(
+    cursor = conn.execute(
         "INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status)
     )
     conn.commit()
+    return cursor.lastrowid
 
 
 def edit_event(conn, event_id, event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status):

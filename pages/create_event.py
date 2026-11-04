@@ -47,20 +47,38 @@ with st.form("create_event"):
                                   accept_new_options=False)
     event_occurred = 1 if event_occurred == "Yes" else 0
     event_notes = st.text_area("Any notes you want to make?")
+
     event_status = st.selectbox("Are the event details complete?", options=DEFAULT_STATUSES, index=1)
 
-    # Submit
-    if st.form_submit_button("Submit"):
-       create_event(conn,
-                    event_name=event_name, 
-                    event_date=event_date, 
-                    num_adults=num_adults, 
-                    num_kids=num_kids, 
-                    num_hearty_eaters=num_hearty_eaters,
-                    need_kids_menu=kids_menu, 
-                    dietary_needs=dietary_needs,
-                    event_occurred=event_occurred,
-                    event_notes=event_notes,
-                    event_status=event_status)
-       st.switch_page(PAGES['events'])
+   # Take user to add_ingredients or submit as-is
+    col1, col2 = st.columns([1, 7], gap="small")
+
+    with col1:
+        add_now = st.form_submit_button("Add menus", type="primary")
+    with col2:
+        add_later = st.form_submit_button("I'll add menus later")
+
+    if add_now or add_later:
+        if not event_name.strip():
+            st.error("Please give the event a name.")
+            st.stop()
+
+        new_event_id = create_event(conn,
+                                    event_name=event_name, 
+                                    event_date=event_date, 
+                                    num_adults=num_adults, 
+                                    num_kids=num_kids, 
+                                    num_hearty_eaters=num_hearty_eaters,
+                                    need_kids_menu=kids_menu, 
+                                    dietary_needs=dietary_needs,
+                                    event_occurred=event_occurred,
+                                    event_notes=event_notes,
+                                    event_status=event_status)
+
+        if add_now:
+            st.session_state["selected_event_id"] = new_event_id
+            st.switch_page(PAGES["event_menus"])
+        else:
+            st.switch_page(PAGES["events"])
+          
        

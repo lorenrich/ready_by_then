@@ -113,7 +113,9 @@ with col1:
 with col2:
     st.write("On the menu")
 
-    st.caption("Under construction")
+    if create_button(name='add_menu_to_event'):
+        st.switch_page(PAGES['event_menus'])
+    
 
 container = st.container(border=True)
 

@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from database.database import get_connection
-from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, get_menu_events, delete_menu
+from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, get_menu_events, delete_menu, render_menu
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 @st.dialog("Delete menu?")
@@ -31,13 +31,6 @@ def confirm_delete(menu_id):
     with col2:
         if create_button(name="cancel"):
             st.rerun()
-
-
-def format_item(recipe_name, recipe_status):
-    if recipe_status == 'Complete':
-        return recipe_name
-    else:
-        return f"{recipe_name} ({recipe_status})"
 
 
 # Connect to database
@@ -114,25 +107,7 @@ with menu_recipe_col:
             st.switch_page(PAGES['edit_menu'])
 
     else:
-        has_courses = any(course for recipe_id, recipe_name, recipe_status, course in selected_menu_recipes)
-
-        if has_courses:
-            by_course = {}
-            for recipe_id, recipe_name, recipe_status, course in selected_menu_recipes:
-                by_course.setdefault(course or "Unassigned", []).append((recipe_name, recipe_status))
-
-            course_order = [c for c in COURSES if c in by_course] + [c for c in by_course if c not in COURSES]
-
-            for course in course_order:
-                label_col, items_col = st.columns([1, 4])
-                label_col.markdown(f"**{course}**")
-                with items_col:
-                    for recipe_name, recipe_status in by_course[course]:
-                        st.write(format_item(recipe_name=recipe_name, recipe_status=recipe_status))
-
-        else:
-            for recipe_id, recipe_name, recipe_status, course in selected_menu_recipes:
-                st.write(format_item(recipe_name=recipe_name, recipe_status=recipe_status))
+        render_menu(selected_menu_recipes)
         
 
 st.space("small")
