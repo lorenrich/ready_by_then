@@ -171,6 +171,14 @@ if create_button(name='save_menu'):
               menu_id=menu_id,
               recipes=items)
 
+    if not edit_menu(conn=conn,
+                     menu_name=menu_name,
+                     menu_notes=menu_notes,
+                     menu_status=menu_status,
+                     menu_id=menu_id):
+        st.error("Nothing was updated.")
+        st.stop()
+
     # Clear existing values
     st.session_state.menu_for_id = None
 

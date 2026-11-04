@@ -19,13 +19,11 @@ def confirm_delete(menu_id):
     col1, col2 = st.columns(2)
     with col1:
         if create_button(name="confirm_delete"):
-            try:
-                deleted = delete_menu(conn, menu_id=menu_id)
-            except sqlite3.IntegrityError:
-                events = get_menu_events(conn=conn, menu_id=menu_id)
-                if events:
-                    st.error("This recipe is used in: " + ", ".join(name for _, name in events) + ". Remove it there first.")
-                    st.stop()
+            events = get_menu_events(conn=conn, menu_id=menu_id)
+            if events:
+                st.warning("This menu is used by: " + ", ".join(name for _, name in events) + ". Deleting it removes it from those events.")
+
+            deleted = delete_menu(conn, menu_id=menu_id)
             if deleted:
                 st.switch_page(PAGES["menus"])
             else:
@@ -85,7 +83,7 @@ with button_col_2:
     
 with button_col_3:
     if create_button(name='delete'):
-        confirm_delete(recipe_id=int(selected_menu_df['menu_id']))
+        confirm_delete(menu_id=int(selected_menu_df['menu_id']))
 
 st.space("small")
 

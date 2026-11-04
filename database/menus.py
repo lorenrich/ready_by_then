@@ -64,6 +64,22 @@ def get_selected_menu_recipes(conn, menu_id):
     ).fetchall()
 
 
+def get_menu_events(conn, menu_id):
+    menu_id = int(menu_id)
+    events = conn.execute(
+        """
+        SELECT e.event_id, e.event_name
+        FROM event_menus em
+        JOIN events e ON e.event_id = em.event_id
+        WHERE em.menu_id = ?
+        ORDER BY e.event_name
+        """,
+        (menu_id,),
+    ).fetchall()
+
+    return events
+
+
 def edit_menu(conn,
               menu_name,
               menu_notes,
@@ -79,7 +95,7 @@ def edit_menu(conn,
         SET menu_name = ?, menu_notes = ?, menu_status = ?
         WHERE menu_id = ?;
         """,
-        (menu_name, menu_notes, menu_status, menu_id)
+        (menu_name, menu_notes, menu_status, int(menu_id))
         )
     conn.commit()
     return cursor.rowcount
@@ -118,11 +134,21 @@ def copy_menu(conn, menu_id):
 
 
 def delete_menu(conn, menu_id):
-    cursor = conn.execute(
+    conn.execute(
         """
         DELETE FROM menu_recipes WHERE menu_id = ?
         """, (int(menu_id),)
                  )
+    conn.execute(
+        """
+        DELETE FROM event_menus WHERE menu_id = ?
+        """, (int(menu_id),)
+                )
+    cursor = conn.execute(
+        """
+        DELETE FROM menus WHERE menu_id = ?
+        """, (int(menu_id),)
+                )
     conn.commit()
     return cursor.rowcount
 
@@ -141,18 +167,3 @@ def save_menu(conn, menu_id, recipes):
         conn.rollback()
         raise
 
-
-def get_menu_events(conn, menu_id):
-    menu_id = int(menu_id)
-    events = conn.execute(
-        """
-        SELECT e.event)id, e.event_name
-        FROM event_menus em
-        JOIN events e ON e.event_id = em.event_id
-        WHERE em.menu_id = ?
-        ORDER BY e.event_name
-        """,
-        (menu_id,),
-    ).fetchall()
-
-    return events
