@@ -28,10 +28,6 @@ if "menu_recipe_ids" not in st.session_state:
 st.title("Create Menu")
 st.write(" ")
 
-if create_button(name='back'):
-    st.switch_page(PAGES['menus'])
-
-
 # Menu creation entry
 st.write("Let's get started!")
 

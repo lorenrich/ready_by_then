@@ -21,9 +21,6 @@ setup_page_defaults()
 st.title("Create New Event")
 st.write(" ")
 
-if create_button(name='back'):
-    st.switch_page(PAGES['events'])
-
 # Form
 with st.form("create_event"):
     st.write("Let's get started!")

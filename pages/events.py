@@ -55,11 +55,8 @@ else:
     # Buttons
     col1, col2 = st.columns([1, 11])
     with col1:
-        if create_button(name='back'):
-            st.switch_page(PAGES['home'])
-    with col2:
         if create_button(name='create_event'):
-                st.switch_page(PAGES['create_event'])
+            st.switch_page(PAGES['create_event'])
 
     # Data table
     event_table = st.dataframe(

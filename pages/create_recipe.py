@@ -32,9 +32,6 @@ preheat_unit_types = update_and_default_selectbox(conn=conn,
 st.title("Create New Recipe")
 st.write(" ")
 
-if create_button(name='back'):
-        st.switch_page(PAGES['home'])
-
 # Form
 with st.form("create_recipe"):
     st.write("Let's get started!")

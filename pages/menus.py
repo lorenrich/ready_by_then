@@ -26,12 +26,28 @@ df = get_menus_for_display(conn=conn)
 setup_page_defaults()
 
 # Page header
-st.html(create_page_header('menus_page_header', '#45A5ED', '#8FC9F4'))
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
 
-header_container = st.container(key='menus_page_header')
+header_container = st.container(key='kitchen_page_header')
 
 with header_container:
-     st.write(':material/yoshoku: Menus')
+     icon_calendar = ''
+     st.write(':material/chef_hat: Kitchen')
+
+# The default section/page for the kitchen is recipes with buttons to other sections
+col1, col2, col3 = st.columns([1, 3, 3], gap="small")
+
+with col1:
+    if create_button(name='recipes_secondary'):
+         st.switch_page(PAGES['recipes'])
+
+with col2:
+    if create_button(name='food_and_drink_secondary'):
+         st.switch_page(PAGES['food_and_drink'])
+
+with col3:
+    if create_button(name='menus'):
+         st.switch_page(PAGES['menus'])
 
 # No menus page
 if df.empty:
@@ -51,11 +67,8 @@ else:
     # Buttons
     col1, col2 = st.columns([1, 8], gap="small")
     with col1:
-        if create_button(name='back'):
-            st.switch_page(PAGES['home'])
-    with col2:
         if create_button(name='create_menu'):
-                st.switch_page(PAGES['create_menu'])
+            st.switch_page(PAGES['create_menu'])
 
     # Data table
     menu_table = st.dataframe(

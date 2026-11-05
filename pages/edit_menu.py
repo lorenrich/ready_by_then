@@ -69,12 +69,6 @@ if selected_menu_df['menu_status'] == 'Complete':
 else:
     menu_status_idx = 1
 
-# Page navigation
-if create_button(name='back'):
-    # Clear fields
-    st.session_state.menu_for_id = None
-    st.switch_page(PAGES['menus'])
-
 # Title
 st.title("Edit Menu")
 st.space("small")

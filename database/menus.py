@@ -97,16 +97,16 @@ def get_event_menus(conn, event_id):
     return event_menus
 
 
-def add_menu_to_event(conn, event_id, menu_id):
-    cursor = conn.execute(
-        "DELETE FROM event_menus (event_id, menu_id) VALUES (?, ?)",
+def remove_menu_from_event(conn, event_id, menu_id):
+    cursor = conn.execute (
+        "DELETE FROM event_menus WHERE event_id = ? AND menu_id = ?",
         (int(event_id), int(menu_id)),
     )
     conn.commit()
     return cursor.rowcount
 
 
-def remove_menu_from_event(conn, event_id, menu_id):
+def add_menu_to_event(conn, event_id, menu_id):
     cursor = conn.execute(
         "INSERT OR IGNORE INTO event_menus (event_id, menu_id) VALUES (?, ?)",
         (int(event_id), int(menu_id)),

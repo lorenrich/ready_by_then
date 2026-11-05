@@ -18,7 +18,7 @@ PAGES = {
 
     "event_menus": st.Page("pages/event_menus.py", title="Add Event Menus", url_path="event_menus"),
 
-    'recipes': st.Page("pages/recipes.py", title="Recipes", icon=":material/chef_hat:", url_path="recipes"),
+    'recipes': st.Page("pages/recipes.py", title="Kitchen", icon=":material/chef_hat:", url_path="recipes"),
     'recipe_details': st.Page("pages/recipe_details.py", title="Recipe Details", url_path="recipe_details"),
     'copy_recipe': st.Page("pages/copy_recipe.py", title="Create Recipe Copy", url_path="copy_recipe"),
     'create_recipe': st.Page("pages/create_recipe.py", title="Create Recipe", url_path="create_recipe"),
@@ -26,6 +26,9 @@ PAGES = {
 
     'ingredients': st.Page("pages/ingredients.py", title="Add Ingredients", url_path="ingredients"),
     "open_full_recipe": st.Page("pages/ingredients.py", title="Add Ingredients", url_path="ingredients"),
+
+    "food_and_drink": st.Page("pages/food_and_drink.py", title="Food & Drink", url_path="food_and_drink"),
+    "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink"),
 
     'custom_lists': st.Page(page="pages/custom_lists.py", title="Custom Lists", icon=":material/list_alt:", url_path="custom_lists"),
     'custom_list_details': st.Page(page="pages/custom_list_details.py", title="Custom List Details", url_path="custom_list_details"),
@@ -38,7 +41,6 @@ PAGES = {
 
 BUTTONS = {
     # Basic buttons
-    'back': dict(label="Back", type="secondary", icon=":material/arrow_back_ios_new:"),
     'cancel': dict(label="Cancel", type="secondary"),
     'confirm_delete': dict(label="Yes, delete", type='primary'),
     'copy': dict(label="Copy", type="secondary"),
@@ -52,15 +54,24 @@ BUTTONS = {
     'events': dict(label="Events", type="primary", icon=":material/celebration:"),
     'create_event': dict(label="Create new event", type="primary", icon=":material/add:"),
 
-    'recipes': dict(label="Recipes", type="primary", icon=":material/chef_hat:"),
+    'food_and_drink': dict(label="Food & Drink", type="primary", icon=":material/grocery:"),
+    'food_and_drink_secondary': dict(label="Food & Drink", type="secondary", icon=":material/grocery:"),
+    'add_food_and_drink': dict(label="Add item", type="primary", icon=":material/add"),
+    'remove_food_and_drink': dict(label="Remove item", type="primary", icon=":material/remove"),
+
+    'recipes': dict(label='Recipes', type='primary', icon=":material/chef_hat:"),
+    'recipes_secondary': dict(label='Recipes', type='secondary', icon=":material/chef_hat:"),
     'create_recipe': dict(label='Create new recipe', type='primary', icon=":material/add:"),
     'save_ingredients': dict(label='Save ingredients', type='primary', icon=':material/grocery:'),
 
+    'menus': dict(label='Menus', type='primary', icon=':material/menu_book_2:'),
+    'menus_secondary': dict(label='Menus', type='secondary', icon=':material/menu_book_2:'),
     'create_menu': dict(label="Create new menu", type="primary", icon=":material/add:"),
     'save_menu': dict(label="Save menu", type='primary', icon=':material/menu_book_2:'),
     'add_recipes_to_menu': dict(label="Add recipes", type="primary", icon=":material/add:"),
 
-    'add_menu_to_event': dict(label="Add menu to event", type="primary", icon=":material/add:"),
+    'add_menu_to_event': dict(label="Add menu", type="primary", icon=":material/add:"),
+    "remove_menu": dict(label="Remove menu", type="primary", icon=":material/remove:"),
 
     'help': dict(label="Help", type="primary", icon=":material/help:")
 }

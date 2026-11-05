@@ -59,10 +59,6 @@ month = event_date.strftime("%B")
 day = event_date.strftime("%d")
 year = event_date.strftime("%Y")
 
-# Page navigation
-if create_button(name='back'):
-    st.switch_page(PAGES['events'])
-
 # Page header
 st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
 

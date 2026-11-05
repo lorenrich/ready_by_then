@@ -55,10 +55,6 @@ if selected_menu_df is None:
     st.page_link(PAGES['menus'], label="<- Back to Menus")
     st.stop()
 
-# Page navigation
-if create_button(name='back'):
-    st.switch_page(PAGES['menus'])
-
 # Title
 st.title("Menu Details")
 st.space("small")

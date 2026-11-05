@@ -27,37 +27,51 @@ setup_page_defaults()
 df = get_recipes_for_display(conn=conn)
 
 # Page header
-st.html(create_page_header('recipes_page_header', '#CC0099', '#FF85DF'))
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
 
-header_container = st.container(key='recipes_page_header')
+header_container = st.container(key='kitchen_page_header')
 
 with header_container:
      icon_calendar = ''
-     st.write(':material/chef_hat: Recipes')
+     st.write(':material/chef_hat: Kitchen')
 
-# No recipes page
+# The default section/page for the kitchen is recipes with buttons to other sections
+col1, col2, col3 = st.columns([1, 3, 3], gap="small")
+
+with col1:
+    if create_button(name='recipes'):
+         st.switch_page(PAGES['recipes'])
+
+with col2:
+    if create_button(name='food_and_drink_secondary'):
+         st.switch_page(PAGES['food_and_drink'])
+
+with col3:
+    if create_button(name='menus_secondary'):
+         st.switch_page(PAGES['menus'])
+
+
+# No recipes
 if df.empty:
 
     st.html(create_no_records_container('no_recipes'))
     blank_container = st.container(height=250, key='no_recipes', horizontal_alignment='center')
 
     fill_no_records_container(container=blank_container,
-                              icon_name='recipes',
-                              header_val='Create your first recipe',
-                              caption_val='Add ingredients and prep timing preferences all in one place',
-                              button_name='create_recipe',
-                              page_redirect='create_recipe')
+                            icon_name='recipes',
+                            header_val='Create your first recipe',
+                            caption_val='Add ingredients and prep timing preferences all in one place',
+                            button_name='create_recipe',
+                            page_redirect='create_recipe')
+
 
 # List recorded recipes    
 else:
     # Buttons
-    col1, col2 = st.columns([1, 8], gap="small")
-    with col1:
-        if create_button(name='back'):
-            st.switch_page(PAGES['home'])
-    with col2:
+    col4, col5 = st.columns([1, 8], gap="small")
+    with col4:
         if create_button(name='create_recipe'):
-                st.switch_page(PAGES['create_recipe'])
+            st.switch_page(PAGES['create_recipe'])
 
     # Data table
     recipe_table = st.dataframe(
@@ -71,4 +85,3 @@ else:
     if selected:
         st.session_state["selected_recipe_id"] = int(df.iloc[selected[0]]["Recipe ID"])
         st.switch_page(PAGES['recipe_details'])
-    

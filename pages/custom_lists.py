@@ -33,9 +33,6 @@ header_container = st.container(key='lists_page_header')
 with header_container:
      st.write(':material/list_alt: Lists')
 
-if create_button(name='back'):
-    st.switch_page(PAGES['custom_lists'])
-
 # No menus page
 if df.empty:
 
@@ -54,9 +51,6 @@ else:
     # Buttons
     col1, col2 = st.columns([1, 8], gap="small")
     with col1:
-        if create_button(name='back'):
-            st.switch_page(PAGES['home'])
-    with col2:
         if create_button(name='create_list'):
                 st.switch_page(PAGES['create_list'])
 

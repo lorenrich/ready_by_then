@@ -122,7 +122,40 @@ def initialize_schema(conn):
         );
     """)
 
-        
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS food_and_drinks (
+        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        item_type TEXT
+        );
+     """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS menu_items (
+        menu_id INTEGER NOT NULL,
+        item_id INTEGER NOT NULL,
+        course TEXT,
+        amount REAL,
+        unit TEXT,
+        PRIMARY KEY (menu_id, item_id),
+        FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
+        FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
+        );
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS event_items (
+        event_id INTEGER NOT NULL,
+        item_id INTEGER NOT NULL,
+        course TEXT,
+        amount REAL,
+        unit TEXT,
+        PRIMARY KEY (event_id, item_id),
+        FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+        FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
+        );
+    """)    
+ 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS custom_lists (
         list_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -132,9 +165,6 @@ def initialize_schema(conn):
         list_status TEXT NOT NULL DEFAULT 'Incomplete'
         );
     """)
-        
-    conn.commit()
-
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS list_items (
@@ -145,6 +175,8 @@ def initialize_schema(conn):
         FOREIGN KEY (list_id) REFERENCES custom_list(list_id) ON DELETE CASCADE
         );
     """)
+
+    conn.commit()
 
 
 DEFAULT_STATUSES = [

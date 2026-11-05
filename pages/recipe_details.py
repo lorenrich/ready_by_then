@@ -76,10 +76,6 @@ if selected_recipe_df is None:
     st.page_link(PAGES['recipes'], label="<- Back to Recipes")
     st.stop()
 
-# Page navigation
-if create_button(name='back'):
-    st.switch_page(PAGES['recipes'])
-
 # Title
 st.title("Recipe Details")
 st.space("small")

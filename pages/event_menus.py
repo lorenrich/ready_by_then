@@ -64,10 +64,6 @@ month = event_date.strftime("%B")
 day = event_date.strftime("%d")
 year = event_date.strftime("%Y")
 
-# Page navigation
-if create_button(name='back'):
-    st.switch_page(PAGES['events'])
-
 # Page header
 st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
 
@@ -102,8 +98,6 @@ with col2:
     st.write(selected_event_df['dietary_needs'])
 
 # Menu review and selection
-menu_selector = st.container(border=True)
-
 event_menus = get_event_menus(conn=conn, event_id=event_id)
 
 for mid, mname, mstatus in event_menus:

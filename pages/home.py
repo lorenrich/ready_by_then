@@ -31,8 +31,8 @@ with home_row1_col2:
 
 
     with home_button2:
-        if create_big_button('menu', 'Menus', '#45A5ED', '#8FC9F4'):
-            st.switch_page(PAGES['menus'])
+        if create_big_button('kitchen', 'Kitchen', '#45A5ED', '#8FC9F4'):
+            st.switch_page(PAGES['recipes'])
 
 
 home_row2_col1, home_row2_col2 = st.columns(2, gap="small")
@@ -42,9 +42,5 @@ with home_row2_col2:
     home_button3, home_button4 = st.columns(2, gap="large")
 
     with home_button3:
-        if create_big_button('Recipes', 'Recipes', '#CC0099', '#FF85DF'):
-            st.switch_page(PAGES['recipes'])
-
-    with home_button4:
          if create_big_button('custom_lists', 'Task Lists', '#7EC234', '#BCE292'):
               st.switch_page(PAGES['custom_lists'])
