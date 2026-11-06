@@ -81,4 +81,4 @@ else:
     selected = item_table.selection.rows
     if selected:
         st.session_state["selected_item_id"] = int(df.iloc[selected[0]]["Item ID"])
-        st.switch_page(PAGES['create_food_and_drink'])
+        st.switch_page(PAGES['edit_food_and_drink'])

@@ -10,7 +10,7 @@ import streamlit as st
 from datetime import datetime
 from database.database import get_connection
 from database.events import get_selected_event, delete_event
-from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header, create_subheader
+from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
 
 @st.dialog("Delete event?")
 def confirm_delete(event_id):

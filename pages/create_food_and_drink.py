@@ -8,14 +8,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 import time
-from database.database import get_connection
+from database.database import get_connection, update_and_default_selectbox
 from database.food_and_drink import DEFAULT_ITEM_TYPES, create_item
 from styles.page_config import (PAGES, 
                                 setup_page_defaults, 
                                 create_button, 
-                                create_page_header,
-                                create_no_records_container,
-                                fill_no_records_container)
+                                create_page_header)
 
 # Connect to database
 conn = get_connection()
@@ -23,6 +21,11 @@ conn = get_connection()
 # Set up page
 setup_page_defaults()
 
+# Update values of item_type select box with any submitted user entries
+item_types = update_and_default_selectbox(conn=conn,
+                                          table_name='food_and_drinks',
+                                          col_name='item_type',
+                                          default_options=DEFAULT_ITEM_TYPES)
 
 # Page header
 st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
@@ -54,7 +57,7 @@ with st.form("create_item", clear_on_submit=True):
     item_name = st.text_input('Name your item (you can include your favorite brands or keep names generic like "dinner rolls")')
     
     item_type = st.selectbox("Select the item type or add a new one",
-                             options=DEFAULT_ITEM_TYPES,
+                             options=item_types,
                              accept_new_options=True)
 
     st.space("small")
@@ -80,7 +83,10 @@ with st.form("create_item", clear_on_submit=True):
             # Display msg that item was saved
             st.toast(f"{item_name} saved successfully!")
             time.sleep(1.0)
+
+            # Refresh to new form
             st.session_state["selected_item_id"] = new_item_id
-            #st.switch_page(PAGES["create_food_and_drink"])
+            st.switch_page(PAGES["create_food_and_drink"])
+            
         else:
             st.switch_page(PAGES["food_and_drink"])

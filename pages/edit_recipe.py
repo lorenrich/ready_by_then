@@ -7,9 +7,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Continue import statements after locating root
 import streamlit as st
-from database.database import get_connection, update_and_default_selectbox, DEFAULT_STATUSES
-from database.recipes import get_selected_recipe, edit_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
-from styles.page_config import setup_page_defaults, PAGES
+from database.database import DEFAULT_STATUSES, get_connection, update_and_default_selectbox
+from database.recipes import DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES, get_selected_recipe, edit_recipe
+from styles.page_config import PAGES, setup_page_defaults
 
 # Connect to database
 conn = get_connection()

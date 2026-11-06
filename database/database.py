@@ -138,6 +138,7 @@ def initialize_schema(conn):
         amount REAL,
         unit TEXT,
         scales_with_guests BOOLEAN DEFAULT 0,
+        prep_timing INTEGER,
         PRIMARY KEY (menu_id, item_id),
         FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
         FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
@@ -152,6 +153,7 @@ def initialize_schema(conn):
         amount REAL,
         unit TEXT,
         scales_with_guests BOOLEAN DEFAULT 0,
+        prep_timing INTEGER,
         PRIMARY KEY (event_id, item_id),
         FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
         FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
@@ -190,7 +192,8 @@ DEFAULT_STATUSES = [
 ALLOWED_COLUMNS = {
     "recipes": {"recipe_type", "recipe_preheat_unit"},
     "recipe_ingredients": {"ingredient_name", "unit"},
-    "recipe_sections": {"section_name"}
+    "recipe_sections": {"section_name"},
+    "food_and_drinks": {"item_type"}
 }
 
 

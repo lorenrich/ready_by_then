@@ -12,6 +12,7 @@ from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection
 from database.menus import COURSES, create_menu, save_menu
 from database.recipes import get_recipes_for_menu_selection
+from database.food_and_drink import get_items_for_menu_selection
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 # Connect to database
@@ -24,6 +25,13 @@ setup_page_defaults()
 if "menu_recipe_ids" not in st.session_state:
     st.session_state.menu_recipe_ids = []
 
+if "menu_item_ids" not in st.session_state:
+    st.session_state.menu_item_ids = []
+
+# Set up dataframes
+recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
+item_selection_df = get_items_for_menu_selection(conn=conn)
+
 # Title
 st.title("Create Menu")
 st.write(" ")
@@ -34,10 +42,9 @@ st.write("Let's get started!")
 menu_name = st.text_input("Menu name")
 st.space("small")
 
-# Recipe selector
-recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
 
-st.write("Select your recipes")
+# Recipe selector
+st.markdown("**Add recipes**")
 
 search_col1, search_col2 = st.columns(2)
 
@@ -85,8 +92,14 @@ else:
     current = set(st.session_state.menu_recipe_ids)
     st.session_state.menu_recipe_ids = sorted((current | checked) - unchecked)
 
+
+# TODO Food and drink item selector
+
+
+
 # Display what's on the menu
 chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
+
 st.write(f"On this menu ({len(chosen)}): " + ", ".join(chosen["Recipe"]))
 st.space("small")
 
