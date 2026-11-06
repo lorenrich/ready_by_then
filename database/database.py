@@ -137,6 +137,7 @@ def initialize_schema(conn):
         course TEXT,
         amount REAL,
         unit TEXT,
+        scales_with_guests BOOLEAN DEFAULT 0,
         PRIMARY KEY (menu_id, item_id),
         FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
         FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
@@ -150,6 +151,7 @@ def initialize_schema(conn):
         course TEXT,
         amount REAL,
         unit TEXT,
+        scales_with_guests BOOLEAN DEFAULT 0,
         PRIMARY KEY (event_id, item_id),
         FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
         FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
@@ -172,7 +174,7 @@ def initialize_schema(conn):
         item_name TEXT NOT NULL,
         need_to_buy BOOLEAN DEFAULT 0,
         prep_timing INTEGER,
-        FOREIGN KEY (list_id) REFERENCES custom_list(list_id) ON DELETE CASCADE
+        FOREIGN KEY (list_id) REFERENCES custom_lists(list_id) ON DELETE CASCADE
         );
     """)
 

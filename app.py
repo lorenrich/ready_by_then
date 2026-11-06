@@ -31,6 +31,7 @@ pg = st.navigation([
     PAGES['edit_recipe'],
     PAGES['ingredients'],
     PAGES['food_and_drink'],
+    PAGES['create_food_and_drink'],
     PAGES['edit_food_and_drink'],
     PAGES['custom_lists'],
     PAGES['custom_list_details'],

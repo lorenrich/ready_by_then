@@ -28,6 +28,7 @@ PAGES = {
     "open_full_recipe": st.Page("pages/ingredients.py", title="Add Ingredients", url_path="ingredients"),
 
     "food_and_drink": st.Page("pages/food_and_drink.py", title="Food & Drink", url_path="food_and_drink"),
+    "create_food_and_drink": st.Page("pages/create_food_and_drink.py", title="Create Item", url_path="create_food_and_drink"),
     "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink"),
 
     'custom_lists': st.Page(page="pages/custom_lists.py", title="Custom Lists", icon=":material/list_alt:", url_path="custom_lists"),
@@ -56,8 +57,8 @@ BUTTONS = {
 
     'food_and_drink': dict(label="Food & Drink", type="primary", icon=":material/grocery:"),
     'food_and_drink_secondary': dict(label="Food & Drink", type="secondary", icon=":material/grocery:"),
-    'add_food_and_drink': dict(label="Add item", type="primary", icon=":material/add"),
-    'remove_food_and_drink': dict(label="Remove item", type="primary", icon=":material/remove"),
+    'add_food_and_drink': dict(label="Add item", type="primary", icon=":material/add:"),
+    'remove_food_and_drink': dict(label="Remove item", type="primary", icon=":material/remove:"),
 
     'recipes': dict(label='Recipes', type='primary', icon=":material/chef_hat:"),
     'recipes_secondary': dict(label='Recipes', type='secondary', icon=":material/chef_hat:"),
