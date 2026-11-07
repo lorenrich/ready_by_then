@@ -123,3 +123,51 @@ def get_item_usage(conn, item_id):
 
     return menus, events
 
+
+def get_or_create_item(conn, name):
+    name = name.strip()
+    row = conn.execute(
+        "SELECT item_id FROM food_and_drinks WHERE item_name = ? COLLATE NOCASE",
+        (name,),
+    ).fetchone()
+    if row:
+        return row[0]
+    cur = conn.execute("INSERT INTO food_and_drinks (item_name) VALUES (?)", (name,))
+    return cur.lastrowid
+
+
+def save_menu_items(conn, menu_id, items):
+    menu_id = int(menu_id)
+    try:
+        conn.execute("DELETE FROM menu_items WHERE menu_id = ?", (menu_id,))
+
+        for item in items:
+            item_id = get_or_create_item(conn, item["name"])
+            conn.execute(
+                """
+                INSERT INTO menu_items (menu_id, item_id, course, amount, unit, scales_with_guests, prep_timing)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (menu_id, item_id, item["course"], item["amount"], item["unit"],
+                 item["scales"], item["prep"]),
+            )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+
+def get_selected_menu_items(conn,
+                            menu_id):
+    menu_id = int(menu_id)
+    return conn.execute(
+        """
+        SELECT i.item_id, i.item_name, mi.course
+        FROM menu_items mi
+        JOIN food_and_drinks i on i.item_id = mi.item_id
+        WHERE mi.menu_id = ?
+        ORDER BY mi.course, i.item_name
+        """,
+        (menu_id,),
+    ).fetchall()
+
+    

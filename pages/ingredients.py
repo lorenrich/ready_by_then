@@ -77,10 +77,9 @@ st.space("small")
 st.write(f"**Recipe: {selected_recipe_df['recipe_name']}**")
 
 
-'''
-Get current recipe ingredients or initialize a fresh entry section if recipe_id doesn't match, wasn't selected, or if user returned to 
-ingredients page after previously leaving it without saving
-'''
+# Get current recipe ingredients or initialize a fresh entry section if recipe_id doesn't match, wasn't selected, or if user returned to 
+# ingredients page after previously leaving it without saving
+
 rows = st.session_state.get("rows")
 widgets_gone = bool(rows) and f"name_{rows[0]}" not in st.session_state
 

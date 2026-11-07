@@ -11,7 +11,7 @@ from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection
 from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, create_menu, save_menu
 from database.recipes import get_recipes_for_menu_selection
-from pages.menu_details import menu_id as copied_menu_id
+from database.food_and_drink import get_selected_menu_items
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 # Connect to database
@@ -29,6 +29,7 @@ if "menu_recipe_ids" not in st.session_state:
 # Create dataframes
 selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
+selected_menu_items = get_selected_menu_items(conn=conn, menu_id=menu_id) if menu_id is not None else None
 recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
 
 # Guard against empty dataframe else filter it to the selected menu

@@ -138,7 +138,7 @@ def edit_menu(conn,
 
 def copy_menu(conn, menu_id):
     """
-    Duplicate a menu and its recipe list. The copy is not attached to any event. Returns the new menu_id.
+    Duplicate a menu and its recipe and item lists. The copy is not attached to any event. Returns the new menu_id.
     """
     menu_id = int(menu_id)
     try:
@@ -161,6 +161,14 @@ def copy_menu(conn, menu_id):
             (new_id, menu_id),
         )
 
+        conn.execute(
+            """
+            INSERT INTO menu_items (menu_id, item_id, course, amount, unit, scales_with_guests, prep_timing)
+            SELECT ?, item_id, course, amount, unit, scales_with_guests, prep_timing FROM menu_items WHERE menu_id = ?
+            """,
+            (new_id, menu_id)
+        )
+
         conn.commit()
         return new_id
     except Exception:
@@ -169,23 +177,33 @@ def copy_menu(conn, menu_id):
 
 
 def delete_menu(conn, menu_id):
-    conn.execute(
-        """
-        DELETE FROM menu_recipes WHERE menu_id = ?
-        """, (int(menu_id),)
-                 )
-    conn.execute(
-        """
-        DELETE FROM event_menus WHERE menu_id = ?
-        """, (int(menu_id),)
-                )
-    cursor = conn.execute(
-        """
-        DELETE FROM menus WHERE menu_id = ?
-        """, (int(menu_id),)
-                )
-    conn.commit()
-    return cursor.rowcount
+    menu_id = int(menu_id)
+    try:
+        conn.execute(
+            """
+            DELETE FROM menu_recipes WHERE menu_id = ?
+            """, (int(menu_id),)
+                    )
+        conn.execute(
+            """
+            DELETE FROM event_menus WHERE menu_id = ?
+            """, (int(menu_id),)
+                    )
+        conn.execute(
+            """
+            DELETE FROM menu_items WHERE menu_id = ?
+            """, (int(menu_id),)
+                    )
+        cursor = conn.execute(
+            """
+            DELETE FROM menus WHERE menu_id = ?
+            """, (int(menu_id),)
+                    )
+        conn.commit()
+        return cursor.rowcount
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def save_menu(conn, menu_id, recipes):
@@ -210,25 +228,38 @@ def format_item(recipe_name, recipe_status):
         return f"{recipe_name} ({recipe_status})"
 
 
-def render_menu(recipes):
-    """recipes: list of (recipe_id, recipe_name, recipe_status, course) tuples"""
-    if not recipes:
-        st.caption("No recipes on this menu yet.")
-        return
-
-    if not any(course for _, _, _, course in recipes):
-        for _, name, status, _ in recipes:
-            st.write(format_item(recipe_name=name, recipe_status=status))
-        return
-
-    by_course = {}
+def render_menu(recipes, items=()):
+    """
+    recipes: list of (recipe_id, recipe_name, recipe_status, course) tuples
+    items: list of (item_id, item_name, course) tuples
+    """
+    # Turn recipes and items into pairs
+    entries = []
     for _, name, status, course in recipes:
-        by_course.setdefault(course or "Unassigned", []).append((name, status))
+        entries.append((course, format_item(recipe_name=name, recipe_status=status)))
+    for _, name, course in items:
+        entries.append((course, name))
+
+    if not entries:
+        st.caption("No items on this menu yet.")
+        return
+
+    # Guard for recipes and items without courses
+    if not any(course for course, _ in entries):
+        for _, text in entries:
+            st.write(text)
+        return
+
+    # Group by course
+    by_course = {}
+    for course, text in entries:
+        by_course.setdefault(course or "Unassigned", []).append(text)
 
     order = [c for c in COURSES if c in by_course] + [c for c in by_course if c not in COURSES]
     for course in order:
         label_col, items_col = st.columns([1, 4])
         label_col.markdown(f"**{course}**")
         with items_col:
-            for name, status in by_course[course]:
-                st.write(format_item(recipe_name=name, recipe_status=status))
+            for text in by_course[course]:
+                st.write(text)
+

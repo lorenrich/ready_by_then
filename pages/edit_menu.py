@@ -8,9 +8,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 from collections import Counter
-from database.database import DEFAULT_STATUSES, get_connection
+from database.database import DEFAULT_STATUSES, get_connection, update_and_default_selectbox
 from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, edit_menu, save_menu
-from database.recipes import get_recipes_for_menu_selection
+from database.recipes import DEFAULT_UNITS, DEFAULT_PREP_OPTIONS, PREP_LABELS, get_recipes_for_menu_selection
+from database.food_and_drink import get_items_for_menu_selection, get_selected_menu_items
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 # Connect to database
@@ -25,10 +26,20 @@ menu_id = st.session_state.get("selected_menu_id")
 if "menu_recipe_ids" not in st.session_state:
     st.session_state.menu_recipe_ids = []
 
+if "menu_item_ids" not in st.session_state:
+    st.session_state.menu_item_ids = []
+
 # Create dataframes
 selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
 recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
+item_selection_df = get_items_for_menu_selection(conn=conn)
+
+# Update page dropdowns
+amount_units = update_and_default_selectbox(conn=conn,
+                                            table_name='recipe_ingredients',
+                                            col_name='unit',
+                                            default_options=DEFAULT_UNITS)
 
 # Guard against empty dataframe else filter it to the selected menu
 if menu_id is None:
@@ -73,57 +84,146 @@ else:
 st.title("Edit Menu")
 st.space("small")
 
-# Display existing menu data
 menu_name = st.text_input("Menu name", value=menu_name)
 st.space("small")
 
-st.write("Edit your recipes")
+# Display existing recipe data
+recipe_container = st.container(border=True)
+with recipe_container:
+    st.markdown("**Edit your recipes**")
 
-search_col1, search_col2 = st.columns(2)
+    search_col1, search_col2 = st.columns(2)
 
-with search_col1:
-    recipe_name_filter = st.text_input("Recipe name")
+    with search_col1:
+        recipe_name_filter = st.text_input("Recipe name")
 
-with search_col2:
-    type_options = ['All'] + sorted(recipe_selection_df['Type'].dropna().unique())
+    with search_col2:
+        type_options = ['All'] + sorted(recipe_selection_df['Type'].dropna().unique())
 
-    recipe_type_filter = st.selectbox(label='Recipe type',
-                                        options=type_options)
+        recipe_type_filter = st.selectbox(label='Recipe type',
+                                            options=type_options)
 
-# Filter a copy of the dataframe based on user selection
-filtered_df = recipe_selection_df
+    # Filter a copy of the dataframe based on user selection
+    filtered_df = recipe_selection_df
 
-if recipe_name_filter:
-    filtered_df = filtered_df[filtered_df['Recipe'].str.contains(recipe_name_filter, case=False, regex=False, na=False)]
+    if recipe_name_filter:
+        filtered_df = filtered_df[filtered_df['Recipe'].str.contains(recipe_name_filter, case=False, regex=False, na=False)]
 
-if recipe_type_filter != 'All':
-    filtered_df = filtered_df[filtered_df['Type'] == recipe_type_filter]
+    if recipe_type_filter != 'All':
+        filtered_df = filtered_df[filtered_df['Type'] == recipe_type_filter]
 
-# Create the dataframe key
-editor_key = f"menu_editor_{recipe_name_filter}_{recipe_type_filter}"
+    # Create the dataframe key
+    editor_key = f"menu_editor_{recipe_name_filter}_{recipe_type_filter}"
 
-if editor_key not in st.session_state:
-    base_df = filtered_df.copy()
-    base_df["Add to Menu"] = base_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)
-    st.session_state.editor_base_df = base_df
+    if editor_key not in st.session_state:
+        base_df = filtered_df.copy()
+        base_df["Add to Menu"] = base_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)
+        st.session_state.editor_base_df = base_df
 
-# Guard against no filter matches and write the editor
-if len(filtered_df) == 0:
-    st.caption("No recipes match those filters")
-else:
-    edited_df = st.data_editor(
-    st.session_state.editor_base_df,
-    key=editor_key,
-    hide_index=True,
-    column_config={"Recipe ID": None},
-    disabled=["Recipe", "Type"],
-)
-    
-    # Copy user inputs to the session state list
-    checked = {int(r) for r in edited_df.loc[edited_df["Add to Menu"], "Recipe ID"]}
-    unchecked = {int(r) for r in edited_df.loc[~edited_df["Add to Menu"], "Recipe ID"]}
-    current = set(st.session_state.menu_recipe_ids)
-    st.session_state.menu_recipe_ids = sorted((current | checked) - unchecked)
+    # Guard against no filter matches and write the editor
+    if len(filtered_df) == 0:
+        st.caption("No recipes match those filters")
+    else:
+        edited_df = st.data_editor(
+        st.session_state.editor_base_df,
+        key=editor_key,
+        hide_index=True,
+        column_config={"Recipe ID": None},
+        disabled=["Recipe", "Type"],
+    )
+        
+        # Copy user inputs to the session state list
+        checked = {int(r) for r in edited_df.loc[edited_df["Add to Menu"], "Recipe ID"]}
+        unchecked = {int(r) for r in edited_df.loc[~edited_df["Add to Menu"], "Recipe ID"]}
+        current = set(st.session_state.menu_recipe_ids)
+        st.session_state.menu_recipe_ids = sorted((current | checked) - unchecked)
+
+st.space("small")
+
+
+# Get current food and drink items or initialize a fresh entry section if item_id doesn't match, wasn't selected, or if user returned to 
+# ingredients page after previously leaving it without saving
+item_rows = st.session_state.get("item_rows")
+item_widgets_gone = bool(item_rows) and f"item_name_{item_rows[0]}" not in st.session_state
+
+if st.session_state.get("item_rows_for_menu") != menu_id or item_widgets_gone:
+    # Get current ingredients
+    current_items = get_selected_menu_items(conn=conn, menu_id=menu_id) if menu_id is not None else None
+    if current_items:
+            st.session_state.item_rows = list(range(len(current_items)))
+            st.session_state.item_next_row_id = len(current_items)
+
+            for i, (item_name, item_amount, item_unit, item_scale, item_prep, item_id) in enumerate(current_items):
+                st.session_state[f"item_name_{i}"] = item_name
+                st.session_state[f"item_amount_{i}"] = item_amount
+                st.session_state[f"item_unit_{i}"] = item_unit
+                st.session_state[f"item_scale_{i}"] = item_scale
+                st.session_state[f"item_prep_{i}"] = PREP_LABELS.get(item_prep)
+                st.session_state[f"item_id_{i}"] = item_id
+
+    else:
+        # Initialize a fresh entry section
+        st.session_state.item_rows=[0]
+        st.session_state.item_next_row_id = 1
+    st.session_state.item_rows_for_menu = menu_id
+
+
+# Set up entry fields
+item_container = st.container(border=True)
+with item_container:
+    st.markdown("**Add other food and drinks**")
+
+    item_rows = st.session_state.get("item_rows")
+    if item_rows is None or (item_rows and f"item_name_{item_rows[0]}" not in st.session_state):
+        st.session_state.item_rows = [0]
+        st.session_state.next_item_row_id = 1
+
+    # Set up entry fields
+    for rid in st.session_state.item_rows:
+        c1, c2, c3, c4, c5, c6 = st.columns([2.5, 1.25, 1, 1.5, 1.25, 0.6], vertical_alignment="bottom")
+        
+        c1.selectbox("Item", 
+                    options=item_selection_df['Item'].tolist(), 
+                    index=None, 
+                    accept_new_options=True, 
+                    key=f"item_name_{rid}",
+                    label_visibility="visible" if rid == st.session_state.item_rows[0] else "collapsed")
+        
+        c2.number_input("Amount", 
+                        min_value=0.0, 
+                        value=0.0, 
+                        key=f"item_amount_{rid}",
+                        label_visibility="visible" if rid == st.session_state.item_rows[0] else "collapsed")
+        
+        c3.selectbox("Unit", 
+                    options=amount_units, 
+                    index=None, 
+                    accept_new_options=True, 
+                    key=f"item_unit_{rid}",
+                    label_visibility="visible" if rid == st.session_state.item_rows[0] else "collapsed")
+
+        c4.selectbox("Scale amount with guest count",
+                    options=['No', 'Yes'],
+                    accept_new_options=False,
+                    key=f"item_scale_{rid}",
+                    label_visibility="visible" if rid == st.session_state.item_rows[0] else "collapsed")
+        
+        c5.selectbox("Prep timing", 
+                    list(DEFAULT_PREP_OPTIONS), 
+                    index=None, 
+                    key=f"item_prep_{rid}",
+                    label_visibility="visible" if rid == st.session_state.item_rows[0] else "collapsed")
+
+        if c6.button("", icon=":material/delete:", key=f"item_del_{rid}"):
+            st.session_state.item_rows.remove(rid)
+            st.rerun()
+
+    if st.button("Add item", icon=":material/add:"):
+        st.session_state.item_rows.append(st.session_state.next_item_row_id)
+        st.session_state.next_item_row_id += 1
+        st.rerun()
+
+st.space("small")
 
 # Display what's on the menu
 chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]

@@ -11,6 +11,7 @@ import pandas as pd
 import sqlite3
 from database.database import get_connection
 from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, get_menu_events, delete_menu, render_menu
+from database.food_and_drink import get_selected_menu_items
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 @st.dialog("Delete menu?")
@@ -45,6 +46,7 @@ menu_id = st.session_state.get("selected_menu_id")
 # Create dataframes
 selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
+selected_menu_items = get_selected_menu_items(conn=conn, menu_id=menu_id) if menu_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected menu
 if menu_id is None:
@@ -93,17 +95,18 @@ with menu_info_col:
         st.write(selected_menu_df['menu_status'] if selected_menu_df['menu_status'] else "&nbsp;")
 
 with menu_recipe_col:
-    st.markdown("**Recipes**")
+    st.markdown("**What's cooking**")
     st.space("small")
 
-    if not selected_menu_recipes:
-        st.caption("No recipes have been added.")
+    if not selected_menu_recipes and not selected_menu_items:
+        st.caption("No items have been added.")
 
         if create_button(name='add_recipes_to_menu'):
             st.switch_page(PAGES['edit_menu'])
 
     else:
-        render_menu(selected_menu_recipes)
+        render_menu(recipes=selected_menu_recipes,
+                    items=selected_menu_items)
         
 
 st.space("small")
