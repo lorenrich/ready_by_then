@@ -74,17 +74,14 @@ with header_container:
      st.write(':material/chef_hat: Kitchen')
 
 # The default section/page for the kitchen is recipes with buttons to other sections
-col1, col2, col3 = st.columns([1, 3, 3], gap="small")
-
-with col1:
+button_container = st.container(horizontal=True)
+with button_container:
     if create_button(name='recipes_secondary'):
          st.switch_page(PAGES['recipes'])
 
-with col2:
     if create_button(name='food_and_drink'):
          st.switch_page(PAGES['food_and_drink'])
 
-with col3:
     if create_button(name='menus_secondary'):
          st.switch_page(PAGES['menus'])
 
@@ -106,8 +103,8 @@ with st.form("create_item", clear_on_submit=True):
     st.space("small")
     st.write("Don't worry about amounts just yet.  You can edit those when the item is tagged to a menu or event.")
 
-    col4, col5 = st.columns([1, 3])
-    with col4:
+    save_delete_button_container = st.container(horizontal=True)
+    with save_delete_button_container:
         # Save or delete item
         if st.form_submit_button("Save changes"):
             edit_item(conn=conn,
@@ -117,6 +114,5 @@ with st.form("create_item", clear_on_submit=True):
 
             st.switch_page(PAGES['food_and_drink'])
 
-    with col5:
         if st.form_submit_button("Delete item"):
             confirm_delete(item_id=int(selected_item_df['item_id']))

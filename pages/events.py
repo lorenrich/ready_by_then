@@ -16,7 +16,8 @@ from styles.page_config import (
      create_button, 
      create_page_header, 
      create_no_records_container,  
-     fill_no_records_container
+     fill_no_records_container,
+     render_list
 )
 
 # Create the connection to the database
@@ -53,20 +54,29 @@ if df.empty:
 # List recorded events    
 else:
     # Buttons
-    col1, col2 = st.columns([1, 11])
-    with col1:
+    create_button_container = st.container(horizontal=True)
+    with create_button_container:
         if create_button(name='create_event'):
             st.switch_page(PAGES['create_event'])
 
-    # Data table
-    event_table = st.dataframe(
-        df, 
-        on_select="rerun",
-        selection_mode="single-row",
-        hide_index=True, 
-        width="stretch")
+    # Render table
+    df = df.fillna('')
 
-    selected = event_table.selection.rows
-    if selected:
-        st.session_state["selected_event_id"] = int(df.iloc[selected[0]]["Event ID"])
+    rows = df.to_dict("records")
+
+    columns = [
+    ("Event", "Event", 4, "link"),
+    ("Event Date", "Event Date", 2, "date"),
+    ("Guests", "Guests", 2, "integer"),
+    ("Status", "Status", 2, "badge"),
+    ]
+
+    def open_event(event_id):
+        st.session_state["selected_event_id"] = int(event_id)
         st.switch_page(PAGES['event_details'])
+
+    render_list(rows=rows,
+                columns=columns,
+                id_field='Event ID',
+                on_open=open_event,
+                prefix='Events')

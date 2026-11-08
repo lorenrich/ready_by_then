@@ -9,10 +9,21 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 import pandas as pd
 import sqlite3
+import html
 from database.database import get_connection
-from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, get_menu_events, delete_menu, render_menu
+from database.menus import (COURSES, 
+                            get_selected_menu, 
+                            get_selected_menu_recipes, 
+                            get_menu_events, 
+                            delete_menu, 
+                            render_menu)
 from database.food_and_drink import get_selected_menu_items
-from styles.page_config import PAGES, setup_page_defaults, create_button
+from styles.page_config import (PAGES, 
+                                setup_page_defaults, 
+                                create_button, 
+                                create_page_header,
+                                badge,
+                                render_list)
 
 @st.dialog("Delete menu?")
 def confirm_delete(menu_id):
@@ -57,42 +68,45 @@ if selected_menu_df is None:
     st.page_link(PAGES['menus'], label="<- Back to Menus")
     st.stop()
 
-# Title
-st.title("Menu Details")
+# Page header
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
+
+header_container = st.container(key='kitchen_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Kitchen')
+
+title_col, action_col = st.columns([5, 3], vertical_alignment='center')
+with title_col:
+    title_col.markdown(
+        f"<h2 style='margin:0'>{html.escape(selected_menu_df['menu_name'])} {badge(selected_menu_df['menu_status'])}</h2>", 
+        unsafe_allow_html=True,
+        )
+
+with action_col:
+    button_container = st.container(horizontal=True, horizontal_alignment='right')
+    with button_container:
+        if create_button(name='edit'):
+            st.switch_page(PAGES['edit_menu'])
+
+        if create_button(name='copy'):
+            st.switch_page(PAGES['copy_menu'])
+
+        if create_button(name='delete'):
+            confirm_delete(menu_id=int(selected_menu_df['menu_id']))
+
 st.space("small")
 
-# Modify buttons
-button_col_1, button_col_2, button_col_3 = st.columns(3, gap="small", vertical_alignment="top")
-
-with button_col_1:
-    if create_button(name='edit'):
-        st.switch_page(PAGES['edit_menu'])
-
-with button_col_2:
-    if create_button(name='copy'):
-        st.switch_page(PAGES['copy_menu'])
-    
-with button_col_3:
-    if create_button(name='delete'):
-        confirm_delete(menu_id=int(selected_menu_df['menu_id']))
-
-st.space("small")
+# Write menu notes
+if selected_menu_df['menu_notes']:
+    st.markdown("**Notes**")
+    st.write(selected_menu_df['menu_notes'])
 
 # Write menu details to page
 menu_info_col, menu_recipe_col = st.columns(2, border=True)
-with menu_info_col:
-    info_col1, info_col2 = st.columns([1, 3], gap="small")
-    with info_col1:
-        st.markdown("**Menu:**", text_alignment="right")
-        st.markdown("**Menu Notes:**", text_alignment="right")
-        st.space("small")
-        st.markdown("**Menu Status:**", text_alignment="right")
 
-    with info_col2:
-        st.write(selected_menu_df['menu_name'] if selected_menu_df['menu_name'] else "&nbsp;")
-        st.write(selected_menu_df['menu_notes'] if selected_menu_df['menu_notes'] else "&nbsp;")
-        st.space("small")
-        st.write(selected_menu_df['menu_status'] if selected_menu_df['menu_status'] else "&nbsp;")
+
 
 with menu_recipe_col:
     st.markdown("**What's cooking**")

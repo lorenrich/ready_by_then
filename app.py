@@ -32,29 +32,14 @@ pg = st.navigation([
     PAGES['ingredients'],
     PAGES['food_and_drink'],
     PAGES['create_food_and_drink'],
-    PAGES['edit_food_and_drink'],
-    PAGES['custom_lists'],
-    PAGES['custom_list_details'],
-    PAGES['create_custom_list'],
-    PAGES['edit_custom_list'],
-    PAGES['help']
+    PAGES['edit_food_and_drink']
 ], position="hidden")
 
 # Sidebar config
 with st.sidebar:
     st.page_link(PAGES['home'])
-
     st.page_link(PAGES['events'])
-    if pg in (PAGES['events'], PAGES['create_event']):
-        st.page_link(PAGES['event_details'], label="Event Details")
-        st.page_link(PAGES['create_event'], label="Create Event")
-        
     st.page_link(PAGES['recipes'])
-
-    st.page_link(PAGES['custom_lists'])
-
-    st.page_link(PAGES['help'])
-
 
 # Run
 pg.run()

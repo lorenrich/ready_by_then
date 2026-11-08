@@ -15,7 +15,8 @@ from styles.page_config import (
      create_button,
      create_page_header,
      create_no_records_container,
-     fill_no_records_container)
+     fill_no_records_container,
+     render_list)
 
 # Create the connection to the database
 conn = get_connection()
@@ -36,17 +37,14 @@ with header_container:
      st.write(':material/chef_hat: Kitchen')
 
 # The default section/page for the kitchen is recipes with buttons to other sections
-col1, col2, col3 = st.columns([1, 3, 3], gap="small")
-
-with col1:
+button_container = st.container(horizontal=True)
+with button_container:
     if create_button(name='recipes'):
          st.switch_page(PAGES['recipes'])
 
-with col2:
     if create_button(name='food_and_drink_secondary'):
          st.switch_page(PAGES['food_and_drink'])
 
-with col3:
     if create_button(name='menus_secondary'):
          st.switch_page(PAGES['menus'])
 
@@ -68,20 +66,28 @@ if df.empty:
 # List recorded recipes    
 else:
     # Buttons
-    col4, col5 = st.columns([1, 8], gap="small")
-    with col4:
+    create_button_container = st.container(horizontal=True)
+    with create_button_container:
         if create_button(name='create_recipe'):
             st.switch_page(PAGES['create_recipe'])
 
-    # Data table
-    recipe_table = st.dataframe(
-             df, 
-             on_select="rerun",
-             selection_mode="single-row",
-             hide_index=True, 
-             width="stretch")
-    
-    selected = recipe_table.selection.rows
-    if selected:
-        st.session_state["selected_recipe_id"] = int(df.iloc[selected[0]]["Recipe ID"])
+    # Render table
+    df = df.fillna('')
+
+    rows = df.to_dict("records")
+
+    columns = [
+    ("Recipe", "Recipe", 4, "link"),
+    ("Type", "Type", 2, "string"),
+    ("Status", "Status", 2, "badge"),
+    ]
+
+    def open_recipe(recipe_id):
+        st.session_state["selected_recipe_id"] = int(recipe_id)
         st.switch_page(PAGES['recipe_details'])
+
+    render_list(rows=rows,
+                columns=columns,
+                id_field='Recipe ID',
+                on_open=open_recipe,
+                prefix='Recipes')

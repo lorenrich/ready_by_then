@@ -158,6 +158,9 @@ def save_menu_items(conn, menu_id, items):
 
 def get_selected_menu_items(conn,
                             menu_id):
+    '''
+    Specifically for displaying on the menu_details with limited data
+    '''
     menu_id = int(menu_id)
     return conn.execute(
         """
@@ -169,5 +172,23 @@ def get_selected_menu_items(conn,
         """,
         (menu_id,),
     ).fetchall()
+
+
+def get_selected_menu_items_for_edit(conn,
+                                     menu_id):
+    '''
+    Gets all fields from table for user to edit
+    '''
+    menu_id = int(menu_id)
+    return conn.execute(
+        """
+        SELECT i.item_name, mi.course, mi.amount, mi.unit, mi.scales_with_guests, mi.prep_timing
+        FROM menu_items mi
+        JOIN food_and_drinks i on i.item_id = mi.item_id
+        WHERE mi.menu_id = ?
+        ORDER BY mi.course, i.item_name
+        """,
+        (menu_id,),
+    ).fetchall() 
 
     

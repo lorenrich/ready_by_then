@@ -14,7 +14,8 @@ from styles.page_config import (PAGES,
                                 create_button, 
                                 create_page_header,
                                 create_no_records_container,
-                                fill_no_records_container)
+                                fill_no_records_container,
+                                render_list)
 
 # Connect to database
 conn = get_connection()
@@ -35,17 +36,15 @@ with header_container:
      st.write(':material/chef_hat: Kitchen')
 
 # The default section/page for the kitchen is recipes with buttons to other sections
-col1, col2, col3 = st.columns([1, 3, 3], gap="small")
+button_container = st.container(horizontal=True)
 
-with col1:
+with button_container:
     if create_button(name='recipes_secondary'):
          st.switch_page(PAGES['recipes'])
 
-with col2:
     if create_button(name='food_and_drink_secondary'):
          st.switch_page(PAGES['food_and_drink'])
 
-with col3:
     if create_button(name='menus'):
          st.switch_page(PAGES['menus'])
 
@@ -65,20 +64,28 @@ if df.empty:
 # List recorded recipes    
 else:
     # Buttons
-    col1, col2 = st.columns([1, 8], gap="small")
-    with col1:
+    create_button_container = st.container(horizontal=True)
+    with create_button_container:
         if create_button(name='create_menu'):
             st.switch_page(PAGES['create_menu'])
 
-    # Data table
-    menu_table = st.dataframe(
-         df, 
-         on_select="rerun",
-         selection_mode="single-row",
-         hide_index=True, 
-         width="stretch")
-    
-    selected = menu_table.selection.rows
-    if selected:
-        st.session_state["selected_menu_id"] = int(df.iloc[selected[0]]["Menu ID"])
+    # Render table
+    df = df.fillna('')
+
+    rows = df.to_dict("records")
+
+    columns = [
+    ("Menu", "Menu", 4, "link"),
+    ("Status", "Status", 2, "badge"),
+    ]
+
+    def open_menu(menu_id):
+        st.session_state["selected_menu_id"] = int(menu_id)
         st.switch_page(PAGES['menu_details'])
+
+    render_list(rows=rows,
+                columns=columns,
+                id_field='Menu ID',
+                on_open=open_menu,
+                prefix='menus')
+

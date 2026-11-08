@@ -37,17 +37,14 @@ with header_container:
      st.write(':material/chef_hat: Kitchen')
 
 # The default section/page for the kitchen is recipes with buttons to other sections
-col1, col2, col3 = st.columns([1, 3, 3], gap="small")
-
-with col1:
+button_container = st.container(horizontal=True)
+with button_container:
     if create_button(name='recipes_secondary'):
          st.switch_page(PAGES['recipes'])
 
-with col2:
     if create_button(name='food_and_drink'):
          st.switch_page(PAGES['food_and_drink'])
 
-with col3:
     if create_button(name='menus_secondary'):
          st.switch_page(PAGES['menus'])
 
@@ -64,11 +61,10 @@ with st.form("create_item", clear_on_submit=True):
     st.write("Don't worry about amounts just yet.  You can edit those when the item is tagged to a menu or event.")
     
    # Take user to add_ingredients or submit as-is
-    col1, col2 = st.columns([1, 5], gap="small")
+    create_save_button_container = st.container(horizontal=True)
 
-    with col1:
+    with create_save_button_container:
         add_another = st.form_submit_button("Create another item", type="primary")
-    with col2:
         done_adding = st.form_submit_button("I'm finished")
 
     if add_another or done_adding:

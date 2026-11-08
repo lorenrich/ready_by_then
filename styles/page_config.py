@@ -29,29 +29,18 @@ PAGES = {
 
     "food_and_drink": st.Page("pages/food_and_drink.py", title="Food & Drink", url_path="food_and_drink"),
     "create_food_and_drink": st.Page("pages/create_food_and_drink.py", title="Create Item", url_path="create_food_and_drink"),
-    "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink"),
-
-    'custom_lists': st.Page(page="pages/custom_lists.py", title="Custom Lists", icon=":material/list_alt:", url_path="custom_lists"),
-    'custom_list_details': st.Page(page="pages/custom_list_details.py", title="Custom List Details", url_path="custom_list_details"),
-    'copy_custom_list': st.Page(page="pages/copy_custom_list.py", title="Copy Custom List", url_path="copy_custom_list"),
-    'create_custom_list': st.Page(page="pages/create_custom_list.py", title="Create Custom List", url_path="create_custom_list"),
-    'edit_custom_list': st.Page(page="pages/edit_custom_list.py", title="Edit Custom List", url_path="edit_custom_list"),
-
-    'help': st.Page(page="pages/help.py", title="Help", icon=":material/help:")
+    "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink")
 }
 
 BUTTONS = {
     # Basic buttons
     'cancel': dict(label="Cancel", type="secondary"),
     'confirm_delete': dict(label="Yes, delete", type='primary'),
-    'copy': dict(label="Copy", type="secondary"),
-    'delete': dict(label="Delete", type="secondary"),
-    'edit': dict(label="Edit", type="secondary"),
+    'copy': dict(label="Copy", type="secondary", icon=":material/content_copy:"),
+    'delete': dict(label="Delete", type="secondary", icon=":material/delete:"),
+    'edit': dict(label="Edit", type="primary", icon=":material/edit:"),
 
     # Page buttons
-    'custom_lists': dict(label="Custom Lists", type="primary", icon=":material/list_alt:"),
-    'create_list': dict(label="Create new list", type="primary", icon=':material/add:'),
-
     'events': dict(label="Events", type="primary", icon=":material/celebration:"),
     'create_event': dict(label="Create new event", type="primary", icon=":material/add:"),
 
@@ -73,15 +62,17 @@ BUTTONS = {
 
     'add_menu_to_event': dict(label="Add menu", type="primary", icon=":material/add:"),
     "remove_menu": dict(label="Remove menu", type="primary", icon=":material/remove:"),
-
-    'help': dict(label="Help", type="primary", icon=":material/help:")
 }
 
 CIRCULAR_ICONS = {
     "events": 'assets/circular_calendar.png',
     "menus": 'assets/circular_menu.png',
-    "recipes": 'assets/circular_recipe.png',
-    "lists": 'assets/circular_list.png'
+    "recipes": 'assets/circular_recipe.png'
+}
+
+BADGES = {
+    "Complete":   ("#DDF3E4", "#1E6B3A"),
+    "Incomplete": ("#FFDCCB", "#9A3412"),
 }
 
 
@@ -109,6 +100,19 @@ def setup_page_defaults():
         """,
         unsafe_allow_html=True,
     )
+    st.html("""
+    <style>
+    [class*="st-key-list_card_"] {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 8px 12px;
+        box-shadow: 0 2px 8px rgba(40, 20, 90, 0.12);
+    }
+    [class*="st-key-list_card_"] p { color: #2D1B69; margin: 0; }
+    [class*="st-key-listrow_"] { border-radius: 10px; padding: 4px 8px; }
+    [class*="st-key-listrow_"]:hover { background: #F0E9FF; }
+    </style>
+    """)
 
 
 def create_button(name, **overrides):
@@ -196,3 +200,30 @@ def fill_no_records_container(container, icon_name, header_val, caption_val, but
 
             if create_button(name=button_name):
                 st.switch_page(PAGES[page_redirect])
+
+
+def badge(text):
+    bg, fg = BADGES.get(text, ("#EDE7FF", "#5B3FA6"))
+    return (f'<span style="background:{bg};color:{fg};padding:2px 10px;'
+            f'border-radius:999px;font-size:0.8rem;font-weight:600;">{text}</span>')
+
+
+def render_list(rows, columns, id_field, on_open, prefix):
+    widths = [c[2] for c in columns]
+    with st.container(key=f"list_card_{prefix}"):
+        for col, (title, *_) in zip(st.columns(widths), columns):
+            col.caption(title)
+        for row in rows:
+            rid = int(row[id_field])
+            with st.container(key=f"listrow_{prefix}_{rid}"):
+                cells = st.columns(widths, vertical_alignment="center")
+                for cell, (_, field, _, kind) in zip(cells, columns):
+                    if kind == "link":
+                        if cell.button(row[field], type="tertiary", key=f"open_{prefix}_{rid}"):
+                            on_open(rid)
+                    elif kind == "badge":
+                        cell.markdown(badge(row[field]), unsafe_allow_html=True)
+                    elif kind == "integer":
+                        cell.markdown(row[field])
+                    else:
+                        cell.write(row[field])

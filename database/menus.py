@@ -225,7 +225,7 @@ def format_item(recipe_name, recipe_status):
     if recipe_status == 'Complete':
         return recipe_name
     else:
-        return f"{recipe_name} ({recipe_status})"
+        return f"{recipe_name} ({recipe_status} recipe)"
 
 
 def render_menu(recipes, items=()):

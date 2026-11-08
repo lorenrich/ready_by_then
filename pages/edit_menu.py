@@ -11,7 +11,7 @@ from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection, update_and_default_selectbox
 from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, edit_menu, save_menu
 from database.recipes import DEFAULT_UNITS, DEFAULT_PREP_OPTIONS, PREP_LABELS, get_recipes_for_menu_selection
-from database.food_and_drink import get_items_for_menu_selection, get_selected_menu_items
+from database.food_and_drink import get_items_for_menu_selection, get_selected_menu_items_for_edit, save_menu_items
 from styles.page_config import PAGES, setup_page_defaults, create_button
 
 # Connect to database
@@ -147,24 +147,35 @@ item_rows = st.session_state.get("item_rows")
 item_widgets_gone = bool(item_rows) and f"item_name_{item_rows[0]}" not in st.session_state
 
 if st.session_state.get("item_rows_for_menu") != menu_id or item_widgets_gone:
-    # Get current ingredients
-    current_items = get_selected_menu_items(conn=conn, menu_id=menu_id) if menu_id is not None else None
+    # Clear previously seeded entries
+    prefixes = ("item_name_", "item_amount_", "item_unit_",
+                "item_scale_", "item_prep_", "item_course_")
+    for key in [k for k in st.session_state.keys() if k.startswith(prefixes)]:
+        del st.session_state[key]
+
+    # Seed entries
+    current_items = get_selected_menu_items_for_edit(conn=conn, menu_id=menu_id)
+
     if current_items:
-            st.session_state.item_rows = list(range(len(current_items)))
-            st.session_state.item_next_row_id = len(current_items)
+        st.session_state.item_rows = list(range(len(current_items)))
+        st.session_state.next_item_row_id = len(current_items)
 
-            for i, (item_name, item_amount, item_unit, item_scale, item_prep, item_id) in enumerate(current_items):
-                st.session_state[f"item_name_{i}"] = item_name
-                st.session_state[f"item_amount_{i}"] = item_amount
-                st.session_state[f"item_unit_{i}"] = item_unit
-                st.session_state[f"item_scale_{i}"] = item_scale
-                st.session_state[f"item_prep_{i}"] = PREP_LABELS.get(item_prep)
-                st.session_state[f"item_id_{i}"] = item_id
-
+        for i, (name, course, amount, unit, scales, prep) in enumerate(current_items):
+            st.session_state[f"item_name_{i}"] = name
+            st.session_state[f"item_amount_{i}"] = amount or 0.0
+            st.session_state[f"item_scale_{i}"] = "Yes" if scales else "No"
+            if unit:
+                st.session_state[f"item_unit_{i}"] = unit
+            if prep is not None:
+                label = PREP_LABELS.get(prep)
+                if label:
+                    st.session_state[f"item_prep_{i}"] = label
+            if course in COURSES:
+                st.session_state[f"item_course_{i}"] = course
     else:
-        # Initialize a fresh entry section
-        st.session_state.item_rows=[0]
-        st.session_state.item_next_row_id = 1
+        st.session_state.item_rows = [0]
+        st.session_state.next_item_row_id = 1
+
     st.session_state.item_rows_for_menu = menu_id
 
 
@@ -174,9 +185,6 @@ with item_container:
     st.markdown("**Add other food and drinks**")
 
     item_rows = st.session_state.get("item_rows")
-    if item_rows is None or (item_rows and f"item_name_{item_rows[0]}" not in st.session_state):
-        st.session_state.item_rows = [0]
-        st.session_state.next_item_row_id = 1
 
     # Set up entry fields
     for rid in st.session_state.item_rows:
@@ -226,8 +234,12 @@ with item_container:
 st.space("small")
 
 # Display what's on the menu
+item_names = [(st.session_state.get(f"item_name_{rid}") or "").strip()
+              for rid in st.session_state.item_rows]
+
 chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
-st.write(f"On this menu ({len(chosen)}): " + ", ".join(chosen["Recipe"]))
+names = list(chosen["Recipe"]) + [n for n in item_names if n]
+st.write(f"On this menu ({len(names)}): " + ", ".join(names))
 st.space("small")
 
 # Organize menu by courses
@@ -237,12 +249,25 @@ with st.expander("Organize by course (optional)"):
         col_a.write(name)
         col_b.segmented_control("Course", COURSES, key=f'course_{int(rid)}', label_visibility="collapsed")
 
+    for rid, name in zip(st.session_state.item_rows, item_names):
+        if not name:
+            continue
+        col_a, col_b = st.columns([3, 5])
+        col_a.write(name)
+        col_b.segmented_control("Course", COURSES, key=f"item_course_{rid}",
+                                label_visibility="collapsed")
+
 # Store the items and their selected courses
 items = [{"recipe_id": int(rid), "course": st.session_state.get(f"course_{int(rid)}")}
         for rid in st.session_state.menu_recipe_ids]
 
 # Count items per course
-counts = Counter(st.session_state.get(f"course_{int(r)}") for r in st.session_state.menu_recipe_ids)
+recipe_courses = [st.session_state.get(f"course_{int(r)}")
+                  for r in st.session_state.menu_recipe_ids]
+item_courses = [st.session_state.get(f"item_course_{rid}")
+                for rid, name in zip(st.session_state.item_rows, item_names) if name]
+
+counts = Counter(recipe_courses + item_courses)
 st.caption("  ·  ".join(f"{c}: {counts.get(c, 0)}" for c in COURSES))
 
 # Rest of user input
@@ -251,30 +276,45 @@ menu_status = st.selectbox("Is the menu complete?", options=DEFAULT_STATUSES, in
 
 # Save entries to table
 if create_button(name='save_menu'):
+    # Guard against no name
     if not menu_name.strip():
         st.error("Please give the menu a name")
         st.stop()
 
-    edit_menu(conn=conn,
-              menu_name=menu_name,
-              menu_notes=menu_notes,
-              menu_status=menu_status,
-              menu_id=menu_id)
+    menu_items = []
+    for rid in st.session_state.item_rows:
+        name = (st.session_state.get(f"item_name_{rid}") or "").strip()
+        if not name:
+            continue
+        menu_items.append({
+            "name": name,
+            "course": st.session_state.get(f"item_course_{rid}"),
+            "amount": st.session_state.get(f"item_amount_{rid}") or None,
+            "unit": st.session_state.get(f"item_unit_{rid}"),
+            "scales": 1 if st.session_state.get(f"item_scale_{rid}") == "Yes" else 0,
+            "prep": DEFAULT_PREP_OPTIONS.get(st.session_state.get(f"item_prep_{rid}")),
+        })
 
-    save_menu(conn=conn,
-              menu_id=menu_id,
-              recipes=items)
+    lowered = [i["name"].lower() for i in menu_items]
+    if len(lowered) != len(set(lowered)):
+        st.warning("An item appears more than once. Remove or combine the duplicates.")
+        st.stop()
 
+    # Write entries to tables
     if not edit_menu(conn=conn,
-                     menu_name=menu_name,
+                     menu_name=menu_name.strip(),
                      menu_notes=menu_notes,
                      menu_status=menu_status,
                      menu_id=menu_id):
-        st.error("Nothing was updated.")
+        st.error("Nothing was updated. The menu may have been deleted.")
         st.stop()
 
-    # Clear existing values
-    st.session_state.menu_for_id = None
+    save_menu(conn=conn, menu_id=menu_id, recipes=items)
+    save_menu_items(conn=conn, menu_id=menu_id, items=menu_items)
 
+    # Reset
+    st.session_state.menu_for_id = None
+    st.session_state.item_rows_for_menu = None
     st.switch_page(PAGES['menus'])
+
     
