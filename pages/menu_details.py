@@ -100,28 +100,68 @@ st.space("small")
 
 # Write menu notes
 if selected_menu_df['menu_notes']:
-    st.markdown("**Notes**")
-    st.write(selected_menu_df['menu_notes'])
+    notes_container = st.container(horizontal=True, border=True, key='detail_card')
+    with notes_container:
+        st.markdown("**Notes:**")
+        st.write(selected_menu_df['menu_notes'])
 
 # Write menu details to page
-menu_info_col, menu_recipe_col = st.columns(2, border=True)
+st.space("small")
+st.markdown("**What's cooking**")
 
-
-
-with menu_recipe_col:
-    st.markdown("**What's cooking**")
-    st.space("small")
+menu_container = st.container(horizontal=True)
+with menu_container:
+    
 
     if not selected_menu_recipes and not selected_menu_items:
-        st.caption("No items have been added.")
-
-        if create_button(name='add_recipes_to_menu'):
-            st.switch_page(PAGES['edit_menu'])
-
+            st.caption("No items have been added.")
     else:
-        render_menu(recipes=selected_menu_recipes,
-                    items=selected_menu_items)
-        
+        entries = []
+        for recipe_id, name, status, course in selected_menu_recipes:
+            entries.append({"kind": "recipe", "id": recipe_id, "name": name,
+                            "status": status, "course": course})
+        for item_id, name, course in selected_menu_items:
+            entries.append({"kind": "item", "id": item_id, "name": name,
+                            "status": "", "course": course})
+
+        def course_rank(course):
+            return COURSES.index(course) if course in COURSES else len(COURSES)
+
+        entries.sort(key=lambda e: (course_rank(e["course"]), e["name"].lower()))
+
+        rows, last = [], None
+        for e in entries:
+            label = e["course"] or "Unassigned"
+            rows.append({
+                "Course": label if label != last else "",
+                "Name": e["name"],
+                "Status": e["status"],
+                "kind": e["kind"],
+                "id": e["id"],
+                "row_key": f"{e['kind']}-{e['id']}",
+            })
+            last = label
+
+        columns = [
+        ("Course", "Course", 2, "string"),
+        ("Name", "Name", 5, "link"),
+        ("Status", "Status", 2, "badge")
+        ]
+
+        def open_entry(row):
+            if row["kind"] == "recipe":
+                st.session_state["selected_recipe_id"] = int(row["id"])
+                st.switch_page(PAGES['recipe_details'])
+            else:
+                st.session_state["selected_item_id"] = int(row["id"])
+                st.switch_page(PAGES['edit_food_and_drink'])
+
+        render_list(rows=rows, 
+                    columns=columns,
+                    id_field='row_key',
+                    on_open=open_entry,
+                    prefix='items')
+      
 
 st.space("small")
 

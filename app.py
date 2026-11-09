@@ -41,5 +41,23 @@ with st.sidebar:
     st.page_link(PAGES['events'])
     st.page_link(PAGES['recipes'])
 
+    if pg in (PAGES['recipes'], 
+              PAGES['create_recipe'],
+              PAGES['edit_recipe'],
+              PAGES['recipe_details'],
+              PAGES['copy_recipe'],
+              PAGES['ingredients'],
+              PAGES['food_and_drink'], 
+              PAGES['create_food_and_drink'],
+              PAGES['edit_food_and_drink'],
+              PAGES['menus'],
+              PAGES['create_menu'],
+              PAGES['edit_menu'],
+              PAGES['menu_details'],
+              PAGES['copy_menu']):
+        st.page_link(PAGES['recipes'], label='Recipes')
+        st.page_link(PAGES['food_and_drink'], label='Food & Drink')
+        st.page_link(PAGES['menus'], label='Menus')
+
 # Run
 pg.run()

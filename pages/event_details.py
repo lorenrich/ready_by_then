@@ -8,9 +8,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 from datetime import datetime
+import html
 from database.database import get_connection
 from database.events import get_selected_event, delete_event
-from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
+from styles.page_config import (PAGES, 
+                                setup_page_defaults, 
+                                create_button, 
+                                create_page_header,
+                                badge,
+                                render_list)
 
 @st.dialog("Delete event?")
 def confirm_delete(event_id):
@@ -68,20 +74,24 @@ with header_container:
      icon_calendar = ''
      st.write(':material/today: Events')
 
-# Modify buttons
-button_col_1, button_col_2, button_col_3 = st.columns(3, gap="small", vertical_alignment="top")
+title_col, action_col = st.columns([5, 3], vertical_alignment='center')
+with title_col:
+    title_col.markdown(
+        f"<h2 style='margin:0'>{html.escape(selected_event_df['event_name'])} {badge(selected_event_df['event_status'])}</h2>", 
+        unsafe_allow_html=True,
+        )
 
-with button_col_1:
-    if create_button(name='edit'):
-        st.switch_page(PAGES['edit_event'])
+with action_col:
+    button_container = st.container(horizontal=True, horizontal_alignment='right')
+    with button_container:
+        if create_button(name='edit'):
+            st.switch_page(PAGES['edit_event'])
 
-with button_col_2:
-    if create_button(name='copy'):
-        st.switch_page(PAGES['copy_event'])
-    
-with button_col_3:
-    if create_button(name='delete'):
-        confirm_delete(event_id=int(selected_event_df['event_id']))
+        if create_button(name='copy'):
+            st.switch_page(PAGES['copy_event'])
+
+        if create_button(name='delete'):
+            confirm_delete(event_id=int(selected_event_df['event_id']))
 
 st.space("small")
 

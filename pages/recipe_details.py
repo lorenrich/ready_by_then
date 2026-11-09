@@ -9,9 +9,17 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 import pandas as pd
 import sqlite3
+import html
 from database.database import get_connection
-from database.recipes import get_selected_recipe, get_selected_recipe_ingredients, delete_recipe, get_recipe_usage
-from styles.page_config import setup_page_defaults, PAGES, create_button
+from database.recipes import (get_selected_recipe, 
+                              get_selected_recipe_ingredients, 
+                              delete_recipe, get_recipe_usage)
+from styles.page_config import (PAGES, 
+                                setup_page_defaults, 
+                                create_button, 
+                                create_page_header, 
+                                badge,
+                                render_list)
 
 @st.dialog("Delete recipe?")
 def confirm_delete(recipe_id):
@@ -76,24 +84,33 @@ if selected_recipe_df is None:
     st.page_link(PAGES['recipes'], label="<- Back to Recipes")
     st.stop()
 
-# Title
-st.title("Recipe Details")
-st.space("small")
+# Page header
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
 
-# Modify buttons
-button_col_1, button_col_2, button_col_3 = st.columns(3, gap="small", vertical_alignment="top")
+header_container = st.container(key='kitchen_page_header')
 
-with button_col_1:
-    if create_button(name='edit'):
-        st.switch_page(PAGES['edit_recipe'])
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Kitchen')
 
-with button_col_2:
-    if create_button(name='copy'):
-        st.switch_page(PAGES['copy_recipe'])
-    
-with button_col_3:
-    if create_button(name='delete'):
-        confirm_delete(recipe_id=int(selected_recipe_df['recipe_id']))
+title_col, action_col = st.columns([5, 3], vertical_alignment='center')
+with title_col:
+    title_col.markdown(
+        f"<h2 style='margin:0'>{html.escape(selected_recipe_df['recipe_name'])} {badge(selected_recipe_df['recipe_status'])}</h2>", 
+        unsafe_allow_html=True,
+        )
+
+with action_col:
+    button_container = st.container(horizontal=True, horizontal_alignment='right')
+    with button_container:
+        if create_button(name='edit'):
+            st.switch_page(PAGES['edit_recipe'])
+
+        if create_button(name='copy'):
+            st.switch_page(PAGES['copy_recipe'])
+
+        if create_button(name='delete'):
+            confirm_delete(recipe_id=int(selected_recipe_df['recipe_id']))
 
 st.space("small")
 

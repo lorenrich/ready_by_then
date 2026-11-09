@@ -113,6 +113,13 @@ def setup_page_defaults():
     [class*="st-key-listrow_"]:hover { background: #F0E9FF; }
     </style>
     """)
+    st.html(
+        """
+        <style>
+        .st-key-detail_card { background: #FFF; border-radius: 16px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(40, 20, 90, 0.12); }
+        </style>
+        """
+    )
 
 
 def create_button(name, **overrides):
@@ -214,13 +221,13 @@ def render_list(rows, columns, id_field, on_open, prefix):
         for col, (title, *_) in zip(st.columns(widths), columns):
             col.caption(title)
         for row in rows:
-            rid = int(row[id_field])
+            rid = row[id_field]
             with st.container(key=f"listrow_{prefix}_{rid}"):
                 cells = st.columns(widths, vertical_alignment="center")
                 for cell, (_, field, _, kind) in zip(cells, columns):
                     if kind == "link":
                         if cell.button(row[field], type="tertiary", key=f"open_{prefix}_{rid}"):
-                            on_open(rid)
+                            on_open(row)
                     elif kind == "badge":
                         cell.markdown(badge(row[field]), unsafe_allow_html=True)
                     elif kind == "integer":
