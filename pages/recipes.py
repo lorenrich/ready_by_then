@@ -82,8 +82,8 @@ else:
     ("Status", "Status", 2, "badge"),
     ]
 
-    def open_recipe(recipe_id):
-        st.session_state["selected_recipe_id"] = int(recipe_id)
+    def open_recipe(row):
+        st.session_state["selected_recipe_id"] = row["Recipe ID"]
         st.switch_page(PAGES['recipe_details'])
 
     render_list(rows=rows,

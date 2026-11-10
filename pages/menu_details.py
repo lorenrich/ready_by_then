@@ -10,13 +10,13 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import html
+from datetime import datetime
 from database.database import get_connection
 from database.menus import (COURSES, 
                             get_selected_menu, 
                             get_selected_menu_recipes, 
-                            get_menu_events, 
-                            delete_menu, 
-                            render_menu)
+                            get_menu_events_for_display, 
+                            delete_menu)
 from database.food_and_drink import get_selected_menu_items
 from styles.page_config import (PAGES, 
                                 setup_page_defaults, 
@@ -31,7 +31,7 @@ def confirm_delete(menu_id):
     col1, col2 = st.columns(2)
     with col1:
         if create_button(name="confirm_delete"):
-            events = get_menu_events(conn=conn, menu_id=menu_id)
+            events = get_menu_events_for_display(conn=conn, menu_id=menu_id)
             if events:
                 st.warning("This menu is used by: " + ", ".join(name for _, name in events) + ". Deleting it removes it from those events.")
 
@@ -58,6 +58,7 @@ menu_id = st.session_state.get("selected_menu_id")
 selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_items = get_selected_menu_items(conn=conn, menu_id=menu_id) if menu_id is not None else None
+selected_menu_events = get_menu_events_for_display(conn=conn, menu_id=menu_id) if menu_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected menu
 if menu_id is None:
@@ -102,17 +103,12 @@ st.space("small")
 if selected_menu_df['menu_notes']:
     notes_container = st.container(horizontal=True, border=True, key='detail_card')
     with notes_container:
-        st.markdown("**Notes:**")
         st.write(selected_menu_df['menu_notes'])
 
 # Write menu details to page
-st.space("small")
-st.markdown("**What's cooking**")
-
 menu_container = st.container(horizontal=True)
 with menu_container:
     
-
     if not selected_menu_recipes and not selected_menu_items:
             st.caption("No items have been added.")
     else:
@@ -160,10 +156,35 @@ with menu_container:
                     columns=columns,
                     id_field='row_key',
                     on_open=open_entry,
-                    prefix='items')
+                    prefix='items',
+                    title="What's Cooking?")
+
+
+# Write event tags to page   
+if not selected_menu_events:
+        st.caption("This menu has not been added to any events")
+        if create_button(name='events'):
+            st.switch_page(PAGES['events'])
+else:
+    events = []
+    for event_id, name, date, status in selected_menu_events:
+        date_shown = datetime.strptime(date, "%Y-%m-%d %H:%M:%S").strftime("%b %d, %Y")
+        events.append({"id": event_id, "Name": name, "Date": date_shown, "Status": status})
+
+
+    columns = [
+    ("Name", "Name", 5, "link"),
+    ("Date", "Date", 2, "text")
+    ]
+
+    def open_event(row):
+        st.session_state["selected_event_id"] = int(row["id"])
+        st.switch_page(PAGES['event_details'])
+
+    render_list(rows=events, 
+                columns=columns,
+                id_field='id',
+                on_open=open_event,
+                prefix='events',
+                title='Used in events')
       
-
-st.space("small")
-
-with st.container(border=True):
-    st.markdown("**Events**")

@@ -12,9 +12,10 @@ from datetime import datetime
 from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection
 from database.events import get_selected_event
+from database.food_and_drink import get_selected_menu_items
 from database.menus import (COURSES, 
                             get_event_menus, 
-                            get_selected_menu_recipes, 
+                            get_selected_menu_recipes,
                             get_menus_for_display,
                             render_menu, 
                             remove_menu_from_event, 
@@ -74,35 +75,30 @@ with header_container:
      st.write(':material/today: Events')
 
 # Event Details
-col1, col2 = st.columns(2, border=True)
+details_container = st.container(horizontal=True, border=True, key='detail_card')
+with details_container:
+    
 
-with col1:
-    info_col1, info_col2 = st.columns([1, 3], gap="small")
-    with info_col1:
-        st.markdown("**Event:**", text_alignment="right")
-        st.markdown("**Date:**", text_alignment="right")
-        st.markdown("**Time:**", text_alignment="right")
-        st.markdown("**Guests:**", text_alignment="right")
+    col1, col2 = st.columns(2)
+    with col1:
+        info_col1, info_col2 = st.columns([1, 3], gap="small")
+        with info_col1:
+            st.markdown("**Date:**", text_alignment="right")
+            st.markdown("**Time:**", text_alignment="right")
+            st.markdown("**Guests:**", text_alignment="right")
 
-    with info_col2:
-        st.write(selected_event_df['event_name'])
-        st.write(f'{month} {day}, {year}')
-        st.text(event_time)
-        st.write(f"{selected_event_df['num_adults']} adults{kids_amt}")
-
-with col2:
-    st.markdown("**Notes**")
-    st.write(selected_event_df['event_notes'])
-    st.write(" ")
-    st.markdown("**Dietary restrictions/preferences**")
-    st.write(selected_event_df['dietary_needs'])
+        with info_col2:
+            st.write(f'{month} {day}, {year}')
+            st.text(event_time)
+            st.write(f"{selected_event_df['num_adults']} adults{kids_amt}")
 
 # Menu review and selection
 event_menus = get_event_menus(conn=conn, event_id=event_id)
 
 for mid, mname, mstatus in event_menus:
     with st.expander(mname):
-        render_menu(get_selected_menu_recipes(conn=conn, menu_id=mid))
+        render_menu(get_selected_menu_recipes(conn=conn, menu_id=mid),
+                    get_selected_menu_items(conn=conn, menu_id=mid))
         if create_button(name='remove_menu', key=f"remove_menu_{mid}"):
             remove_menu_from_event(conn, event_id, mid)
             st.rerun()

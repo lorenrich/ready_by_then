@@ -9,14 +9,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 from database.database import get_connection, update_and_default_selectbox, DEFAULT_STATUSES
 from database.recipes import get_selected_recipe, copy_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
-from pages.recipe_details import recipe_id as copied_recipe_id
-from styles.page_config import setup_page_defaults, PAGES
+from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 # Connect to database
 conn = get_connection()
 
 # Set up page
 setup_page_defaults()
+
+copied_recipe_id = st.session_state.get("selected_recipe_id")
 
 # Create dataframe based on copied recipe data excluding the new ID to be generated
 selected_recipe_df = get_selected_recipe(conn=conn, recipe_id=copied_recipe_id) if copied_recipe_id is not None else None
@@ -28,7 +29,13 @@ if selected_recipe_df.empty:
     st.stop()
 
 # Title
-st.title("Copy Recipe")
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
+
+header_container = st.container(key='kitchen_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Copy Recipe')
 st.space("small")
 
 # Create the unique lists for selectboxes including defaults and user-created entries

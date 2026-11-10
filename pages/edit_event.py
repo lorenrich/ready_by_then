@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 from database.database import get_connection, DEFAULT_STATUSES
 from database.events import get_selected_event, edit_event
-from styles.page_config import setup_page_defaults, PAGES
+from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 # Connect to database
 conn = get_connection()
@@ -31,7 +31,13 @@ if selected_event_df.empty:
     st.stop()
 
 # Title
-st.title("Edit Event")
+st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
+
+header_container = st.container(key='events_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/today: Events')
 st.space("small")
 
 # Identify default index values for form selectbox
@@ -87,9 +93,20 @@ with st.form("edit_event"):
                                 index=event_status_default_idx,
                                 accept_new_options=False)
 
-    # Save 
-    if st.form_submit_button("Save changes"):
-       edit_event(conn,
+    # Take user to add_ingredients or submit as-is
+    col1, col2 = st.columns([1, 7], gap="small")
+
+    with col1:
+        add_menus = st.form_submit_button("Add menu", type="primary")
+    with col2:
+        add_later = st.form_submit_button("I'll add a menu later") 
+
+    if add_menus or add_later:
+        if not event_name.strip():
+            st.error("Please give the event a name.")
+            st.stop()
+    
+        edit_event(conn,
                   event_id=event_id,
                   event_name=event_name, 
                   event_date=event_date, 
@@ -101,5 +118,11 @@ with st.form("edit_event"):
                   event_occurred=event_occurred,
                   event_notes=event_notes,
                   event_status=event_status)
-       st.switch_page(PAGES['events'])
+
+        if add_menus:
+            updated_event_id = st.session_state["selected_event_id"]
+            st.switch_page(PAGES["event_menus"])
+        else:
+            st.switch_page(PAGES["events"])
+
        

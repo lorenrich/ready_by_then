@@ -97,6 +97,20 @@ def get_event_menus(conn, event_id):
     return event_menus
 
 
+def get_menu_events_for_display(conn, menu_id):
+    menu_id = int(menu_id)
+    return conn.execute(
+        """
+        SELECT e.event_id, e.event_name, e.event_date, e.event_status
+        FROM event_menus em
+        JOIN events e ON e.event_id = em.event_id
+        WHERE em.menu_id = ?
+        ORDER BY e.event_date
+        """,
+        (menu_id,),
+    ).fetchall()
+
+
 def remove_menu_from_event(conn, event_id, menu_id):
     cursor = conn.execute (
         "DELETE FROM event_menus WHERE event_id = ? AND menu_id = ?",
@@ -262,4 +276,3 @@ def render_menu(recipes, items=()):
         with items_col:
             for text in by_course[course]:
                 st.write(text)
-

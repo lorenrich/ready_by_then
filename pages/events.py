@@ -71,8 +71,8 @@ else:
     ("Status", "Status", 2, "badge"),
     ]
 
-    def open_event(event_id):
-        st.session_state["selected_event_id"] = int(event_id)
+    def open_event(row):
+        st.session_state["selected_event_id"] = row["Event ID"]
         st.switch_page(PAGES['event_details'])
 
     render_list(rows=rows,

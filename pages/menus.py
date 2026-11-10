@@ -79,8 +79,8 @@ else:
     ("Status", "Status", 2, "badge"),
     ]
 
-    def open_menu(menu_id):
-        st.session_state["selected_menu_id"] = int(menu_id)
+    def open_menu(row):
+        st.session_state["selected_menu_id"] = row["Menu ID"]
         st.switch_page(PAGES['menu_details'])
 
     render_list(rows=rows,

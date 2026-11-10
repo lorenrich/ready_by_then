@@ -19,7 +19,7 @@ from styles.page_config import (PAGES,
                                 create_button, 
                                 create_page_header, 
                                 badge,
-                                render_list)
+                                section_heading)
 
 @st.dialog("Delete recipe?")
 def confirm_delete(recipe_id):
@@ -127,77 +127,60 @@ else:
     cooking_vessel = None
 
 # Write recipe details to page
-recipe_info_col, recipe_ingredient_col = st.columns(2, border=True)
+recipe_info_col, recipe_ingredient_col = st.columns(2)
 with recipe_info_col:
-    info_col1, info_col2 = st.columns([1, 3], gap="small")
-    with info_col1:
-        st.markdown("**Recipe:**", text_alignment="right")
-        st.markdown("**Recipe Type:**", text_alignment="right")
-        st.markdown("**Servings:**", text_alignment="right")
-        st.markdown("**Cooking:**", text_alignment="right")
-        st.markdown("**Source:**", text_alignment="right")
-        st.markdown("**Recipe Notes:**", text_alignment="right")
-        st.space("small")
-        st.markdown("**Recipe Status:**", text_alignment="right")
+    details_container = st.container(key='list_card_details')
+    with details_container:
+        section_heading('Details')
+        info_col1, info_col2 = st.columns([1, 3], gap="small")
+        with info_col1:
+            st.markdown("**Recipe Type:**", text_alignment="right")
+            st.markdown("**Servings:**", text_alignment="right")
+            if cooking_vessel:
+                st.markdown("**Cooking:**", text_alignment="right")
+            st.markdown("**Source:**", text_alignment="right")
+            st.markdown("**Recipe Notes:**", text_alignment="right")
 
-    with info_col2:
-        st.write(selected_recipe_df['recipe_name'])
-        st.write(selected_recipe_df['recipe_type'] if selected_recipe_df['recipe_type'] else "&nbsp;")
-        st.write(selected_recipe_df['recipe_yield'] if selected_recipe_df['recipe_yield'] else "&nbsp;")
+        with info_col2:
+            st.write(selected_recipe_df['recipe_type'] if selected_recipe_df['recipe_type'] else "&nbsp;")
+            st.write(str(selected_recipe_df['recipe_yield']) if selected_recipe_df['recipe_yield'] else "&nbsp;")
 
-        if not cooking_vessel:
-            st.write("&nbsp;")
-        elif cooking_vessel == 'oven':
-            st.write(f"Bake at {selected_recipe_df['recipe_preheat_temp']} degrees {selected_recipe_df["recipe_preheat_unit"]} in {selected_recipe_df["recipe_cooking_vessel"]} for {selected_recipe_df['recipe_cook_time']}")
-        elif cooking_vessel in cooktops:
-            st.write(f"Cook on stove for {selected_recipe_df['recipe_cook_time']} (includes preheat time)")
-            
+            if cooking_vessel == 'oven':
+                st.write(f"Bake at {selected_recipe_df['recipe_preheat_temp']} degrees {selected_recipe_df["recipe_preheat_unit"]} in {selected_recipe_df["recipe_cooking_vessel"]} for {selected_recipe_df['recipe_cook_time']}")
+            elif cooking_vessel in cooktops:
+                st.write(f"Cook on stove for {selected_recipe_df['recipe_cook_time']} (includes preheat time)")
+                
 
-        st.write(selected_recipe_df["recipe_source"] if selected_recipe_df['recipe_source'] else "&nbsp;")
-        st.write(selected_recipe_df['recipe_notes'] if selected_recipe_df['recipe_notes'] else "&nbsp;")
-        st.space("small")
-        st.write(selected_recipe_df['recipe_status'] if selected_recipe_df['recipe_status'] else "&nbsp;")
+            st.write(selected_recipe_df["recipe_source"] if selected_recipe_df['recipe_source'] else "&nbsp;")
+            st.write(selected_recipe_df['recipe_notes'] if selected_recipe_df['recipe_notes'] else "&nbsp;")
 
 with recipe_ingredient_col:
-    st.markdown("**Ingredients**")
-    st.space("small")
+    ingredient_container = st.container(key='list_card_ingredients')
+    with ingredient_container:
+        section_heading('Ingredients')
+        st.space("small")
 
-    sections = {}
-    for name, section, item_type, amount, unit, prep, component_id in selected_recipe_ingredients:
-        sections.setdefault(section or "Main", []).append(
-            (name, item_type, amount, unit, component_id)
-        )
+        sections = {}
+        for name, section, item_type, amount, unit, prep, component_id in selected_recipe_ingredients:
+            sections.setdefault(section or "Main", []).append(
+                (name, item_type, amount, unit, component_id)
+            )
 
-    for section_name in sorted(sections, key=section_sort_key):
-        label_col, items_col = st.columns([1, 4])
-        label_col.markdown(f"**{section_name}**")
-        with items_col:
-            for name, item_type, amount, unit, component_id in sections[section_name]:
-                if item_type == "Recipe":
-                    with st.expander(f"{format_item(name, amount, unit)} (see recipe)"):
-                        component_ingredients = get_selected_recipe_ingredients(conn, component_id)
-                        if len(component_ingredients) == 0:
-                            st.caption("No ingredients have been added.")
-                        else:
-                            for sub_name, sub_section, sub_item_type, sub_amount, sub_unit, sub_prep, sub_component_id in component_ingredients:
-                                st.write(format_item(sub_name, sub_amount, sub_unit))
-                            if st.button('Go to Recipe', key=f"open_{component_id}"):
-                                st.session_state["selected_recipe_id"] = component_id
-                                st.rerun()
-                else:
-                    st.write(format_item(name, amount, unit))
-
-st.space("small")
-
-with st.container():
-    usage_menus, usage_events = st.columns(2, border=True)
-
-    with usage_menus:
-        st.markdown("**Menus**")
-
-    with usage_events:
-        st.markdown("**Events**")
-
-
-
-
+        for section_name in sorted(sections, key=section_sort_key):
+            label_col, items_col = st.columns([1, 4])
+            label_col.markdown(f"**{section_name}**")
+            with items_col:
+                for name, item_type, amount, unit, component_id in sections[section_name]:
+                    if item_type == "Recipe":
+                        with st.expander(f"{format_item(name, amount, unit)} (see recipe)"):
+                            component_ingredients = get_selected_recipe_ingredients(conn, component_id)
+                            if len(component_ingredients) == 0:
+                                st.caption("No ingredients have been added.")
+                            else:
+                                for sub_name, sub_section, sub_item_type, sub_amount, sub_unit, sub_prep, sub_component_id in component_ingredients:
+                                    st.write(format_item(sub_name, sub_amount, sub_unit))
+                                if st.button('Go to Recipe', key=f"open_{component_id}"):
+                                    st.session_state["selected_recipe_id"] = component_id
+                                    st.rerun()
+                    else:
+                        st.write(format_item(name, amount, unit))

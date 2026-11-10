@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 from database.database import get_connection, update_and_default_selectbox
 from database.recipes import create_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
-from styles.page_config import setup_page_defaults, PAGES, create_button
+from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 # Connect to database
 conn = get_connection()
@@ -29,8 +29,14 @@ preheat_unit_types = update_and_default_selectbox(conn=conn,
                                                   default_options=DEFAULT_PREHEAT_UNITS)
 
 # Title
-st.title("Create New Recipe")
-st.write(" ")
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
+
+header_container = st.container(key='kitchen_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Create Recipe')
+
 
 # Form
 with st.form("create_recipe"):

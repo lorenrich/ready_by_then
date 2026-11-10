@@ -10,14 +10,15 @@ import streamlit as st
 import pandas as pd
 from database.database import get_connection, DEFAULT_STATUSES
 from database.events import get_selected_event, create_event
-from pages.event_details import event_id as copied_event_id
-from styles.page_config import setup_page_defaults, PAGES
+from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 # Connect to database
 conn = get_connection()
 
 # Set up page
 setup_page_defaults()
+
+copied_event_id = st.session_state.get("selected_event_id")
 
 # Create dataframe based on copied event data excluding the new ID to be generated
 selected_event_df = get_selected_event(conn=conn, event_id=copied_event_id) if copied_event_id is not None else None
@@ -29,7 +30,13 @@ if selected_event_df.empty:
     st.stop()
 
 # Title
-st.title("Copy Event")
+st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
+
+header_container = st.container(key='events_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/today: Events')
 st.space("small")
 
 # Identify default index values for form selectbox

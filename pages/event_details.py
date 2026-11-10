@@ -11,12 +11,17 @@ from datetime import datetime
 import html
 from database.database import get_connection
 from database.events import get_selected_event, delete_event
+from database.menus import COURSES, get_selected_menu_recipes, get_event_menus
+from database.food_and_drink import get_selected_menu_items
 from styles.page_config import (PAGES, 
                                 setup_page_defaults, 
                                 create_button, 
                                 create_page_header,
                                 badge,
-                                render_list)
+                                render_list,
+                                section_heading,
+                                create_no_records_container,
+                                fill_no_records_container)
 
 @st.dialog("Delete event?")
 def confirm_delete(event_id):
@@ -44,6 +49,7 @@ event_id = st.session_state.get("selected_event_id")
 
 # Create dataframe
 selected_event_df = get_selected_event(conn=conn, event_id=event_id) if event_id is not None else None
+selected_event_menus = get_event_menus(conn=conn, event_id=event_id) if event_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected event
 if event_id is None:
@@ -96,36 +102,88 @@ with action_col:
 st.space("small")
 
 # Event Details
-col1, col2 = st.columns(2, border=True)
-
-with col1:
-    info_col1, info_col2 = st.columns([1, 3], gap="small")
-    with info_col1:
-        st.markdown("**Event:**", text_alignment="right")
-        st.markdown("**Date:**", text_alignment="right")
-        st.markdown("**Time:**", text_alignment="right")
-        st.markdown("**Guests:**", text_alignment="right")
-        st.space("small")
-        st.markdown("**Event Status:**", text_alignment="right")
-
-    with info_col2:
-        st.write(selected_event_df['event_name'])
-        st.write(f'{month} {day}, {year}')
-        st.text(event_time)
-        st.write(f"{selected_event_df['num_adults']} adults{kids_amt}")
-        st.space("small")
-        st.write(selected_event_df['event_status'])
-
-with col2:
-    st.write("On the menu")
-
-    if create_button(name='add_menu_to_event'):
-        st.switch_page(PAGES['event_menus'])
+details_container = st.container(horizontal=True, border=True, key='detail_card')
+with details_container:
     
 
-container = st.container(border=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        info_col1, info_col2 = st.columns([1, 3], gap="small")
+        with info_col1:
+            st.markdown("**Date:**", text_alignment="right")
+            st.markdown("**Time:**", text_alignment="right")
+            st.markdown("**Guests:**", text_alignment="right")
 
-with container:
-    st.markdown("**Notes:**")
-    st.write(selected_event_df['event_notes'])
- 
+        with info_col2:
+            st.write(f'{month} {day}, {year}')
+            st.text(event_time)
+            st.write(f"{selected_event_df['num_adults']} adults{kids_amt}")
+
+
+# Write menu
+if not selected_event_menus:
+    st.html(create_no_records_container('no_menus'))
+    no_menus_container = st.container(key='no_menus', height=250, horizontal_alignment='center')
+
+    fill_no_records_container(container=no_menus_container,
+                              icon_name='menus',
+                              header_val='No Menus Added',
+                              caption_val='Start tagging menus to your event',
+                              button_name='add_menus',
+                              page_redirect=PAGES['event_menus'])
+
+else:
+    for menu_id, menu_name, menu_status in selected_event_menus:
+        recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id)
+        items = get_selected_menu_items(conn=conn, menu_id=menu_id)
+
+        entries = []
+        for recipe_id, name, status, course in recipes:
+            entries.append({"kind": "recipe", "id": recipe_id, "name": name,
+                            "status": status, "course": course})
+        for item_id, name, course in items:
+            entries.append({"kind": "item", "id": item_id, "name": name,
+                            "status": "", "course": course})
+
+        def course_rank(course):
+            return COURSES.index(course) if course in COURSES else len(COURSES)
+
+        entries.sort(key=lambda e: (course_rank(e["course"]), e["name"].lower()))
+
+        rows, last = [], None
+        for e in entries:
+            label = e["course"] or "Unassigned"
+            rows.append({
+                "Course": label if label != last else "",
+                "Name": e["name"],
+                "Status": e["status"],
+                "kind": e["kind"],
+                "id": e["id"],
+                "row_key": f"{e['kind']}-{e['id']}",
+            })
+            last = label
+
+        columns = [
+                ("Course", "Course", 2, "string"),
+                ("Name", "Name", 5, "link"),
+                ("Status", "Status", 2, "badge")
+                ]
+        
+        def open_entry(row):
+            if row["kind"] == "recipe":
+                st.session_state["selected_recipe_id"] = int(row["id"])
+                st.switch_page(PAGES['recipe_details'])
+            else:
+                st.session_state["selected_item_id"] = int(row["id"])
+                st.switch_page(PAGES['edit_food_and_drink'])
+
+        render_list(rows=rows, columns=columns, id_field="row_key",
+                    on_open=open_entry, prefix=f"menu_{menu_id}",
+                    title=menu_name, empty_message="Nothing on this menu yet.")
+
+
+# Write menu notes
+if selected_event_df['event_notes']:
+    notes_container = st.container(horizontal=True, border=True, key='detail_card')
+    with notes_container:
+        st.write(selected_event_df['event_notes'])

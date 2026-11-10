@@ -12,8 +12,8 @@ from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection, update_and_default_selectbox
 from database.menus import COURSES, create_menu, save_menu
 from database.recipes import DEFAULT_PREP_OPTIONS, DEFAULT_UNITS, get_recipes_for_menu_selection
-from database.food_and_drink import get_items_for_menu_selection, get_or_create_item, save_menu_items
-from styles.page_config import PAGES, setup_page_defaults, create_button
+from database.food_and_drink import get_items_for_menu_selection, save_menu_items
+from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
 
 # Connect to database
 conn = get_connection()
@@ -39,13 +39,18 @@ amount_units = update_and_default_selectbox(conn=conn,
                                             default_options=DEFAULT_UNITS)
 
 # Title
-st.title("Create Menu")
-st.write(" ")
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
+
+header_container = st.container(key='kitchen_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Create Menu')
 
 # Menu creation entry
 st.write("Let's get started!")
 
-menu_name = st.text_input("Menu name")
+menu_name = st.text_input("Create a menu name")
 st.space("small")
 
 

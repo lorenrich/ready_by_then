@@ -17,7 +17,7 @@ PAGES = {
     "edit_menu": st.Page("pages/edit_menu.py", title="Edit Menu", url_path="edit_menu"),
 
     "event_menus": st.Page("pages/event_menus.py", title="Add Event Menus", url_path="event_menus"),
-
+    
     'recipes': st.Page("pages/recipes.py", title="Kitchen", icon=":material/chef_hat:", url_path="recipes"),
     'recipe_details': st.Page("pages/recipe_details.py", title="Recipe Details", url_path="recipe_details"),
     'copy_recipe': st.Page("pages/copy_recipe.py", title="Create Recipe Copy", url_path="copy_recipe"),
@@ -31,6 +31,13 @@ PAGES = {
     "create_food_and_drink": st.Page("pages/create_food_and_drink.py", title="Create Item", url_path="create_food_and_drink"),
     "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink")
 }
+
+
+KITCHEN_PAGES = (PAGES['recipes'], PAGES['create_recipe'], PAGES['edit_recipe'],
+                 PAGES['recipe_details'], PAGES['copy_recipe'], PAGES['ingredients'],
+                 PAGES['food_and_drink'], PAGES['create_food_and_drink'],
+                 PAGES['edit_food_and_drink'], PAGES['menus'], PAGES['create_menu'],
+                 PAGES['edit_menu'], PAGES['menu_details'], PAGES['copy_menu'])
 
 BUTTONS = {
     # Basic buttons
@@ -61,6 +68,7 @@ BUTTONS = {
     'add_recipes_to_menu': dict(label="Add recipes", type="primary", icon=":material/add:"),
 
     'add_menu_to_event': dict(label="Add menu", type="primary", icon=":material/add:"),
+    'add_menus': dict(label="Add menu", type="primary", icon=":material/add:"),
     "remove_menu": dict(label="Remove menu", type="primary", icon=":material/remove:"),
 }
 
@@ -108,9 +116,25 @@ def setup_page_defaults():
         padding: 8px 12px;
         box-shadow: 0 2px 8px rgba(40, 20, 90, 0.12);
     }
-    [class*="st-key-list_card_"] p { color: #2D1B69; margin: 0; }
+    [class*="st-key-list_card_"] [data-testid="stMarkdownContainer"] p { color: #2D1B69; margin: 0 !important; line-height: 1.5; }
+    
+    [class*="st-key-list_card_"] [data-testid="stMarkdownContainer"],
+    [class*="st-key-list_card_"] [data-testid="stMarkdownContainer"] p {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    }
+
     [class*="st-key-listrow_"] { border-radius: 10px; padding: 4px 8px; }
     [class*="st-key-listrow_"]:hover { background: #F0E9FF; }
+    [class*="st-key-list_card_"] { color: #2D1B69; }
+    [class*="st-key-rowlink_"] button { padding: 0; min-height: 0; }
+    [class*="st-key-rowlink_"] button p { font-size: 1rem; line-height: 1.5; }
+    [class*="st-key-list_card_"] h3 {
+    color: #2D1B69;
+    font-size: 2rem;
+    padding: 0.25rem 0 0.5rem 0;
+    margin: 0;
+    }
     </style>
     """)
     st.html(
@@ -211,13 +235,25 @@ def fill_no_records_container(container, icon_name, header_val, caption_val, but
 
 def badge(text):
     bg, fg = BADGES.get(text, ("#EDE7FF", "#5B3FA6"))
+    if not text:
+        return ""
     return (f'<span style="background:{bg};color:{fg};padding:2px 10px;'
             f'border-radius:999px;font-size:0.8rem;font-weight:600;">{text}</span>')
 
 
-def render_list(rows, columns, id_field, on_open, prefix):
+def section_heading(text):
+    st.subheader(text, anchor=False)
+
+
+def render_list(rows, columns, id_field, on_open, prefix, title=None, empty_message=None):
     widths = [c[2] for c in columns]
     with st.container(key=f"list_card_{prefix}"):
+        if title:
+            section_heading(title)
+        if not rows:
+            if empty_message:
+                st.caption(empty_message)
+            return
         for col, (title, *_) in zip(st.columns(widths), columns):
             col.caption(title)
         for row in rows:
@@ -234,3 +270,4 @@ def render_list(rows, columns, id_field, on_open, prefix):
                         cell.markdown(row[field])
                     else:
                         cell.write(row[field])
+

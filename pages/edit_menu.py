@@ -12,7 +12,7 @@ from database.database import DEFAULT_STATUSES, get_connection, update_and_defau
 from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, edit_menu, save_menu
 from database.recipes import DEFAULT_UNITS, DEFAULT_PREP_OPTIONS, PREP_LABELS, get_recipes_for_menu_selection
 from database.food_and_drink import get_items_for_menu_selection, get_selected_menu_items_for_edit, save_menu_items
-from styles.page_config import PAGES, setup_page_defaults, create_button
+from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
 
 # Connect to database
 conn = get_connection()
@@ -81,7 +81,13 @@ else:
     menu_status_idx = 1
 
 # Title
-st.title("Edit Menu")
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
+
+header_container = st.container(key='kitchen_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Edit Menu')
 st.space("small")
 
 menu_name = st.text_input("Menu name", value=menu_name)

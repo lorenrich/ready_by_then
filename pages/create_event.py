@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 from database.database import get_connection, DEFAULT_STATUSES
 from database.events import create_event
-from styles.page_config import setup_page_defaults, PAGES, create_button
+from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 # Connect to database
 conn = get_connection()
@@ -18,8 +18,13 @@ conn = get_connection()
 setup_page_defaults()
 
 # Title
-st.title("Create New Event")
-st.write(" ")
+st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
+
+header_container = st.container(key='events_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/today: Events')
 
 # Form
 with st.form("create_event"):

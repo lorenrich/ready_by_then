@@ -71,7 +71,7 @@ header_container = st.container(key='kitchen_page_header')
 
 with header_container:
      icon_calendar = ''
-     st.write(':material/chef_hat: Kitchen')
+     st.write(':material/chef_hat: Edit Food and Drink Items')
 
 # The default section/page for the kitchen is recipes with buttons to other sections
 button_container = st.container(horizontal=True)

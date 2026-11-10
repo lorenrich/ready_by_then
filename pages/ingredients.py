@@ -18,7 +18,7 @@ from database.recipes import (get_selected_recipe,
                               DEFAULT_PREP_OPTIONS, 
                               DEFAULT_INGREDIENT_TYPE,
                               PREP_LABELS)
-from styles.page_config import setup_page_defaults, PAGES, create_button
+from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
 
 # Connect to database
 conn = get_connection()
@@ -60,7 +60,13 @@ amount_units = update_and_default_selectbox(conn=conn,
                                             default_options=DEFAULT_UNITS)
 
 # Title
-st.title("Ingredients")
+st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
+
+header_container = st.container(key='kitchen_page_header')
+
+with header_container:
+     icon_calendar = ''
+     st.write(':material/chef_hat: Ingredients')
 st.write(" ")
 
 # Ingredient entry
@@ -158,9 +164,7 @@ if st.button("Add ingredient", icon=":material/add:"):
     st.rerun()
 
 
-'''
-Save and write to tables
-'''
+# Save and write to tables
 if create_button(name='save_ingredients'):
     items = []
     for rid in st.session_state.rows:
