@@ -48,6 +48,7 @@ def initialize_schema(conn):
         menu_id INTEGER NOT NULL,
         recipe_id INTEGER NOT NULL,
         course TEXT,
+        batches REAL DEFAULT 1.0,
         PRIMARY KEY (menu_id, recipe_id),
         FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
         FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT

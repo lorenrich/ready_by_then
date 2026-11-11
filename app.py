@@ -32,7 +32,8 @@ pg = st.navigation([
     PAGES['ingredients'],
     PAGES['food_and_drink'],
     PAGES['create_food_and_drink'],
-    PAGES['edit_food_and_drink']
+    PAGES['edit_food_and_drink'],
+    PAGES['shopping_list']
 ], position="hidden")
 
 # Sidebar config

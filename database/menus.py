@@ -65,6 +65,18 @@ def get_selected_menu_recipes(conn, menu_id):
     ).fetchall()
 
 
+def get_menu_batches(conn, menu_id):
+    menu_id = int(menu_id)
+    return conn.execute(
+        """
+        SELECT recipe_id, batches
+        FROM menu_recipes
+        WHERE menu_id = ?
+        """,
+        (menu_id,),
+    ).fetchall()
+
+
 def get_menu_events(conn, menu_id):
     menu_id = int(menu_id)
     events = conn.execute(
@@ -169,8 +181,8 @@ def copy_menu(conn, menu_id):
 
         conn.execute(
             """
-            INSERT INTO menu_recipes (menu_id, recipe_id, course)
-            SELECT ?, recipe_id, course FROM menu_recipes WHERE menu_id = ?
+            INSERT INTO menu_recipes (menu_id, recipe_id, course, batches)
+            SELECT ?, recipe_id, course, batches FROM menu_recipes WHERE menu_id = ?
             """,
             (new_id, menu_id),
         )
@@ -226,8 +238,8 @@ def save_menu(conn, menu_id, recipes):
         conn.execute("DELETE FROM menu_recipes WHERE menu_id = ?", (menu_id,))
         for item in recipes:
             conn.execute(
-                "INSERT INTO menu_recipes (menu_id, recipe_id, course) VALUES (?, ?, ?)",
-                (menu_id, int(item["recipe_id"]), item["course"]),
+                "INSERT INTO menu_recipes (menu_id, recipe_id, course, batches) VALUES (?, ?, ?, ?)",
+                (menu_id, int(item["recipe_id"]), item["course"], item['batches']),
             )
         conn.commit()
     except Exception:

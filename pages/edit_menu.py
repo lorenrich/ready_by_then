@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 from collections import Counter
 from database.database import DEFAULT_STATUSES, get_connection, update_and_default_selectbox
-from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, edit_menu, save_menu
+from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, get_menu_batches, edit_menu, save_menu
 from database.recipes import DEFAULT_UNITS, DEFAULT_PREP_OPTIONS, PREP_LABELS, get_recipes_for_menu_selection
 from database.food_and_drink import get_items_for_menu_selection, get_selected_menu_items_for_edit, save_menu_items
 from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
@@ -32,6 +32,7 @@ if "menu_item_ids" not in st.session_state:
 # Create dataframes
 selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
 selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
+selected_menu_recipe_batches = get_menu_batches(conn=conn, menu_id=menu_id) if menu_id is not None else None
 recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
 item_selection_df = get_items_for_menu_selection(conn=conn)
 
@@ -57,7 +58,7 @@ needs_init = (st.session_state.get("menu_for_id") != menu_id or "edit_menu_notes
 if needs_init:
     # Clear leftovers from any previously viewed menu
     stale = [k for k in st.session_state.keys()
-            if k.startswith("course_") or k.startswith("menu_editor_") or k == "editor_base_df"]
+            if k.startswith("course_") or k.startswith("menu_editor_") or k.startswith('batch_') or k == "editor_base_df"]
     for key in stale:
         del st.session_state[key]
 
@@ -68,6 +69,10 @@ if needs_init:
     for rid, name, status, course in selected_menu_recipes:
         if course in COURSES:
             st.session_state[f"course_{int(rid)}"] = course
+
+    # Seed saved batch sizes into their widget keys
+    for rid, batches in get_menu_batches(conn=conn, menu_id=menu_id):
+        st.session_state[f"batch_{int(rid)}"] = max(float(batches or 1.0), 0.5)
 
     st.session_state.menu_for_id = menu_id
 
@@ -143,6 +148,22 @@ with recipe_container:
         unchecked = {int(r) for r in edited_df.loc[~edited_df["Add to Menu"], "Recipe ID"]}
         current = set(st.session_state.menu_recipe_ids)
         st.session_state.menu_recipe_ids = sorted((current | checked) - unchecked)
+
+# Group selected recipes
+chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
+
+# Allow user to adjust recipe batch sizes
+with st.expander("Adjust recipe batch sizes (optional)"):
+    if chosen.empty:
+        st.caption("Add recipes above to adjust their batch sizes.")
+    else:
+        for rid, name in zip(chosen["Recipe ID"], chosen["Recipe"]):
+            key = f"batch_{int(rid)}"
+            st.session_state.setdefault(key, 1.0)
+            col_a, col_b = st.columns([3, 5])
+            col_a.write(name)
+            col_b.number_input("Batches", min_value=0.5, step=0.5, format="%g",
+                               key=key, label_visibility="collapsed")
 
 st.space("small")
 
@@ -243,7 +264,6 @@ st.space("small")
 item_names = [(st.session_state.get(f"item_name_{rid}") or "").strip()
               for rid in st.session_state.item_rows]
 
-chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
 names = list(chosen["Recipe"]) + [n for n in item_names if n]
 st.write(f"On this menu ({len(names)}): " + ", ".join(names))
 st.space("small")
@@ -264,7 +284,10 @@ with st.expander("Organize by course (optional)"):
                                 label_visibility="collapsed")
 
 # Store the items and their selected courses
-items = [{"recipe_id": int(rid), "course": st.session_state.get(f"course_{int(rid)}")}
+items = [{
+    "recipe_id": int(rid), 
+    "course": st.session_state.get(f"course_{int(rid)}"),
+    "batches": st.session_state.get(f"batch_{int(rid)}", 1.0)}
         for rid in st.session_state.menu_recipe_ids]
 
 # Count items per course

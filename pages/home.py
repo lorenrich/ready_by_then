@@ -34,5 +34,3 @@ with home_row1_col2:
         if create_big_button('kitchen', 'Kitchen', '#45A5ED', '#8FC9F4'):
             st.switch_page(PAGES['recipes'])
 
-
-home_row2_col1, home_row2_col2 = st.columns(2, gap="small")

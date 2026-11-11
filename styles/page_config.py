@@ -29,7 +29,9 @@ PAGES = {
 
     "food_and_drink": st.Page("pages/food_and_drink.py", title="Food & Drink", url_path="food_and_drink"),
     "create_food_and_drink": st.Page("pages/create_food_and_drink.py", title="Create Item", url_path="create_food_and_drink"),
-    "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink")
+    "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink"),
+
+    "shopping_list": st.Page("pages/shopping_list.py", title="Shopping List", url_path='shopping_list')
 }
 
 
@@ -46,6 +48,7 @@ BUTTONS = {
     'copy': dict(label="Copy", type="secondary", icon=":material/content_copy:"),
     'delete': dict(label="Delete", type="secondary", icon=":material/delete:"),
     'edit': dict(label="Edit", type="primary", icon=":material/edit:"),
+    'shopping_list': dict(label='Get Shopping List', type='secondary', icon=":material/shopping_bag:"),
 
     # Page buttons
     'events': dict(label="Events", type="primary", icon=":material/celebration:"),

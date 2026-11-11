@@ -99,6 +99,9 @@ with action_col:
         if create_button(name='delete'):
             confirm_delete(event_id=int(selected_event_df['event_id']))
 
+        if create_button(name='shopping_list'):
+            st.switch_page(PAGES['shopping_list'])
+
 st.space("small")
 
 # Event Details

@@ -105,6 +105,22 @@ with recipe_container:
         current = set(st.session_state.menu_recipe_ids)
         st.session_state.menu_recipe_ids = sorted((current | checked) - unchecked)
 
+# Save chosen recipes
+chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
+
+# Allow user to adjust recipe batch sizes
+with st.expander("Adjust recipe batch sizes (optional)"):
+    if chosen.empty:
+        st.caption("Add recipes above to adjust their batch sizes.")
+    else:
+        for rid, name in zip(chosen["Recipe ID"], chosen["Recipe"]):
+            key = f"batch_{int(rid)}"
+            st.session_state.setdefault(key, 1.0)
+            col_a, col_b = st.columns([3, 5])
+            col_a.write(name)
+            col_b.number_input("Batches", min_value=0.5, step=0.5, format="%g",
+                               key=key, label_visibility="collapsed")
+
 st.space("small")
 
 # Food and drink item selector
@@ -165,8 +181,6 @@ with item_container:
 st.space("small")
 
 # Display what's on the menu
-chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
-
 item_names = [(st.session_state.get(f"item_name_{rid}") or "").strip()
               for rid in st.session_state.item_rows]
 item_names = [n for n in item_names if n]
@@ -205,7 +219,10 @@ item_courses = [st.session_state.get(f"item_course_{rid}")
                 for rid in st.session_state.item_rows
                 if (st.session_state.get(f"item_name_{rid}") or "").strip()]
 
-items = [{"recipe_id": int(rid), "course": st.session_state.get(f"course_{int(rid)}")}
+items = [{
+    "recipe_id": int(rid),
+    "course": st.session_state.get(f"course_{int(rid)}"),
+    "batches": st.session_state.get(f"batch_{int(rid)}", 1.0)}
          for rid in st.session_state.menu_recipe_ids]
 
 # Count items per course
