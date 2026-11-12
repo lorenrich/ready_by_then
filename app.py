@@ -33,7 +33,8 @@ pg = st.navigation([
     PAGES['food_and_drink'],
     PAGES['create_food_and_drink'],
     PAGES['edit_food_and_drink'],
-    PAGES['shopping_list']
+    PAGES['shopping_list'],
+    PAGES['help']
 ], position="hidden")
 
 # Sidebar config
@@ -47,6 +48,8 @@ with st.sidebar:
         st.page_link(PAGES['menus'], label='Menus')
     else:
         st.page_link(PAGES['recipes'], label='Kitchen')
+
+    st.page_link(PAGES['help'])
 
 # Run
 pg.run()

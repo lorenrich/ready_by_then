@@ -31,7 +31,9 @@ PAGES = {
     "create_food_and_drink": st.Page("pages/create_food_and_drink.py", title="Create Item", url_path="create_food_and_drink"),
     "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink"),
 
-    "shopping_list": st.Page("pages/shopping_list.py", title="Shopping List", url_path='shopping_list')
+    "shopping_list": st.Page("pages/shopping_list.py", title="Shopping List", url_path='shopping_list'),
+
+    "help": st.Page('pages/help.py', title='How to Use', icon=':material/help:', url_path='help'),
 }
 
 
@@ -49,6 +51,7 @@ BUTTONS = {
     'delete': dict(label="Delete", type="secondary", icon=":material/delete:"),
     'edit': dict(label="Edit", type="primary", icon=":material/edit:"),
     'shopping_list': dict(label='Get Shopping List', type='secondary', icon=":material/shopping_bag:"),
+    'back_to_details': dict(label='Back to Event Details', type='secondary', icon=':material/arrow_back:'),
 
     # Page buttons
     'events': dict(label="Events", type="primary", icon=":material/celebration:"),
@@ -73,12 +76,14 @@ BUTTONS = {
     'add_menu_to_event': dict(label="Add menu", type="primary", icon=":material/add:"),
     'add_menus': dict(label="Add menu", type="primary", icon=":material/add:"),
     "remove_menu": dict(label="Remove menu", type="primary", icon=":material/remove:"),
+
 }
 
 CIRCULAR_ICONS = {
     "events": 'assets/circular_calendar.png',
     "menus": 'assets/circular_menu.png',
-    "recipes": 'assets/circular_recipe.png'
+    "recipes": 'assets/circular_recipe.png',
+    "food_and_drink": "assets/circular_food_and_drink.png"
 }
 
 BADGES = {
@@ -147,6 +152,14 @@ def setup_page_defaults():
         </style>
         """
     )
+    st.html("""
+    <style>
+    [class*="st-key-list_card_"], [class*="st-key-info_card_"] {
+    background: #FFFFFF; border-radius: 16px; padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(40, 20, 90, 0.12); color: #2D1B69;
+    }
+    </style>
+    """)
 
 
 def create_button(name, **overrides):
@@ -248,11 +261,13 @@ def section_heading(text):
     st.subheader(text, anchor=False)
 
 
-def render_list(rows, columns, id_field, on_open, prefix, title=None, empty_message=None):
+def render_list(rows, columns, id_field, prefix, on_open=None, title=None, empty_message=None, subtext=None):
     widths = [c[2] for c in columns]
     with st.container(key=f"list_card_{prefix}"):
         if title:
             section_heading(title)
+        if subtext:
+            st.caption(subtext)
         if not rows:
             if empty_message:
                 st.caption(empty_message)

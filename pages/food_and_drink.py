@@ -54,11 +54,11 @@ if df.empty:
     blank_container = st.container(height=250, key='no_items', horizontal_alignment='center')
 
     fill_no_records_container(container=blank_container,
-                            icon_name='recipes',
+                            icon_name='food_and_drink',
                             header_val='Create your first food or drink item',
                             caption_val="Log dinner rolls, a bottle of wine, and your family's favorite sodas all in one place",
                             button_name='add_food_and_drink',
-                            page_redirect='create_food_and_drink')
+                            page_redirect='create_food_and_drink') 
 
 # List recorded items    
 else:

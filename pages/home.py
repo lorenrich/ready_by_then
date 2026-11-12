@@ -13,7 +13,7 @@ from styles.page_config import PAGES, setup_page_defaults, create_big_button
 setup_page_defaults()
 
 # Structure containers to hold home page objects
-home_row1_col1, home_row1_col2 = st.columns(2, gap="small")
+home_row1_col1, home_row1_col2 = st.columns(2, gap="large")
 
 with home_row1_col1:
     # Title
@@ -34,3 +34,12 @@ with home_row1_col2:
         if create_big_button('kitchen', 'Kitchen', '#45A5ED', '#8FC9F4'):
             st.switch_page(PAGES['recipes'])
 
+
+home_row2_col1, home_row2_col2 = st.columns(2, gap="large")
+
+with home_row2_col2:
+    home_button3, home_button4 = st.columns(2, gap="large")
+
+    with home_button3:
+        if create_big_button("help", 'Help', '#7EC234', '#BCE292'):
+            st.switch_page(PAGES['help'])
