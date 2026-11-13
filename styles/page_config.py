@@ -32,6 +32,7 @@ PAGES = {
     "edit_food_and_drink": st.Page("pages/edit_food_and_drink.py", title="Edit Food & Drink", url_path="edit_food_and_drink"),
 
     "shopping_list": st.Page("pages/shopping_list.py", title="Shopping List", url_path='shopping_list'),
+    "schedule": st.Page("pages/schedule.py", title='Schedule', url_path='schedule'),
 
     "help": st.Page('pages/help.py', title='How to Use', icon=':material/help:', url_path='help'),
 }
@@ -51,6 +52,7 @@ BUTTONS = {
     'delete': dict(label="Delete", type="secondary", icon=":material/delete:"),
     'edit': dict(label="Edit", type="primary", icon=":material/edit:"),
     'shopping_list': dict(label='Get Shopping List', type='secondary', icon=":material/shopping_bag:"),
+    'schedule': dict(label='Get Prep Schedule', type='secondary', icon=":material/schedule:"),
     'back_to_details': dict(label='Back to Event Details', type='secondary', icon=':material/arrow_back:'),
 
     # Page buttons

@@ -87,8 +87,9 @@ with st.form("edit_recipe"):
         accept_new_options=True,
         placeholder="Choose or type a temperature unit",
         )                         
-    recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1, value=selected_recipe_df['recipe_preheat_time'])
-    recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1, value=selected_recipe_df['recipe_cook_time'])
+    recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1, value=selected_recipe_df['recipe_preheat_time'], min_value=0)
+    recipe_prep_time = st.number_input("What is the approximate prep time (in minutes)?", step=1, value=selected_recipe_df['recipe_prep_time'], min_value=0)
+    recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1, value=selected_recipe_df['recipe_cook_time'], min_value=0)
     recipe_source = st.text_input("Who or where is this recipe from?", value=selected_recipe_df['recipe_source'])
     recipe_notes = st.text_area("Any extra notes you want to add?", value=selected_recipe_df['recipe_notes'])
     recipe_status = st.selectbox("Is this recipe now complete?", options=DEFAULT_STATUSES, index=recipe_status_default_idx)
@@ -119,6 +120,7 @@ with st.form("edit_recipe"):
                     recipe_source=recipe_source,
                     recipe_notes=recipe_notes,
                     recipe_status=recipe_status,
+                    recipe_prep_time=recipe_prep_time,
                     recipe_id=recipe_id,
                     )
 

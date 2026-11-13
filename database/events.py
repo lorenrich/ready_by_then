@@ -45,26 +45,27 @@ def create_event(conn,
                  dietary_needs,
                  event_occurred,
                  event_notes,
-                 event_status):
+                 event_status,
+                 event_serving_time):
     cursor = conn.execute(
-        "INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status)
+        "INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time)
     )
     conn.commit()
     return cursor.lastrowid
 
 
-def edit_event(conn, event_id, event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status):
+def edit_event(conn, event_id, event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time):
     """
     Modify content of a logged event record
     """
     conn.execute(
         """
         UPDATE events
-        SET event_name = ?, event_date = ?, num_adults = ?, num_kids = ?, num_hearty_eaters = ?, need_kids_menu = ?, dietary_needs = ?, event_occurred = ?, event_notes = ?, event_status = ?
+        SET event_name = ?, event_date = ?, num_adults = ?, num_kids = ?, num_hearty_eaters = ?, need_kids_menu = ?, dietary_needs = ?, event_occurred = ?, event_notes = ?, event_status = ?, event_serving_time = ?
         WHERE event_id = ?;
         """,
-        (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_id)
+        (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time, event_id)
     )
     conn.commit()
 
@@ -78,9 +79,9 @@ def copy_event(conn, event_id):
         cur = conn.execute(
             """
             INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters,
-                                need_kids_menu, dietary_needs, event_occurred, event_notes, event_status)
+                                need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time)
             SELECT 'Copy of ' || event_name, event_date, num_adults, num_kids, num_hearty_eaters,
-                   need_kids_menu, dietary_needs, 0, event_notes, event_status
+                   need_kids_menu, dietary_needs, 0, event_notes, event_status, event_serving_time
             FROM events
             WHERE event_id = ?
             """,

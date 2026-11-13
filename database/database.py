@@ -30,7 +30,8 @@ def initialize_schema(conn):
         dietary_needs TEXT,
         event_occurred BOOLEAN DEFAULT 0,
         event_notes TEXT,
-        event_status TEXT NOT NULL DEFAULT 'Incomplete'
+        event_status TEXT NOT NULL DEFAULT 'Incomplete',
+        serving_time TEXT,
         );
     """)
 
@@ -78,7 +79,8 @@ def initialize_schema(conn):
         recipe_cook_time INTEGER,
         recipe_source TEXT,
         recipe_notes TEXT,
-        recipe_status TEXT NOT NULL DEFAULT 'Incomplete'
+        recipe_status TEXT NOT NULL DEFAULT 'Incomplete',
+        recipe_prep_time INTEGER
         );
     """)
         

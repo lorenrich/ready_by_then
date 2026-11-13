@@ -94,10 +94,11 @@ def create_recipe(conn,
                   recipe_cook_time,
                   recipe_source,
                   recipe_notes,
-                  recipe_status):
+                  recipe_status,
+                  recipe_prep_time):
     cursor = conn.execute(
-        "INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status)
+        "INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time)
     )
     conn.commit()
     return cursor.lastrowid
@@ -157,6 +158,7 @@ def edit_recipe(conn,
                 recipe_source,
                 recipe_notes,
                 recipe_status,
+                recipe_prep_time,
                 recipe_id,   
                 ):
     """
@@ -165,7 +167,7 @@ def edit_recipe(conn,
     conn.execute(
         """
         UPDATE recipes
-        SET recipe_name = ?, recipe_type = ?, recipe_yield = ?, recipe_cooking_vessel = ?, recipe_preheat_temp = ?, recipe_preheat_unit = ?, recipe_preheat_time = ?, recipe_cook_time = ?, recipe_source = ?, recipe_notes = ?, recipe_status = ?
+        SET recipe_name = ?, recipe_type = ?, recipe_yield = ?, recipe_cooking_vessel = ?, recipe_preheat_temp = ?, recipe_preheat_unit = ?, recipe_preheat_time = ?, recipe_cook_time = ?, recipe_source = ?, recipe_notes = ?, recipe_status = ?, recipe_prep_time = ?
         WHERE recipe_id = ?;
         """,
         (recipe_name,
@@ -179,6 +181,7 @@ def edit_recipe(conn,
          recipe_source,
          recipe_notes,
          recipe_status,
+         recipe_prep_time,
          recipe_id
          )
     )
@@ -197,7 +200,8 @@ def copy_recipe(conn,
                 recipe_cook_time, 
                 recipe_source,
                 recipe_notes, 
-                recipe_status):
+                recipe_status,
+                recipe_prep_time):
     """
     Duplicate a recipe with its sections, ingredients, and components and return the new recipe_id.
     """
@@ -208,12 +212,12 @@ def copy_recipe(conn,
             """
             INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel,
                                 recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time,
-                                recipe_cook_time, recipe_source, recipe_notes, recipe_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel,
             recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time,
-            recipe_cook_time, recipe_source, recipe_notes, recipe_status),
+            recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time),
         )
         new_id = cur.lastrowid
 
@@ -295,6 +299,16 @@ def get_recipe_usage(conn, recipe_id):
     ).fetchall()
 
     return parents, events
+
+
+def get_component_ids(conn, recipe_id):
+    recipe_id = int(recipe_id)
+    return conn.execute(
+        """
+        SELECT component_recipe_id FROM recipe_components WHERE parent_recipe_id = ?
+        """
+        (recipe_id,),
+    ).fetchall()
 
 
 def resolve_recipe_timing(conn, recipe_id):
@@ -399,3 +413,4 @@ def save_ingredients(conn, recipe_id, items):
     except Exception:
         conn.rollback()
         raise
+

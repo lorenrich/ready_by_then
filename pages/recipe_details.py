@@ -146,9 +146,9 @@ with recipe_info_col:
             st.write(str(selected_recipe_df['recipe_yield']) if selected_recipe_df['recipe_yield'] else "&nbsp;")
 
             if cooking_vessel == 'oven':
-                st.write(f"Bake at {selected_recipe_df['recipe_preheat_temp']} degrees {selected_recipe_df["recipe_preheat_unit"]} in {selected_recipe_df["recipe_cooking_vessel"]} for {selected_recipe_df['recipe_cook_time']}")
+                st.write(f"Bake at {selected_recipe_df['recipe_preheat_temp']} degrees {selected_recipe_df["recipe_preheat_unit"]} in {selected_recipe_df["recipe_cooking_vessel"]} for {selected_recipe_df['recipe_cook_time']} minutes")
             elif cooking_vessel in cooktops:
-                st.write(f"Cook on stove for {selected_recipe_df['recipe_cook_time']} (includes preheat time)")
+                st.write(f"Cook on stove for {selected_recipe_df['recipe_cook_time']} minutes (includes preheat time)")
                 
 
             st.write(selected_recipe_df["recipe_source"] if selected_recipe_df['recipe_source'] else "&nbsp;")

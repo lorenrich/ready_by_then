@@ -34,6 +34,7 @@ pg = st.navigation([
     PAGES['create_food_and_drink'],
     PAGES['edit_food_and_drink'],
     PAGES['shopping_list'],
+    PAGES['schedule'],
     PAGES['help']
 ], position="hidden")
 

@@ -53,8 +53,9 @@ with st.form("create_recipe"):
     recipe_cooking_vessel = st.text_input("Where recipe is cooked (e.g. oven, air fryer)")
     recipe_preheat_temp = st.number_input("Preheat Temperature", step=1)
     recipe_preheat_unit = st.selectbox("Preheat Unit", preheat_unit_types, index=None, accept_new_options=True)
-    recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1)
-    recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1)
+    recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1, min_value=0)
+    recipe_prep_time = st.number_input("What is the approximate prep time (in minutes)?", step=1, min_value=0)
+    recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1, min_value=0)
     recipe_source = st.text_input("Who or where is this recipe from?")
     recipe_notes = st.text_area("Any extra notes you want to add?")
 
@@ -84,6 +85,7 @@ with st.form("create_recipe"):
             recipe_source=recipe_source,
             recipe_notes=recipe_notes,
             recipe_status="Incomplete",
+            recipe_prep_time=recipe_prep_time
         )
 
         if add_now:

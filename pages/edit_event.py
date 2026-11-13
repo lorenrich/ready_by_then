@@ -67,6 +67,8 @@ with st.form("edit_event"):
                                value=selected_event_df["event_name"])
     event_date = st.datetime_input("Event Date", 
                                    value=selected_event_df["event_date"])
+    event_serving_time = st.time_input("Food Serve Time",
+                                       value=selected_event_df['serving_time'])
     num_adults = st.number_input("Number of adults attending", 
                                  step=1, 
                                  value=selected_event_df["num_adults"])
@@ -117,7 +119,8 @@ with st.form("edit_event"):
                   dietary_needs=dietary_needs,
                   event_occurred=event_occurred,
                   event_notes=event_notes,
-                  event_status=event_status)
+                  event_status=event_status,
+                  event_serving_time=event_serving_time)
 
         if add_menus:
             updated_event_id = st.session_state["selected_event_id"]

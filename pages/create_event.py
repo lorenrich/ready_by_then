@@ -31,6 +31,7 @@ with st.form("create_event"):
     st.write("Let's get started!")
     event_name = st.text_input("What should we call the event?")
     event_date = st.datetime_input("When is your event?")
+    event_serving_time = st.time_input("What time are you serving food?")
     num_adults = st.number_input("Number of adults attending", 
                                  step=1)
     num_kids = st.number_input("Number of kids attending", 
@@ -75,7 +76,8 @@ with st.form("create_event"):
                                     dietary_needs=dietary_needs,
                                     event_occurred=event_occurred,
                                     event_notes=event_notes,
-                                    event_status=event_status)
+                                    event_status=event_status,
+                                    event_serving_time=event_serving_time)
 
         if add_now:
             st.session_state["selected_event_id"] = new_event_id

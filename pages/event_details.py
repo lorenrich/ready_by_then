@@ -102,6 +102,9 @@ with action_col:
         if create_button(name='shopping_list'):
             st.switch_page(PAGES['shopping_list'])
 
+        if create_button(name='schedule'):
+            st.switch_page(PAGES['schedule'])
+
 st.space("small")
 
 # Event Details
