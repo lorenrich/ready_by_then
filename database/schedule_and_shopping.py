@@ -2,10 +2,10 @@
 Prep work to build schedule and shopping list
 '''
 import math
-from collections import defaultdict
+from collections import defaultdict, Counter
 from database.events import get_selected_event
 from database.menus import get_event_menus, get_menu_batches
-from database.recipes import get_selected_recipe_ingredients
+from database.recipes import PREP_LABELS, get_selected_recipe_ingredients, get_selected_recipe
 from database.food_and_drink import get_selected_menu_items_for_edit
 
 
@@ -144,7 +144,7 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
     return final_shopping_list, checked
 
 
-def build_schedule(conn, menu_recipes):
+def build_schedule(conn, menu_recipes, menus):
 
     unchecked = [x[0] for x in menu_recipes]
     checked = []
@@ -172,46 +172,62 @@ def build_schedule(conn, menu_recipes):
     # Build list of recipes
     unchecked, checked = find_nested_components_only(unchecked=unchecked, checked=checked)
 
-    # Deduplicate list of recipes
-    checked = dict.fromkeys(checked)
+    # Deduplicate list of recipes, preserving the original checked list
+    checked_dict = dict.fromkeys(checked)
 
     # Set up dictionary of lists for groups
-    groups = defaultdict(list)
+    groups = defaultdict(lambda: defaultdict(list))
 
-    # Loop through recipes and group by timing
-    for recipe_id in checked:
+    # Loop through recipes and group
+    for recipe_id in checked_dict:
 
         # Get ingredients
         ingredients = get_selected_recipe_ingredients(conn=conn, recipe_id=recipe_id)
-        print("\nrecipe ingredients: ", ingredients)
 
         # Group the tuples by prep_timing
         for i in ingredients:
+            if i[2] != 'Ingredient':
+                continue
             timing = i[5] if i[5] is not None else 1
-            groups[(recipe_id, timing)].append(i)
-    print("\ngroups by timing: ", groups)
-   
-    
-    return groups
-    
+            groups[recipe_id][timing].append(i)
+                      
+    # Build labels
+    schedule = defaultdict(list)
 
+    for recipe_id, buckets in groups.items():
+        name = get_selected_recipe(conn=conn, recipe_id=recipe_id)["recipe_name"]
 
-'''
- - Prep Timing Section Logic
-elif all ingredients in a recipe section (if section) have the same prep timing, schedule shows recipe name, section, and its ingredients?
-    under respective prep timing section
+        if len(buckets) == 1:
+            timing = next(iter(buckets))
+            schedule[timing].append({"row_key": f"{recipe_id}_{timing}", "label": name})
 
-elif all recipe ingredients have the same prep timing, schedule shows recipe name under the respective prep timing section
+        else:
+            all_rows = [r for rows in groups[recipe_id].values() for r in rows]
+            section_total = Counter(r[1] for r in all_rows)
 
-else group together ingredients by prep timing section and list them in parentheses with the recipe name 
-    (e.g. Veggie flatbread (carrots, broccoli, etc.) under Day Before and Veggie flatbread (flatbread) under Day of)
+            for timing, rows in buckets.items():
+                bucket_count = Counter(r[1] for r in rows)
+                parts = []
+                for section in bucket_count:
+                    if section is not None and bucket_count[section] == section_total[section]:
+                        parts.append(section)
+                    else:
+                        parts.extend(r[0] for r in rows if r[1] == section)
+                label = f"{name} ({', '.join(parts)})"
+                schedule[timing].append({"row_key": f"{recipe_id}_{timing}", "label": label})
 
+    # Add in menu_items
+    for menu in menus:
+        menu_items = get_selected_menu_items_for_edit(conn=conn, menu_id=menu)
 
-Label. If a bucket covers the whole recipe, show the name only. Otherwise show the name plus a parenthetical, using section or 
-component names where the bucket fully contains them and ingredient names only for the leftovers.
+        for item in menu_items:
+            timing = item[5] if item[5] is not None else 1
+            schedule[timing].append({"row_key": f"item_{menu}_{item[6]}_{timing}", "label": item[0]})
 
-Your Veggie flatbread example falls out naturally: one task under Day Before, one under Day Of. I’d also drop 
-“section and its ingredients” from case 3. The ingredient list already lives on the recipe page, and a schedule 
-is a checklist, so a section name is enough. Show ingredients only when a section is split across buckets.
+    rows = []
+    for t in sorted(schedule, reverse=True):
+        for entry in sorted(schedule[t], key=lambda e: e["label"].lower()):
+            rows.append({"When": PREP_LABELS[t], "Task": entry["label"], "row_key": entry["row_key"]})
 
-'''
+    return rows, checked
+

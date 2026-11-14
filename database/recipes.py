@@ -108,6 +108,8 @@ def get_selected_recipe(conn, recipe_id):
     df = pd.read_sql_query(
         "SELECT * FROM recipes WHERE recipe_id = ?", conn, params=(recipe_id,)
     )
+    df['recipe_preheat_temp'] = df['recipe_preheat_temp'].fillna(0)
+
     return df.iloc[0] if not df.empty else None
 
 

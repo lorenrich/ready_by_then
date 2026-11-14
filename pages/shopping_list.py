@@ -91,7 +91,7 @@ if incomplete:
             ]
     
     def open_entry(row):
-        st.session_state["selected_item_id"] = int(row["recipe_id"])
+        st.session_state["selected_recipe_id"] = int(row["id"])
         st.switch_page(PAGES['edit_recipe'])
 
     render_list(rows=rows, 

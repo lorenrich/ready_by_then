@@ -182,7 +182,7 @@ def get_selected_menu_items_for_edit(conn,
     menu_id = int(menu_id)
     return conn.execute(
         """
-        SELECT i.item_name, mi.course, mi.amount, mi.unit, mi.scales_with_guests, mi.prep_timing
+        SELECT i.item_name, mi.course, mi.amount, mi.unit, mi.scales_with_guests, mi.prep_timing, mi.item_id
         FROM menu_items mi
         JOIN food_and_drinks i on i.item_id = mi.item_id
         WHERE mi.menu_id = ?

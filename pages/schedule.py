@@ -26,6 +26,12 @@ from styles.page_config import (
     badge,
     section_heading)
 
+
+def export_schedule(schedule_rows):
+    df = pd.DataFrame(schedule_rows)[["When", "Task"]]
+    return df.to_csv(index=False).encode("utf-8")
+
+
 # Create the connection to the database
 conn = get_connection()
 
@@ -35,24 +41,24 @@ setup_page_defaults()
 event_id = st.session_state.get('selected_event_id')
 today = date.today()
 
-# Call functions to build shopping list
+# Call functions to build shopping list and schedule
 selected_event = get_selected_event(conn=conn, event_id=event_id)
 guest_count, menu_recipes, menus = build_schedule_and_shopping_prep(conn, event_id)
+schedule, checked = build_schedule(conn=conn, menu_recipes=menu_recipes, menus=menus)
 
+# Structure schedule for page render
+schedule_rows, last = [], None
 
-build_schedule(conn=conn, menu_recipes=menu_recipes)
+for r in schedule:
+    schedule_rows.append({
+        "When": r["When"] if r["When"] != last else "",
+        "Task": r["Task"],
+        "row_key": r["row_key"],
+    })
+    last = r["When"]
 
-
-
-
-
-
-
-
-
-
-
-
+schedule_columns = [("When", "When", 2, "string"),
+                    ("Task", "Task", 5, "string")]
 
 
 # Render to page
@@ -78,6 +84,14 @@ with action_col:
         if create_button('back_to_details'):
             st.switch_page(PAGES['event_details'])
 
+        st.download_button(
+            label='Export Schedule',
+            data=export_schedule(schedule_rows=schedule_rows),
+            file_name=f'{selected_event['event_name']} Prep Schedule {today}.csv',
+            mime="text/csv",
+            icon=":material/download:"
+            )
+
 # Alert the user of assumptions
 with st.expander(label='About scheduling'):
     st.write(
@@ -87,107 +101,52 @@ with st.expander(label='About scheduling'):
     )
 
 # If event has recipes missing times, alert the user and guide them to fix it
-missing_times = {}
+missing_info = []
 
-'''
-for recipe in recipes, if recipe_cooking_vessel != "" and recipe_cook_time is 0, flag as missing cook time
-for recipe in recipes, if recipe_preheat_temp > 0 and recipe_preheat_time == 0, flag as missing preheat time
-for recipe in recipes, if recipe_prep_time == 0 and recipe_id not in recipe_component_ids, flag as missing prep time
-'''
+for recipe_id in checked:
+    df = get_selected_recipe(conn=conn, recipe_id=recipe_id)
+    issues = []
+
+    if df['recipe_cooking_vessel'] != '' and df['recipe_cook_time'] == 0:
+        issues.append('cook time')
+    if df['recipe_preheat_temp'] > 0 and df['recipe_preheat_time'] == 0:
+        issues.append("preheat time")
+    if df['recipe_prep_time'] == 0:
+        issues.append("prep time")
+
+    if issues:
+        missing_info.append({
+            "Name": df['recipe_name'],
+            "Status": f"Missing {', '.join(issues)}",
+            "recipe_id": recipe_id,
+            "row_key": recipe_id
+        })
 
 
-if missing_times:
-    rows = [{"Name": name, "Status": "Incomplete", "id": rid, "row_key": rid}
-            for rid, name in missing_times.items()]
-
+if missing_info:
     columns = [
             ("Name", "Name", 5, "link"),
-            ("Status", "Status", 2, "badge")
+            ("Status", "Status", 2, "string")
             ]
-    
+
     def open_entry(row):
-        st.session_state["selected_item_id"] = int(row["recipe_id"])
+        st.session_state["selected_recipe_id"] = int(row["recipe_id"])
         st.switch_page(PAGES['edit_recipe'])
 
-    render_list(rows=rows, 
+    render_list(rows=missing_info, 
                 columns=columns, 
                 id_field="row_key",
                 on_open=open_entry, 
-                prefix='incomplete_recipe',
-                title="Wait, you have incomplete recipes",
-                subtext="Click below to review. Some recipes listed may be nested within other recipes such as a dressing within a salad.")
+                prefix='missing_times',
+                title="Wait, some recipes are missing times",
+                subtext="Click to fix. Until then, the schedule assumes 10 minutes of prep and no preheat or cook time for each recipe.")
 
 
-'''
- - On the page
-Alert the user of incomplete recipes in their menu and recipes which do not contain a value for cook or preheat time and
-provide a list for them to click on to edit items (similar to shopping list page).  Alert them of assumptions made about
-blank entries for preheat, prep, and cook times.
+# Render schedule to page
+render_list(rows=schedule_rows, 
+            columns=schedule_columns, 
+            id_field="row_key",
+            prefix="schedule", 
+            title="Prep Schedule",
+            empty_message="There are no menu items assigned to this event yet.")
 
-Use unchecked, checked list similar to shopping list logic (I can share how this was structured)
-
-
-
-
- - Time Calculation Logic 
-TABLE CHANGE - I need a field for prep time for each recipe (e.g. a soup takes 15 minutes of prep, 20 minutes to boil (what I would enter into preheat), and 20 minutes to cook.)
-This should really only apply to the recipes table since we only think about prep times associated with a whole recipe, not ingredients or sections.
-
-Assume that all things with a cook time can be cooked simultaneously.  The logic should take the max cook time of everything in that prep section
-    and use it as the allotted cook time.  Repeat this logic for preheat time.  If no preheat or cook time was entered, the app will assume these as zero.
-
-Assume all things with prep time cannot be done simultaneously and add the prep times together.  If no prep time was entered, the app will assume 10 minutes
-    for full recipes and five minutes per food/drink item.
-
-DESIGN DILEMMA - In recipes like veggie flatbread, the recipe prep time is 20 minutes and part of the main ingredients section can be prepped the day 
-before (veggies) but part of them are to be prepped the day of (flatbread and recipe components).  The app shouldn't allow twenty minutes each day of the prep schedule.
-  It also isn't clear when the cook time should be applied as it's only tagged to the recipe as a whole.  If we consider something like Reuben sandwiches where I make 
-my own bread, prep time including proof time is three hours.  That three hours should all be banked towards the day before prep when the bread is made, not the day of, 
-and then day-of assembly comes with its own separate prep time.
-
-Personally, I always need to know when I should start cooking on the day of the event and have to calculate it out.  Maybe the result is a table of what's left to 
-prep the day of and we then ask the user to allot times for each or they can leave it as-is.  Then we aren't making incorrect assumptions about how long prep will 
-take.  We only make assumptions on time when an entire recipe happens in the same prep_timing section but allow the user to overwrite that if they choose.  I like this, but
-will need to build a way to log their entries.  Then, if they come back later and have adjusted the menu, what they had before is still there and what's newly added
-is on the schedule with an option for them to include a prep time.
-
-
-
-Will need
-Events
-Event date and start time (one field, event_date)
-
-event_menus
-menu_id
-menu_recipes (function?)
-
-Recipes
-recipe_id
-recipe_cooking_vessel
-recipe_preheat_temp
-recipe_preheat_unit
-recipe_preheat_time
-recipe_cook_time
-recipe_status
-
-recipe_ingredients
-ingredient_id
-section_id
-ingredient_name
-prep_timing
-
-recipe_components
-component_recipe_id
-section_id
-prep_timing
-
-recipe_sections
-section_id
-section_name
-prep_timing
-
-menu_items
-item_id
-prep_timing
-
-'''

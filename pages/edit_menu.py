@@ -187,7 +187,7 @@ if st.session_state.get("item_rows_for_menu") != menu_id or item_widgets_gone:
         st.session_state.item_rows = list(range(len(current_items)))
         st.session_state.next_item_row_id = len(current_items)
 
-        for i, (name, course, amount, unit, scales, prep) in enumerate(current_items):
+        for i, (name, course, amount, unit, scales, prep, _recipe_id) in enumerate(current_items):
             st.session_state[f"item_name_{i}"] = name
             st.session_state[f"item_amount_{i}"] = amount or 0.0
             st.session_state[f"item_scale_{i}"] = "Yes" if scales else "No"
