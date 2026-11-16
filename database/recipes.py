@@ -3,6 +3,7 @@ Create and modify recipe data
 '''
 # Import
 import pandas as pd
+from database.database import clean
 
 DEFAULT_RECIPE_TYPES = [
     'Entree',
@@ -96,6 +97,14 @@ def create_recipe(conn,
                   recipe_notes,
                   recipe_status,
                   recipe_prep_time):
+
+    recipe_name = clean(recipe_name, collapse=True)
+    recipe_type = clean(recipe_type, collapse=True)
+    recipe_cooking_vessel = clean(recipe_cooking_vessel, collapse=True)
+    recipe_preheat_unit = clean(recipe_preheat_unit, collapse=True)
+    recipe_source = clean(recipe_source)
+    recipe_notes = clean(recipe_notes)
+    
     cursor = conn.execute(
         "INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time)
@@ -166,6 +175,13 @@ def edit_recipe(conn,
     """
     Modify content of a logged recipe record
     """
+    recipe_name = clean(recipe_name, collapse=True)
+    recipe_type = clean(recipe_type, collapse=True)
+    recipe_cooking_vessel = clean(recipe_cooking_vessel, collapse=True)
+    recipe_preheat_unit = clean(recipe_preheat_unit, collapse=True)
+    recipe_source = clean(recipe_source)
+    recipe_notes = clean(recipe_notes)
+
     conn.execute(
         """
         UPDATE recipes
@@ -208,6 +224,13 @@ def copy_recipe(conn,
     Duplicate a recipe with its sections, ingredients, and components and return the new recipe_id.
     """
     source_recipe_id = int(source_recipe_id)
+    recipe_name = clean(recipe_name, collapse=True)
+    recipe_type = clean(recipe_type, collapse=True)
+    recipe_cooking_vessel = clean(recipe_cooking_vessel, collapse=True)
+    recipe_preheat_unit = clean(recipe_preheat_unit, collapse=True)
+    recipe_source = clean(recipe_source)
+    recipe_notes = clean(recipe_notes)
+    
     try:
         # Copy the recipe row
         cur = conn.execute(
@@ -345,6 +368,9 @@ def resolve_recipe_timing(conn, recipe_id):
 
 
 def get_or_create_section(conn, recipe_id, name):
+
+    name = clean(name, collapse=True)
+
     cursor = conn.execute(
         """
         SELECT section_id FROM recipe_sections WHERE recipe_id = ? AND section_name = ? COLLATE NOCASE
@@ -364,6 +390,9 @@ def get_or_create_section(conn, recipe_id, name):
 
 
 def get_or_create_stub(conn, name):
+
+    name = clean(name, collapse=True)
+
     row = conn.execute(
         """
         SELECT recipe_id FROM recipes WHERE recipe_name = ? COLLATE NOCASE
@@ -389,6 +418,11 @@ def save_ingredients(conn, recipe_id, items):
         conn.execute("""DELETE FROM recipe_sections WHERE recipe_id = ?""", (int(recipe_id),))
 
         for item in items:
+
+            item['name'] = clean(item['name'], collapse=True)
+            item['section'] = clean(item['section'], collapse=True)
+            item['unit'] = clean(item['unit'], collapse=True)
+
             section_id = get_or_create_section(conn, recipe_id, item["section"]) if item["section"] else None
             if item["type"] == "Recipe":
                 component_id = get_or_create_stub(conn, item["name"])

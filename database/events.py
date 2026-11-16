@@ -3,6 +3,7 @@ Createand modify events data
 '''
 # Import
 import pandas as pd
+from database.database import clean
 
 
 def get_events_for_display(conn):
@@ -47,6 +48,10 @@ def create_event(conn,
                  event_notes,
                  event_status,
                  event_serving_time):
+    
+    event_name = clean(event_name, collapse=True)
+    dietary_needs = clean(dietary_needs)
+    event_notes = clean(event_notes)
     cursor = conn.execute(
         "INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time)
@@ -59,6 +64,9 @@ def edit_event(conn, event_id, event_name, event_date, num_adults, num_kids, num
     """
     Modify content of a logged event record
     """
+    event_name = clean(event_name, collapse=True)
+    dietary_needs = clean(dietary_needs)
+    event_notes = clean(event_notes)
     conn.execute(
         """
         UPDATE events
@@ -109,6 +117,6 @@ def delete_event(conn, event_id):
         """
         DELETE FROM events WHERE event_id = ?
         """, (int(event_id),)
-                 )
+                )
     conn.commit()
     return cur.rowcount

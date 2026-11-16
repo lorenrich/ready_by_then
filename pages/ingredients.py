@@ -165,13 +165,29 @@ if st.button("Add ingredient", icon=":material/add:"):
 
 
 # Save and write to tables
-if create_button(name='save_ingredients'):
+save_clicked = create_button("save_ingredients")
+confirmed = st.session_state.pop("gaps_confirmed", False)
+
+if save_clicked or confirmed:
+    # Clear old warnings
+    st.session_state.save_gaps = None
+
+    gaps = []
     items = []
-    for rid in st.session_state.rows:
-        name = (st.session_state.get(f"name_{rid}") or "").strip()
+    for n, rid in enumerate(st.session_state.rows, start=1):
+        name    = (st.session_state.get(f"name_{rid}") or "").strip()
+        amount  = st.session_state.get(f"amount_{rid}")
+        unit    = st.session_state.get(f"unit_{rid}")
+        section = st.session_state.get(f"section_{rid}")
+        prep    = st.session_state.get(f"prep_{rid}")
 
         if not name:
-            continue  # Skip blank rows
+            if any(v not in (None, "") for v in (amount, unit, section, prep)):
+                gaps.append(f"Row {n} has entries but no ingredient name")
+            continue
+
+        if amount is None:
+            gaps.append(f"Row {n} ({name}) has no amount")
 
         items.append({
             "section": (st.session_state.get(f"section_{rid}") or "").strip() or None,
@@ -180,17 +196,24 @@ if create_button(name='save_ingredients'):
             "amount": st.session_state[f"amount_{rid}"],
             "unit": st.session_state[f"unit_{rid}"],
             "prep": DEFAULT_PREP_OPTIONS.get(st.session_state.get(f"prep_{rid}")),
-        })
+            })
 
     # Guard against no data
     if not items:
         st.warning("Add at least one ingredient."); st.stop()
-        
+
     # Guard against duplicates
     values = [d['name'] for d in items]
     duplicates = [k for k, v in Counter(values).items() if v > 1]
 
-    if not duplicates:
+    if duplicates:
+        st.warning("It looks like you have duplicate ingredients in your recipe. Remove or combine them before saving.")
+        st.stop()
+                
+    if gaps and not confirmed:
+        st.session_state.save_gaps = gaps
+
+    else:
         # Save ingredients
         try:
             save_ingredients(conn, recipe_id, items)
@@ -200,8 +223,10 @@ if create_button(name='save_ingredients'):
         st.session_state.rows_for_recipe = None
 
         st.switch_page(PAGES['recipe_details'])
-    else:
-        st.warning("It looks like you have duplicate ingredients in your recipe. Remove or combine them before saving.")
 
-  
-    
+if st.session_state.get("save_gaps"):
+    st.warning("Some rows may be missing information:\n\n" +
+               "\n".join(f"- {g}" for g in st.session_state.save_gaps))
+    if st.button("Save anyway", key="save_anyway"):
+        st.session_state.gaps_confirmed = True
+        st.rerun()

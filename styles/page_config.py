@@ -160,6 +160,12 @@ def setup_page_defaults():
     background: #FFFFFF; border-radius: 16px; padding: 16px 20px;
     box-shadow: 0 2px 8px rgba(40, 20, 90, 0.12); color: #2D1B69;
     }
+    [class*="st-key-info_card_"] h3 {
+    color: #2D1B69;
+    font-size: 2rem;
+    padding: 0.25rem 0 0.5rem 0;
+    margin: 0;
+    }
     </style>
     """)
 

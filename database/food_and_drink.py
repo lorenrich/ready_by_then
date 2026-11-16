@@ -4,6 +4,7 @@ Create and edit food and drink items
 
 # Import
 import pandas as pd
+from database.database import clean
 
 DEFAULT_ITEM_TYPES = [
     'Food',
@@ -50,6 +51,9 @@ def get_items_for_menu_selection(conn):
 def create_item(conn,
                 item_name,
                 item_type):
+
+    item_name = clean(item_name, collapse=True)
+    
     cursor = conn.execute(
         "INSERT INTO food_and_drinks (item_name, item_type) VALUES ( ?, ?)",
         (item_name, item_type)
@@ -73,6 +77,8 @@ def edit_item(conn,
     """
     Modify content of a logged item record
     """
+    item_name = clean(item_name, collapse=True)
+
     conn.execute(
         """
         UPDATE food_and_drinks
@@ -125,7 +131,9 @@ def get_item_usage(conn, item_id):
 
 
 def get_or_create_item(conn, name):
-    name = name.strip()
+
+    name = clean(name, collapse=True)
+    
     row = conn.execute(
         "SELECT item_id FROM food_and_drinks WHERE item_name = ? COLLATE NOCASE",
         (name,),

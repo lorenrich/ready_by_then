@@ -8,14 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Continue import statements after locating root
 import streamlit as st
 from database.database import get_connection
-from database.food_and_drink import get_items_for_display
-from styles.page_config import (PAGES, 
-                                setup_page_defaults, 
-                                create_button, 
+from styles.page_config import (setup_page_defaults, 
                                 create_page_header,
-                                create_no_records_container,
-                                fill_no_records_container,
-                                render_list,
                                 section_heading)
 
 HOW_IT_WORKS = [
@@ -42,16 +36,19 @@ QUESTIONS = {
      'Complete and Incomplete statuses are only there to remind you where something is.  You can change them and make edits to an item at any time.',
 
      'Where is my data stored?':
-     'The app writes your data to disk so data never leaves your device.'
+     'The app writes your data to a locally stored database so data never leaves your device.'
 }
 
 ROADMAP = [
-     ("🚧 Custom Lists", "Build custom to-do lists for cleaning, decorations, and gifts linked to your prep schedule where you need it"),
-     ("🚧 Shareable Menu Template", "When your event is a potluck, invite your guests to sign up to bring something"),
-     ("🚧 Guest Lists", "Keep track of who's coming"),
-     ("🚧 Web Hosting", "An app always accessible which allows user accounts and securely stores your data in the cloud"),
-     ("🚧 Chatbot Assistant", "Not sure what to do next?  Ask a robot."),
-]
+    ("🚧 Event Specs", 'Scaling to accommodate events with "hearty eaters" and notifications for dietary restrictions.'),
+    ("🚧 Upgraded Schedule", "Prep schedule based on event start/meal serving time to estimate when the host should start cooking and how long prep is estimated to take."),
+    ("🚧 Custom Lists", "Build custom to-do lists for cleaning, decorations, and gifts linked to your prep schedule where you need it."),
+    ("🚧 Shareable Menu Template", "When your event is potluck-style, invite your guests to sign up to bring something while ensuring you have a well-rounded menu."),
+    ("🚧 Guest Lists", "Keep track of who's coming."),
+    ("🚧 Web Hosting", "An app always accessible which allows user accounts and securely stores your data in the cloud."),
+    ("🚧 Smart Alerts", "Notify the user when there isn't enough food on the menu for the number of guests, when the menu doesn't include drinks, or make suggestions based on the most frequently tagged recipes and items from the user."),
+    ("🚧 Chatbot Assistant", "Not sure what to do next?  Ask a robot.")
+    ]
 
 # Connect to database
 conn = get_connection()

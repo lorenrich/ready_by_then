@@ -4,6 +4,7 @@ Create and modify menu data
 # Import
 import pandas as pd
 import streamlit as st
+from database.database import clean
 
 # Constants
 COURSES = [
@@ -19,6 +20,10 @@ def create_menu(conn,
                 menu_name,
                 menu_notes,
                 menu_status):
+
+    menu_name = clean(menu_name, collapse=True)
+    menu_notes = clean(menu_notes)
+    
     cursor = conn.execute(
         "INSERT INTO menus (menu_name, menu_notes, menu_status) VALUES(?, ?, ?)",
         (menu_name, menu_notes, menu_status)
@@ -150,6 +155,9 @@ def edit_menu(conn,
     """
     Modify content of a logged menu record
     """
+    menu_name = clean(menu_name, collapse=True)
+    menu_notes = clean(menu_notes)
+    
     cursor = conn.execute(
         """
         UPDATE menus
@@ -234,6 +242,7 @@ def delete_menu(conn, menu_id):
 
 def save_menu(conn, menu_id, recipes):
     menu_id = int(menu_id)
+    
     try:
         conn.execute("DELETE FROM menu_recipes WHERE menu_id = ?", (menu_id,))
         for item in recipes:

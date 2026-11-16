@@ -36,14 +36,11 @@ with st.form("create_event"):
                                  step=1)
     num_kids = st.number_input("Number of kids attending", 
                                step=1)
-    num_hearty_eaters = st.number_input("How many of your guests are hearty eaters?",
-                                        step=1)
     need_kids_menu = st.selectbox("Do you need a separate kids' menu (who doesn't love chicken nuggets and fries)?",
                                  ["Yes", "No"],
                                  index=None,
                                  accept_new_options=False)
     kids_menu = 1 if need_kids_menu == "Yes" else 0
-    dietary_needs = st.text_area("Does anyone have dietary needs or preferences?")
     event_occurred = st.selectbox("Has this event already happened?",
                                   ["Yes", "No"],
                                   index=None,
@@ -71,9 +68,9 @@ with st.form("create_event"):
                                     event_date=event_date, 
                                     num_adults=num_adults, 
                                     num_kids=num_kids, 
-                                    num_hearty_eaters=num_hearty_eaters,
+                                    num_hearty_eaters=0,
                                     need_kids_menu=kids_menu, 
-                                    dietary_needs=dietary_needs,
+                                    dietary_needs="",
                                     event_occurred=event_occurred,
                                     event_notes=event_notes,
                                     event_status=event_status,

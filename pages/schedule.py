@@ -150,3 +150,4 @@ render_list(rows=schedule_rows,
             title="Prep Schedule",
             empty_message="There are no menu items assigned to this event yet.")
 
+ 

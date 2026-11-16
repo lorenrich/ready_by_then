@@ -199,6 +199,14 @@ ALLOWED_COLUMNS = {
     "food_and_drinks": {"item_type"}
 }
 
+def clean(value, collapse=False):
+    if not isinstance(value, str):
+        return value
+    value = value.strip()
+    if collapse:
+        value = " ".join(value.split())
+    return value
+
 
 def get_unique_records(conn, table_name, col_name):
     if col_name not in ALLOWED_COLUMNS.get(table_name, set()):
