@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -23,7 +24,8 @@ from styles.page_config import (PAGES,
 
 @st.dialog("Delete recipe?")
 def confirm_delete(recipe_id):
-    st.write("This permanently deletes the recipe. This action cannot be undone.")
+    st.write("This permanently deletes the recipe. This action cannot be "\
+             "undone.")
     col1, col2 = st.columns(2)
     with col1:
         if create_button(name="confirm_delete"):
@@ -32,7 +34,9 @@ def confirm_delete(recipe_id):
             except sqlite3.IntegrityError:
                 parents, events = get_recipe_usage(conn, recipe_id)
                 if parents:
-                    st.error("This recipe is used in: " + ", ".join(name for _, name in parents) + ". Remove it there first.")
+                    st.error("This recipe is used in: " + \
+                             ", ".join(name for _, name in parents) + \
+                                ". Remove it there first.")
                     st.stop()
             if deleted:
                 st.switch_page(PAGES["recipes"])
@@ -72,8 +76,13 @@ setup_page_defaults()
 recipe_id = st.session_state.get("selected_recipe_id")
 
 # Create dataframes
-selected_recipe_df = get_selected_recipe(conn=conn, recipe_id=recipe_id) if recipe_id is not None else None
-selected_recipe_ingredients = get_selected_recipe_ingredients(conn=conn, recipe_id=recipe_id) if recipe_id is not None else None
+selected_recipe_df = \
+    get_selected_recipe(conn=conn, 
+                        recipe_id=recipe_id) if recipe_id is not None else None
+selected_recipe_ingredients = \
+    get_selected_recipe_ingredients(conn=conn, 
+                                    recipe_id=recipe_id) \
+                                        if recipe_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected recipe
 if recipe_id is None:
@@ -96,12 +105,15 @@ with header_container:
 title_col, action_col = st.columns([5, 3], vertical_alignment='center')
 with title_col:
     title_col.markdown(
-        f"<h2 style='margin:0'>{html.escape(selected_recipe_df['recipe_name'])} {badge(selected_recipe_df['recipe_status'])}</h2>", 
+        f"""<h2 style='margin:0'>{
+            html.escape(selected_recipe_df['recipe_name'])} 
+            {badge(selected_recipe_df['recipe_status'])}</h2>""", 
         unsafe_allow_html=True,
         )
 
 with action_col:
-    button_container = st.container(horizontal=True, horizontal_alignment='right')
+    button_container = st.container(horizontal=True, 
+                                    horizontal_alignment='right')
     with button_container:
         if create_button(name='edit'):
             st.switch_page(PAGES['edit_recipe'])
@@ -142,17 +154,27 @@ with recipe_info_col:
             st.markdown("**Recipe Notes:**", text_alignment="right")
 
         with info_col2:
-            st.write(selected_recipe_df['recipe_type'] if selected_recipe_df['recipe_type'] else "&nbsp;")
-            st.write(str(selected_recipe_df['recipe_yield']) if selected_recipe_df['recipe_yield'] else "&nbsp;")
+            st.write(selected_recipe_df['recipe_type'] \
+                     if selected_recipe_df['recipe_type'] else "&nbsp;")
+            st.write(str(selected_recipe_df['recipe_yield']) \
+                     if selected_recipe_df['recipe_yield'] else "&nbsp;")
 
             if cooking_vessel == 'oven':
-                st.write(f"Bake at {selected_recipe_df['recipe_preheat_temp']} degrees {selected_recipe_df["recipe_preheat_unit"]} in {selected_recipe_df["recipe_cooking_vessel"]} for {selected_recipe_df['recipe_cook_time']} minutes")
+                st.write(
+                    f"Bake at {selected_recipe_df['recipe_preheat_temp']} "\
+                    f"degrees {selected_recipe_df["recipe_preheat_unit"]} in "\
+                    f"{selected_recipe_df["recipe_cooking_vessel"]} for "\
+                    f"{selected_recipe_df['recipe_cook_time']} minutes")
             elif cooking_vessel in cooktops:
-                st.write(f"Cook on stove for {selected_recipe_df['recipe_cook_time']} minutes (includes preheat time)")
+                st.write(f"Cook on stove for "\
+                         f"{selected_recipe_df['recipe_cook_time']} minutes "\
+                        "(includes preheat time)")
                 
 
-            st.write(selected_recipe_df["recipe_source"] if selected_recipe_df['recipe_source'] else "&nbsp;")
-            st.write(selected_recipe_df['recipe_notes'] if selected_recipe_df['recipe_notes'] else "&nbsp;")
+            st.write(selected_recipe_df["recipe_source"] \
+                     if selected_recipe_df['recipe_source'] else "&nbsp;")
+            st.write(selected_recipe_df['recipe_notes'] \
+                     if selected_recipe_df['recipe_notes'] else "&nbsp;")
 
 with recipe_ingredient_col:
     ingredient_container = st.container(key='list_card_ingredients')
@@ -161,7 +183,8 @@ with recipe_ingredient_col:
         st.space("small")
 
         sections = {}
-        for name, section, item_type, amount, unit, prep, component_id in selected_recipe_ingredients:
+        for name, section, item_type, amount, unit, prep, component_id \
+            in selected_recipe_ingredients:
             sections.setdefault(section or "Main", []).append(
                 (name, item_type, amount, unit, component_id)
             )
@@ -170,17 +193,28 @@ with recipe_ingredient_col:
             label_col, items_col = st.columns([1, 4])
             label_col.markdown(f"**{section_name}**")
             with items_col:
-                for name, item_type, amount, unit, component_id in sections[section_name]:
+                for name, item_type, amount, unit, component_id \
+                    in sections[section_name]:
                     if item_type == "Recipe":
                         with st.expander(f"{format_item(name, amount, unit)} (see recipe)"):
-                            component_ingredients = get_selected_recipe_ingredients(conn, component_id)
+                            component_ingredients = \
+                                get_selected_recipe_ingredients(conn, 
+                                                                component_id)
                             if len(component_ingredients) == 0:
                                 st.caption("No ingredients have been added.")
                             else:
-                                for sub_name, sub_section, sub_item_type, sub_amount, sub_unit, sub_prep, sub_component_id in component_ingredients:
-                                    st.write(format_item(sub_name, sub_amount, sub_unit))
-                                if st.button('Go to Recipe', key=f"open_{component_id}"):
-                                    st.session_state["selected_recipe_id"] = component_id
+                                for sub_name, sub_section, sub_item_type, \
+                                    sub_amount, sub_unit, sub_prep, \
+                                        sub_component_id \
+                                            in component_ingredients:
+                                    st.write(format_item(sub_name, 
+                                                         sub_amount, 
+                                                         sub_unit))
+                                if st.button('Go to Recipe', 
+                                             key=f"open_{component_id}"):
+                                    st.session_state["selected_recipe_id"] = \
+                                        component_id
                                     st.rerun()
                     else:
                         st.write(format_item(name, amount, unit))
+

@@ -3,11 +3,12 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
-from database.database import get_connection, DEFAULT_STATUSES
+from database.database import DEFAULT_STATUSES, get_connection
 from database.events import create_event
 from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
@@ -36,19 +37,11 @@ with st.form("create_event"):
                                  step=1)
     num_kids = st.number_input("Number of kids attending", 
                                step=1)
-    need_kids_menu = st.selectbox("Do you need a separate kids' menu (who doesn't love chicken nuggets and fries)?",
-                                 ["Yes", "No"],
-                                 index=None,
-                                 accept_new_options=False)
-    kids_menu = 1 if need_kids_menu == "Yes" else 0
-    event_occurred = st.selectbox("Has this event already happened?",
-                                  ["Yes", "No"],
-                                  index=None,
-                                  accept_new_options=False)
-    event_occurred = 1 if event_occurred == "Yes" else 0
     event_notes = st.text_area("Any notes you want to make?")
 
-    event_status = st.selectbox("Are the event details complete?", options=DEFAULT_STATUSES, index=1)
+    event_status = st.selectbox("Are the event details complete?", 
+                                options=DEFAULT_STATUSES, 
+                                index=1)
 
    # Take user to add_ingredients or submit as-is
     col1, col2 = st.columns([1, 7], gap="small")
@@ -67,11 +60,7 @@ with st.form("create_event"):
                                     event_name=event_name, 
                                     event_date=event_date, 
                                     num_adults=num_adults, 
-                                    num_kids=num_kids, 
-                                    num_hearty_eaters=0,
-                                    need_kids_menu=kids_menu, 
-                                    dietary_needs="",
-                                    event_occurred=event_occurred,
+                                    num_kids=num_kids,
                                     event_notes=event_notes,
                                     event_status=event_status,
                                     event_serving_time=event_serving_time)

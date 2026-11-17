@@ -3,13 +3,24 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
 from database.database import get_connection, update_and_default_selectbox
-from database.recipes import create_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
+from database.recipes import (DEFAULT_PREHEAT_UNITS, 
+                              DEFAULT_RECIPE_TYPES, 
+                              create_recipe)
 from styles.page_config import PAGES, setup_page_defaults, create_page_header
+
+INSTRUCTIONS = [
+    'Ready by Then needs your recipe details like cook time and ingredients '\
+        'but not your recipe steps like "Add ingredients to bowl".',
+    "You can come back and edit a recipe at any time, even if it's marked "\
+        "complete.  We'll remind you when you have incomplete recipes.",
+    "Once you create a recipe, you can tag it to a menu from the Menu page."
+]
 
 # Connect to database
 conn = get_connection()
@@ -18,15 +29,17 @@ conn = get_connection()
 setup_page_defaults()
 
 # Update page dropdowns
-recipe_types = update_and_default_selectbox(conn=conn, 
-                                            table_name='recipes', 
-                                            col_name='recipe_type', 
-                                            default_options=DEFAULT_RECIPE_TYPES)
+recipe_types = \
+    update_and_default_selectbox(conn=conn, 
+                                 table_name='recipes', 
+                                 col_name='recipe_type', 
+                                 default_options=DEFAULT_RECIPE_TYPES)
 
-preheat_unit_types = update_and_default_selectbox(conn=conn, 
-                                                  table_name='recipes', 
-                                                  col_name='recipe_preheat_unit', 
-                                                  default_options=DEFAULT_PREHEAT_UNITS)
+preheat_unit_types = \
+    update_and_default_selectbox(conn=conn, 
+                                 table_name='recipes', 
+                                 col_name='recipe_preheat_unit', 
+                                 default_options=DEFAULT_PREHEAT_UNITS)
 
 # Title
 st.html(create_page_header('kitchen_page_header', '#45A5ED', '#8FC9F4'))
@@ -43,20 +56,45 @@ with st.form("create_recipe"):
     st.write("Let's get started!")
     
     with st.expander("Instructions"):
-        st.write('Ready by Then needs your recipe details like cook time and ingredients but not your recipe steps like "Add ingredients to bowl".')
-        st.write("You can come back and edit a recipe at any time, even if it's marked complete.  We'll remind you when you have incomplete recipes.")
-        st.write("Once you create a recipe, you can tag it to a menu from the Menu page.")
+        for instruction in INSTRUCTIONS:
+            st.write(instruction)
 
     recipe_name = st.text_input("Recipe Name")
-    recipe_type = st.selectbox("Recipe Type", recipe_types, index=None, accept_new_options=True)
+
+    recipe_type = st.selectbox("Recipe Type", 
+                               recipe_types, 
+                               index=None, 
+                               accept_new_options=True)
+    
     recipe_yield = st.number_input("Servings Yield", step=1)
-    recipe_cooking_vessel = st.text_input("Where recipe is cooked (e.g. oven, air fryer)")
-    recipe_preheat_temp = st.number_input("Preheat Temperature", step=1)
-    recipe_preheat_unit = st.selectbox("Preheat Unit", preheat_unit_types, index=None, accept_new_options=True)
-    recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1, min_value=0)
-    recipe_prep_time = st.number_input("What is the approximate prep time (in minutes)?", step=1, min_value=0)
-    recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1, min_value=0)
+
+    recipe_cooking_vessel = \
+        st.text_input("Where recipe is cooked (e.g. oven, air fryer)")
+    
+    recipe_preheat_temp = st.number_input("Preheat Temperature", 
+                                          step=1)
+
+    recipe_preheat_unit = st.selectbox("Preheat Unit", 
+                                       preheat_unit_types, 
+                                       index=None, 
+                                       accept_new_options=True)
+
+    recipe_preheat_time = \
+        st.number_input("How long should be allowed for preheat (in minutes)?", 
+                        step=1, min_value=0)
+
+    recipe_prep_time = \
+        st.number_input("What is the approximate prep time (in minutes)?", 
+                        step=1, 
+                        min_value=0)
+
+    recipe_cook_time = \
+        st.number_input("What is the approximate cook time (in minutes)?", 
+                        step=1, 
+                        min_value=0)
+
     recipe_source = st.text_input("Who or where is this recipe from?")
+
     recipe_notes = st.text_area("Any extra notes you want to add?")
 
     # Take user to add_ingredients or submit as-is
@@ -93,4 +131,5 @@ with st.form("create_recipe"):
             st.switch_page(PAGES["ingredients"])
         else:
             st.switch_page(PAGES["recipes"])
+
        

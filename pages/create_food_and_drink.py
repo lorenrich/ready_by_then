@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -36,7 +37,7 @@ with header_container:
      icon_calendar = ''
      st.write(':material/chef_hat: Create Food and Drink Items')
 
-# The default section/page for the kitchen is recipes with buttons to other sections
+# The default section/page for the kitchen is recipes
 button_container = st.container(horizontal=True)
 with button_container:
     if create_button(name='recipes_secondary'):
@@ -51,20 +52,24 @@ with button_container:
 # Create item form
 with st.form("create_item", clear_on_submit=True):
     st.write("Let's get started!")
-    item_name = st.text_input('Name your item (you can include your favorite brands or keep names generic like "dinner rolls")')
+    item_name = \
+        st.text_input('Name your item (you can include your favorite "\
+                      "brands or keep names generic like "dinner rolls")')
     
     item_type = st.selectbox("Select the item type or add a new one",
                              options=item_types,
                              accept_new_options=True)
 
     st.space("small")
-    st.write("Don't worry about amounts just yet.  You can edit those when the item is tagged to a menu or event.")
+    st.write("Don't worry about amounts just yet. You can edit those when "\
+             "the item is tagged to a menu or event.")
     
    # Take user to add_ingredients or submit as-is
     create_save_button_container = st.container(horizontal=True)
 
     with create_save_button_container:
-        add_another = st.form_submit_button("Create another item", type="primary")
+        add_another = st.form_submit_button("Create another item", 
+                                            type="primary")
         done_adding = st.form_submit_button("I'm finished")
 
     if add_another or done_adding:
@@ -86,3 +91,5 @@ with st.form("create_item", clear_on_submit=True):
             
         else:
             st.switch_page(PAGES["food_and_drink"])
+
+            

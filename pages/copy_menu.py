@@ -3,16 +3,32 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
 from collections import Counter
-from database.database import DEFAULT_STATUSES, get_connection, update_and_default_selectbox
-from database.menus import COURSES, get_selected_menu, get_selected_menu_recipes, get_menu_batches, create_menu, save_menu
-from database.recipes import DEFAULT_PREP_OPTIONS, PREP_LABELS, DEFAULT_UNITS, get_recipes_for_menu_selection
-from database.food_and_drink import get_selected_menu_items_for_edit, save_menu_items, get_items_for_menu_selection
-from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
+from database.database import (DEFAULT_STATUSES, 
+                               get_connection, 
+                               update_and_default_selectbox)
+from database.menus import (COURSES, 
+                            get_selected_menu, 
+                            get_selected_menu_recipes, 
+                            get_menu_batches, 
+                            create_menu, 
+                            save_menu)
+from database.recipes import (DEFAULT_PREP_OPTIONS, 
+                              PREP_LABELS, 
+                              DEFAULT_UNITS, 
+                              get_recipes_for_menu_selection)
+from database.food_and_drink import (get_selected_menu_items_for_edit, 
+                                     save_menu_items, 
+                                     get_items_for_menu_selection)
+from styles.page_config import (PAGES, 
+                                setup_page_defaults, 
+                                create_button, 
+                                create_page_header)
 
 
 # Connect to database
@@ -34,11 +50,21 @@ amount_units = update_and_default_selectbox(conn=conn,
                                             default_options=DEFAULT_UNITS)
 
 # Create dataframes
-selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
-selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
-selected_menu_recipe_batches = get_menu_batches(conn=conn, menu_id=menu_id) if menu_id is not None else None
-selected_menu_items = get_selected_menu_items_for_edit(conn=conn, menu_id=menu_id) if menu_id is not None else None
-recipe_selection_df = get_recipes_for_menu_selection(conn=conn)
+selected_menu_df = \
+    get_selected_menu(conn=conn, 
+                      menu_id=menu_id) if menu_id is not None else None
+selected_menu_recipes = \
+    get_selected_menu_recipes(conn=conn, 
+                              menu_id=menu_id) if menu_id is not None else None
+selected_menu_recipe_batches = \
+    get_menu_batches(conn=conn, 
+                     menu_id=menu_id) if menu_id is not None else None
+selected_menu_items = \
+    get_selected_menu_items_for_edit(conn=conn, 
+                                     menu_id=menu_id) \
+                                        if menu_id is not None else None
+recipe_selection_df = \
+    get_recipes_for_menu_selection(conn=conn)
 copy_item_selection_df = get_items_for_menu_selection(conn=conn)
 
 # Guard against empty dataframe else filter it to the selected menu
@@ -51,18 +77,23 @@ if selected_menu_df is None:
     st.stop()
 
 # Determine if initializing is needed
-needs_init = (st.session_state.get("menu_for_id") != menu_id or "edit_menu_notes" not in st.session_state)
+needs_init = (st.session_state.get("menu_for_id") != menu_id or \
+              "edit_menu_notes" not in st.session_state)
 
 # Seed existing recipes tagged to menu
 if needs_init:
     # Clear leftovers from any previously viewed menu
     stale = [k for k in st.session_state.keys()
-            if k.startswith("course_") or k.startswith("menu_editor_") or k.startswith('batch_') or k == "editor_base_df"]
+            if k.startswith("course_") or k.startswith("menu_editor_") or \
+                k.startswith('batch_') or k == "editor_base_df"]
     for key in stale:
         del st.session_state[key]
 
     # Load the saved recipe IDs into the list
-    st.session_state.menu_recipe_ids = [int(rid) for rid, name, status, course in selected_menu_recipes]
+    st.session_state.menu_recipe_ids = [int(rid) for rid, 
+                                        name, 
+                                        status, 
+                                        course in selected_menu_recipes]
 
     # Seed each saved course into its widget key
     for rid, name, status, course in selected_menu_recipes:
@@ -71,7 +102,8 @@ if needs_init:
 
     # Seed saved batch sizes into their widget keys
         for rid, batches in selected_menu_recipe_batches:
-            st.session_state[f"batch_{int(rid)}"] = max(float(batches or 1.0), 0.5)
+            st.session_state[f"batch_{int(rid)}"] = \
+                max(float(batches or 1.0), 0.5)
 
     st.session_state.menu_for_id = menu_id
 
@@ -106,7 +138,8 @@ with search_col1:
     recipe_name_filter = st.text_input("Recipe name")
 
 with search_col2:
-    type_options = ['All'] + sorted(recipe_selection_df['Type'].dropna().unique())
+    type_options = ['All'] + \
+        sorted(recipe_selection_df['Type'].dropna().unique())
 
     recipe_type_filter = st.selectbox(label='Recipe type',
                                         options=type_options)
@@ -115,7 +148,11 @@ with search_col2:
 filtered_df = recipe_selection_df
 
 if recipe_name_filter:
-    filtered_df = filtered_df[filtered_df['Recipe'].str.contains(recipe_name_filter, case=False, regex=False, na=False)]
+    filtered_df = filtered_df[filtered_df['Recipe'].str.contains(
+        recipe_name_filter, 
+        case=False, 
+        regex=False, 
+        na=False)]
 
 if recipe_type_filter != 'All':
     filtered_df = filtered_df[filtered_df['Type'] == recipe_type_filter]
@@ -125,7 +162,8 @@ editor_key = f"menu_editor_{recipe_name_filter}_{recipe_type_filter}"
 
 if editor_key not in st.session_state:
     base_df = filtered_df.copy()
-    base_df["Add to Menu"] = base_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)
+    base_df["Add to Menu"] = \
+        base_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)
     st.session_state.editor_base_df = base_df
 
 # Guard against no filter matches and write the editor
@@ -141,13 +179,16 @@ else:
 )
     
     # Copy user inputs to the session state list
-    checked = {int(r) for r in edited_df.loc[edited_df["Add to Menu"], "Recipe ID"]}
-    unchecked = {int(r) for r in edited_df.loc[~edited_df["Add to Menu"], "Recipe ID"]}
+    checked = {int(r) for r in edited_df.loc[edited_df["Add to Menu"], 
+                                             "Recipe ID"]}
+    unchecked = {int(r) for r in edited_df.loc[~edited_df["Add to Menu"], 
+                                               "Recipe ID"]}
     current = set(st.session_state.menu_recipe_ids)
     st.session_state.menu_recipe_ids = sorted((current | checked) - unchecked)
 
 # Group existing recipes copied to menu
-chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(st.session_state.menu_recipe_ids)]
+chosen = recipe_selection_df[recipe_selection_df["Recipe ID"].isin(
+    st.session_state.menu_recipe_ids)]
 
 # Allow user to adjust recipe batch sizes
 with st.expander("Adjust recipe batch sizes (optional)"):
@@ -163,12 +204,15 @@ with st.expander("Adjust recipe batch sizes (optional)"):
                                key=key, label_visibility="collapsed")
 
 
-# Get current food and drink items or initialize a fresh entry section if copy_item_id doesn't match, wasn't selected, or if user returned to 
+# Get current food and drink items or initialize a fresh entry section if 
+# copy_item_id doesn't match, wasn't selected, or if user returned to 
 # ingredients page after previously leaving it without saving
 copy_item_rows = st.session_state.get("copy_item_rows")
-copy_item_widgets_gone = bool(copy_item_rows) and f"copy_item_name_{copy_item_rows[0]}" not in st.session_state
+copy_item_widgets_gone = bool(copy_item_rows) and \
+    f"copy_item_name_{copy_item_rows[0]}" not in st.session_state
 
-if st.session_state.get("copy_item_rows_for_menu") != menu_id or copy_item_widgets_gone:
+if st.session_state.get("copy_item_rows_for_menu") != menu_id or \
+    copy_item_widgets_gone:
     # Clear previously seeded entries
     prefixes = ("copy_item_name_", "copy_item_amount_", "copy_item_unit_",
                 "copy_item_scale_", "copy_item_prep_", "copy_item_course_")
@@ -182,7 +226,12 @@ if st.session_state.get("copy_item_rows_for_menu") != menu_id or copy_item_widge
         st.session_state.copy_item_rows = list(range(len(current_items)))
         st.session_state.next_copy_item_row_id = len(current_items)
 
-        for i, (name, course, amount, unit, scales, prep) in enumerate(current_items):
+        for i, (name, 
+                course, 
+                amount, 
+                unit, 
+                scales, 
+                prep) in enumerate(current_items):
             st.session_state[f"copy_item_name_{i}"] = name
             st.session_state[f"copy_item_amount_{i}"] = amount or 0.0
             st.session_state[f"copy_item_scale_{i}"] = "Yes" if scales else "No"
@@ -210,46 +259,53 @@ with copy_item_container:
 
     # Set up entry fields
     for rid in st.session_state.copy_item_rows:
-        c1, c2, c3, c4, c5, c6 = st.columns([2.5, 1.25, 1, 1.5, 1.25, 0.6], vertical_alignment="bottom")
+        c1, c2, c3, c4, c5, c6 = st.columns([2.5, 1.25, 1, 1.5, 1.25, 0.6], 
+                                            vertical_alignment="bottom")
         
         c1.selectbox("Item", 
                     options=copy_item_selection_df['Item'].tolist(), 
                     index=None, 
                     accept_new_options=True, 
                     key=f"copy_item_name_{rid}",
-                    label_visibility="visible" if rid == st.session_state.copy_item_rows[0] else "collapsed")
+                    label_visibility="visible" if rid == \
+                        st.session_state.copy_item_rows[0] else "collapsed")
         
         c2.number_input("Amount", 
                         min_value=0.0, 
                         value=0.0, 
                         key=f"copy_item_amount_{rid}",
-                        label_visibility="visible" if rid == st.session_state.copy_item_rows[0] else "collapsed")
+                        label_visibility="visible" if rid == \
+                            st.session_state.copy_item_rows[0] else "collapsed")
         
         c3.selectbox("Unit", 
                     options=amount_units, 
                     index=None, 
                     accept_new_options=True, 
                     key=f"copy_item_unit_{rid}",
-                    label_visibility="visible" if rid == st.session_state.copy_item_rows[0] else "collapsed")
+                    label_visibility="visible" if rid == \
+                        st.session_state.copy_item_rows[0] else "collapsed")
 
         c4.selectbox("Scale amount with guest count",
                     options=['No', 'Yes'],
                     accept_new_options=False,
                     key=f"copy_item_scale_{rid}",
-                    label_visibility="visible" if rid == st.session_state.copy_item_rows[0] else "collapsed")
+                    label_visibility="visible" if rid == \
+                        st.session_state.copy_item_rows[0] else "collapsed")
         
         c5.selectbox("Prep timing", 
                     list(DEFAULT_PREP_OPTIONS), 
                     index=None, 
                     key=f"copy_item_prep_{rid}",
-                    label_visibility="visible" if rid == st.session_state.copy_item_rows[0] else "collapsed")
+                    label_visibility="visible" if rid == \
+                        st.session_state.copy_item_rows[0] else "collapsed")
 
         if c6.button("", icon=":material/delete:", key=f"copy_item_del_{rid}"):
             st.session_state.copy_item_rows.remove(rid)
             st.rerun()
 
     if st.button("Add item", icon=":material/add:"):
-        st.session_state.copy_item_rows.append(st.session_state.next_copy_item_row_id)
+        st.session_state.copy_item_rows.append(
+            st.session_state.next_copy_item_row_id)
         st.session_state.next_copy_item_row_id += 1
         st.rerun()
 
@@ -269,14 +325,19 @@ with st.expander("Organize by course (optional)"):
     for rid, name in zip(chosen["Recipe ID"], chosen["Recipe"]):
         col_a, col_b = st.columns([3, 5])
         col_a.write(name)
-        col_b.segmented_control("Course", COURSES, key=f'course_{int(rid)}', label_visibility="collapsed")
+        col_b.segmented_control("Course", 
+                                COURSES,
+                                key=f'course_{int(rid)}', 
+                                label_visibility="collapsed")
 
     for rid, name in zip(st.session_state.copy_item_rows, copy_item_names):
         if not name:
             continue
         col_a, col_b = st.columns([3, 5])
         col_a.write(name)
-        col_b.segmented_control("Course", COURSES, key=f"copy_item_course_{rid}",
+        col_b.segmented_control("Course", 
+                                COURSES, 
+                                key=f"copy_item_course_{rid}",
                                 label_visibility="collapsed")
 
 # Store the items and their selected courses
@@ -290,14 +351,19 @@ items = [{
 recipe_courses = [st.session_state.get(f"course_{int(r)}")
                   for r in st.session_state.menu_recipe_ids]
 copy_item_courses = [st.session_state.get(f"copy_item_course_{rid}")
-                for rid, name in zip(st.session_state.copy_item_rows, copy_item_names) if name]
+                for rid, name in zip(st.session_state.copy_item_rows, 
+                                     copy_item_names) if name]
 
 counts = Counter(recipe_courses + copy_item_courses)
 st.caption("  ·  ".join(f"{c}: {counts.get(c, 0)}" for c in COURSES))
 
 # Rest of user input
-menu_notes = st.text_area("Any notes you want to make?", value=menu_notes, key="edit_menu_notes")
-menu_status = st.selectbox("Is the menu complete?", options=DEFAULT_STATUSES, index=menu_status_idx)
+menu_notes = st.text_area("Any notes you want to make?", 
+                          value=menu_notes, 
+                          key="edit_menu_notes")
+menu_status = st.selectbox("Is the menu complete?", 
+                           options=DEFAULT_STATUSES, 
+                           index=menu_status_idx)
 
 # Save entries to table
 if create_button(name='save_menu'):
@@ -316,13 +382,16 @@ if create_button(name='save_menu'):
             "course": st.session_state.get(f"copy_item_course_{rid}"),
             "amount": st.session_state.get(f"copy_item_amount_{rid}") or None,
             "unit": st.session_state.get(f"copy_item_unit_{rid}"),
-            "scales": 1 if st.session_state.get(f"copy_item_scale_{rid}") == "Yes" else 0,
-            "prep": DEFAULT_PREP_OPTIONS.get(st.session_state.get(f"copy_item_prep_{rid}")),
+            "scales": 1 if st.session_state.get(
+                f"copy_item_scale_{rid}") == "Yes" else 0,
+                "prep": DEFAULT_PREP_OPTIONS.get(st.session_state.get(
+                    f"copy_item_prep_{rid}")),
         })
 
     lowered = [i["name"].lower() for i in menu_items]
     if len(lowered) != len(set(lowered)):
-        st.warning("An item appears more than once. Remove or combine the duplicates.")
+        st.warning(
+            "An item appears more than once. Remove or combine the duplicates.")
         st.stop()
 
     # Write entries to tables

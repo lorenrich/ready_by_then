@@ -106,8 +106,31 @@ def create_recipe(conn,
     recipe_notes = clean(recipe_notes)
     
     cursor = conn.execute(
-        "INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel, recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time, recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time)
+        """INSERT INTO recipes (recipe_name, 
+                                recipe_type, 
+                                recipe_yield, 
+                                recipe_cooking_vessel, 
+                                recipe_preheat_temp, 
+                                recipe_preheat_unit, 
+                                recipe_preheat_time, 
+                                recipe_cook_time, 
+                                recipe_source, 
+                                recipe_notes, 
+                                recipe_status, 
+                                recipe_prep_time) 
+        VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (recipe_name, 
+         recipe_type, 
+         recipe_yield, 
+         recipe_cooking_vessel, 
+         recipe_preheat_temp, 
+         recipe_preheat_unit, 
+         recipe_preheat_time, 
+         recipe_cook_time, 
+         recipe_source, 
+         recipe_notes, 
+         recipe_status, 
+         recipe_prep_time)
     )
     conn.commit()
     return cursor.lastrowid
@@ -185,7 +208,18 @@ def edit_recipe(conn,
     conn.execute(
         """
         UPDATE recipes
-        SET recipe_name = ?, recipe_type = ?, recipe_yield = ?, recipe_cooking_vessel = ?, recipe_preheat_temp = ?, recipe_preheat_unit = ?, recipe_preheat_time = ?, recipe_cook_time = ?, recipe_source = ?, recipe_notes = ?, recipe_status = ?, recipe_prep_time = ?
+        SET recipe_name = ?, 
+            recipe_type = ?, 
+            recipe_yield = ?, 
+            recipe_cooking_vessel = ?, 
+            recipe_preheat_temp = ?, 
+            recipe_preheat_unit = ?, 
+            recipe_preheat_time = ?, 
+            recipe_cook_time = ?, 
+            recipe_source = ?, 
+            recipe_notes = ?, 
+            recipe_status = ?, 
+            recipe_prep_time = ?
         WHERE recipe_id = ?;
         """,
         (recipe_name,
@@ -221,7 +255,7 @@ def copy_recipe(conn,
                 recipe_status,
                 recipe_prep_time):
     """
-    Duplicate a recipe with its sections, ingredients, and components and return the new recipe_id.
+    Duplicate a recipe with its sections, ingredients, and components
     """
     source_recipe_id = int(source_recipe_id)
     recipe_name = clean(recipe_name, collapse=True)
@@ -235,14 +269,32 @@ def copy_recipe(conn,
         # Copy the recipe row
         cur = conn.execute(
             """
-            INSERT INTO recipes (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel,
-                                recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time,
-                                recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time)
+            INSERT INTO recipes (recipe_name, 
+                                    recipe_type, 
+                                    recipe_yield, 
+                                    recipe_cooking_vessel,
+                                    recipe_preheat_temp, 
+                                    recipe_preheat_unit, 
+                                    recipe_preheat_time,
+                                    recipe_cook_time, 
+                                    recipe_source, 
+                                    recipe_notes, 
+                                    recipe_status, 
+                                    recipe_prep_time)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (recipe_name, recipe_type, recipe_yield, recipe_cooking_vessel,
-            recipe_preheat_temp, recipe_preheat_unit, recipe_preheat_time,
-            recipe_cook_time, recipe_source, recipe_notes, recipe_status, recipe_prep_time),
+            (recipe_name, 
+             recipe_type, 
+             recipe_yield, 
+             recipe_cooking_vessel,
+             recipe_preheat_temp, 
+             recipe_preheat_unit, 
+             recipe_preheat_time,
+             recipe_cook_time, 
+             recipe_source, 
+             recipe_notes, 
+             recipe_status, 
+             recipe_prep_time),
         )
         new_id = cur.lastrowid
 
@@ -260,11 +312,20 @@ def copy_recipe(conn,
         # Copy the ingredients
         conn.execute(
             """
-            INSERT INTO recipe_ingredients (recipe_id, section_id, ingredient_name, amount, unit, prep_timing)
-            SELECT ?, ns.section_id, i.ingredient_name, i.amount, i.unit, i.prep_timing
+            INSERT INTO recipe_ingredients (recipe_id, 
+                                            section_id, 
+                                            ingredient_name, 
+                                            amount, unit, 
+                                            prep_timing)
+            SELECT ?, ns.section_id, 
+                        i.ingredient_name, 
+                        i.amount, 
+                        i.unit, 
+                        i.prep_timing
             FROM recipe_ingredients i
             LEFT JOIN recipe_sections os ON os.section_id = i.section_id
-            LEFT JOIN recipe_sections ns ON ns.recipe_id = ? AND ns.section_name = os.section_name
+            LEFT JOIN recipe_sections ns ON ns.recipe_id = ? 
+                AND ns.section_name = os.section_name
             WHERE i.recipe_id = ?
             """,
             (new_id, new_id, source_recipe_id),
@@ -273,11 +334,21 @@ def copy_recipe(conn,
         # Copy the components
         conn.execute(
             """
-            INSERT INTO recipe_components (parent_recipe_id, component_recipe_id, section_id, amount, unit, prep_timing)
-            SELECT ?, c.component_recipe_id, ns.section_id, c.amount, c.unit, c.prep_timing
+            INSERT INTO recipe_components (parent_recipe_id, 
+                                            component_recipe_id, 
+                                            section_id, 
+                                            amount, 
+                                            unit, 
+                                            prep_timing)
+            SELECT ?, c.component_recipe_id, 
+                        ns.section_id, 
+                        c.amount, 
+                        c.unit, 
+                        c.prep_timing
             FROM recipe_components c
             LEFT JOIN recipe_sections os ON os.section_id = c.section_id
-            LEFT JOIN recipe_sections ns ON ns.recipe_id = ? AND ns.section_name = os.section_name
+            LEFT JOIN recipe_sections ns ON ns.recipe_id = ? 
+                AND ns.section_name = os.section_name
             WHERE c.parent_recipe_id = ?
             """,
             (new_id, new_id, source_recipe_id),
@@ -330,40 +401,10 @@ def get_component_ids(conn, recipe_id):
     recipe_id = int(recipe_id)
     return conn.execute(
         """
-        SELECT component_recipe_id FROM recipe_components WHERE parent_recipe_id = ?
+        SELECT component_recipe_id 
+        FROM recipe_components WHERE parent_recipe_id = ?
         """
         (recipe_id,),
-    ).fetchall()
-
-
-def resolve_recipe_timing(conn, recipe_id):
-    """
-    List every ingredient and sub-recipe in a recipe with the prep timing that applies.
-    Returns tuples: (name, section_name, item_type, effective_prep)
-    """
-    recipe_id = int(recipe_id)
-    return conn.execute(
-        """
-        SELECT i.ingredient_name,
-               s.section_name,
-               'Ingredient',
-               COALESCE(s.prep_timing, i.prep_timing)
-        FROM recipe_ingredients i
-        LEFT JOIN recipe_sections s ON i.section_id = s.section_id
-        WHERE i.recipe_id = ?
-
-        UNION ALL
-
-        SELECT r.recipe_name,
-               s.section_name,
-               'Recipe',
-               COALESCE(s.prep_timing, c.prep_timing)
-        FROM recipe_components c
-        JOIN recipes r ON r.recipe_id = c.component_recipe_id
-        LEFT JOIN recipe_sections s ON c.section_id = s.section_id
-        WHERE c.parent_recipe_id = ?
-        """,
-        (recipe_id, recipe_id),
     ).fetchall()
 
 
@@ -373,7 +414,9 @@ def get_or_create_section(conn, recipe_id, name):
 
     cursor = conn.execute(
         """
-        SELECT section_id FROM recipe_sections WHERE recipe_id = ? AND section_name = ? COLLATE NOCASE
+        SELECT section_id 
+        FROM recipe_sections 
+        WHERE recipe_id = ? AND section_name = ? COLLATE NOCASE
         """, (recipe_id, name)
     )
     row = cursor.fetchone()
@@ -413,9 +456,12 @@ def save_ingredients(conn, recipe_id, items):
     recipe_id = int(recipe_id)
     try:
         # Delete any existing data
-        conn.execute("""DELETE from recipe_components WHERE parent_recipe_id = ?""", (int(recipe_id),))
-        conn.execute("""DELETE FROM recipe_ingredients WHERE recipe_id = ?""", (int(recipe_id),))
-        conn.execute("""DELETE FROM recipe_sections WHERE recipe_id = ?""", (int(recipe_id),))
+        conn.execute("""DELETE from recipe_components 
+                     WHERE parent_recipe_id = ?""", (int(recipe_id),))
+        conn.execute("""DELETE FROM recipe_ingredients 
+                    WHERE recipe_id = ?""", (int(recipe_id),))
+        conn.execute("""DELETE FROM recipe_sections 
+                    WHERE recipe_id = ?""", (int(recipe_id),))
 
         for item in items:
 
@@ -423,27 +469,54 @@ def save_ingredients(conn, recipe_id, items):
             item['section'] = clean(item['section'], collapse=True)
             item['unit'] = clean(item['unit'], collapse=True)
 
-            section_id = get_or_create_section(conn, recipe_id, item["section"]) if item["section"] else None
+            section_id = \
+                get_or_create_section(conn, 
+                                      recipe_id,
+                                      item["section"]) \
+                                        if item["section"] else None
             if item["type"] == "Recipe":
                 component_id = get_or_create_stub(conn, item["name"])
                 if component_id == recipe_id:
-                    raise ValueError("A recipe can't be an ingredient of itself.")
+                    raise ValueError(
+                        "A recipe can't be an ingredient of itself.")
 
                 # Insert into recipe_components
                 conn.execute(
                     """
-                    INSERT INTO recipe_components (parent_recipe_id, component_recipe_id, section_id, amount, unit, prep_timing) VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO recipe_components (parent_recipe_id, 
+                                                    component_recipe_id, 
+                                                    section_id, 
+                                                    amount, 
+                                                    unit, 
+                                                    prep_timing) 
+                    VALUES (?, ?, ?, ?, ?, ?)
                     """,
-                    (recipe_id, component_id, section_id, item["amount"], item["unit"], item["prep"])
+                    (recipe_id, 
+                     component_id, 
+                     section_id, 
+                     item["amount"], 
+                     item["unit"], 
+                     item["prep"])
                     
                 )
             else:
                 # Insert into recipe_ingredients
                 conn.execute(
                     """
-                    INSERT INTO recipe_ingredients (recipe_id, section_id, ingredient_name, amount, unit, prep_timing) VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO recipe_ingredients (recipe_id, 
+                                                    section_id, 
+                                                    ingredient_name, 
+                                                    amount, 
+                                                    unit, 
+                                                    prep_timing) 
+                    VALUES (?, ?, ?, ?, ?, ?)
                     """,
-                    (recipe_id, section_id, item["name"], item["amount"], item["unit"], item["prep"]),
+                    (recipe_id, 
+                     section_id, 
+                     item["name"], 
+                     item["amount"], 
+                     item["unit"], 
+                     item["prep"]),
                     )
         conn.commit()
     except Exception:

@@ -25,10 +25,6 @@ def initialize_schema(conn):
         event_date TEXT NOT NULL,
         num_adults INTEGER NOT NULL,
         num_kids INTEGER NOT NULL,
-        num_hearty_eaters INTEGER NOT NULL,
-        need_kids_menu BOOLEAN NOT NULL,
-        dietary_needs TEXT,
-        event_occurred BOOLEAN DEFAULT 0,
         event_notes TEXT,
         event_status TEXT NOT NULL DEFAULT 'Incomplete',
         serving_time TEXT,
@@ -94,7 +90,8 @@ def initialize_schema(conn):
         unit TEXT,
         prep_timing INTEGER,
         FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
-        FOREIGN KEY (section_id) REFERENCES recipe_sections(section_id) ON DELETE SET NULL
+        FOREIGN KEY (section_id) REFERENCES recipe_sections(section_id) 
+            ON DELETE SET NULL
         );
     """)
 
@@ -108,9 +105,12 @@ def initialize_schema(conn):
         prep_timing INTEGER,
         PRIMARY KEY (parent_recipe_id, component_recipe_id),
         CHECK (parent_recipe_id != component_recipe_id),
-        FOREIGN KEY (parent_recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE,
-        FOREIGN KEY (component_recipe_id) REFERENCES recipes(recipe_id) ON DELETE RESTRICT,
-        FOREIGN KEY (section_id) REFERENCES recipe_sections(section_id) ON DELETE SET NULL
+        FOREIGN KEY (parent_recipe_id) REFERENCES recipes(recipe_id) 
+            ON DELETE CASCADE,
+        FOREIGN KEY (component_recipe_id) REFERENCES recipes(recipe_id) 
+            ON DELETE RESTRICT,
+        FOREIGN KEY (section_id) REFERENCES recipe_sections(section_id) 
+            ON DELETE SET NULL
         )
     """)
 
@@ -144,42 +144,8 @@ def initialize_schema(conn):
         prep_timing INTEGER,
         PRIMARY KEY (menu_id, item_id),
         FOREIGN KEY (menu_id) REFERENCES menus(menu_id) ON DELETE CASCADE,
-        FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
-        );
-    """)
-
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS event_items (
-        event_id INTEGER NOT NULL,
-        item_id INTEGER NOT NULL,
-        course TEXT,
-        amount REAL,
-        unit TEXT,
-        scales_with_guests BOOLEAN DEFAULT 0,
-        prep_timing INTEGER,
-        PRIMARY KEY (event_id, item_id),
-        FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
-        FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) ON DELETE RESTRICT
-        );
-    """)    
- 
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS custom_lists (
-        list_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        list_name TEXT NOT NULL,
-        apply_to_all BOOLEAN DEFAULT 0,
-        list_notes TEXT,
-        list_status TEXT NOT NULL DEFAULT 'Incomplete'
-        );
-    """)
-
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS list_items (
-        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        item_name TEXT NOT NULL,
-        need_to_buy BOOLEAN DEFAULT 0,
-        prep_timing INTEGER,
-        FOREIGN KEY (list_id) REFERENCES custom_lists(list_id) ON DELETE CASCADE
+        FOREIGN KEY (item_id) REFERENCES food_and_drinks(item_id) 
+            ON DELETE RESTRICT
         );
     """)
 
@@ -223,12 +189,18 @@ def get_unique_records(conn, table_name, col_name):
     return [row[0] for row in rows]
 
 
-def update_and_default_selectbox(conn, table_name, col_name, default_options, selected_record_df=None):
+def update_and_default_selectbox(conn, 
+                                 table_name, 
+                                 col_name, 
+                                 default_options, 
+                                 selected_record_df=None):
     """
-    Remember to add any new fields to ALLOWED_COLUMNS in db.py or this will throw a ValueError.
+    Add new fields to ALLOWED_COLUMNS in db.py or this will throw a ValueError.
     """
     # Get unique values from existing database table
-    entries = get_unique_records(conn=conn, table_name=table_name, col_name=col_name)
+    entries = get_unique_records(conn=conn, 
+                                 table_name=table_name, 
+                                 col_name=col_name)
 
     # Identify user selection
     options = list(default_options)
@@ -240,7 +212,6 @@ def update_and_default_selectbox(conn, table_name, col_name, default_options, se
     # Drop entries to lowercase
     seen = {e.strip().lower() for e in entries}
 
-    # Ensure default options are in the list if they aren't found in table records
     for o in options:
         if o.strip().lower() not in seen:
             entries.append(o.strip())

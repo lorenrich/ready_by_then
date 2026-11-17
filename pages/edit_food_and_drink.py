@@ -9,7 +9,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import streamlit as st
 import sqlite3
 from database.database import get_connection, update_and_default_selectbox
-from database.food_and_drink import DEFAULT_ITEM_TYPES, get_selected_item, edit_item, delete_item, get_item_usage
+from database.food_and_drink import (DEFAULT_ITEM_TYPES, 
+                                     get_selected_item, 
+                                     edit_item, delete_item, 
+                                     get_item_usage)
 from styles.page_config import (PAGES, 
                                 setup_page_defaults, 
                                 create_button, 
@@ -27,10 +30,14 @@ def confirm_delete(item_id):
             except sqlite3.IntegrityError:
                 menus, events = get_item_usage(conn, item_id)
                 if menus:
-                    st.error("This item is used in: " + ", ".join(name for _, name in menus) + ". Remove it there first.")
+                    st.error("This item is used in: " + \
+                             ", ".join(name for _, name in menus) + \
+                                ". Remove it there first.")
                     st.stop()
                 if events:
-                    st.error("This item is used in: " + ", ".join(name for _, name in events) + ". Remove it there first.")
+                    st.error("This item is used in: " + \
+                             ", ".join(name for _, name in events) + \
+                                ". Remove it there first.")
             if deleted:
                 st.switch_page(PAGES["food_and_drink"])
             else:
@@ -73,7 +80,7 @@ with header_container:
      icon_calendar = ''
      st.write(':material/chef_hat: Edit Food and Drink Items')
 
-# The default section/page for the kitchen is recipes with buttons to other sections
+# The default section/page for the kitchen is recipes
 button_container = st.container(horizontal=True)
 with button_container:
     if create_button(name='recipes_secondary'):
@@ -92,16 +99,20 @@ with st.form("create_item", clear_on_submit=True):
     # Identify the default type
     default_item_type = selected_item_df['item_type']
 
-    item_name = st.text_input('Name your item (you can include your favorite brands or keep names generic like "dinner rolls")',
-                              value=selected_item_df['item_name'])
+    item_name = \
+        st.text_input('Name your item (you can include your favorite brands '\
+                      'or keep names generic like "dinner rolls")',
+                      value=selected_item_df['item_name'])
     
     item_type = st.selectbox("Select the item type or add a new one",
-                             index=item_types.index(default_item_type) if default_item_type in item_types else None,
+                             index=item_types.index(default_item_type) \
+                                if default_item_type in item_types else None,
                              options=item_types,
                              accept_new_options=True)
 
     st.space("small")
-    st.write("Don't worry about amounts just yet.  You can edit those when the item is tagged to a menu or event.")
+    st.write("Don't worry about amounts just yet.  You can edit those when \
+             the item is tagged to a menu or event.")
 
     save_delete_button_container = st.container(horizontal=True)
     with save_delete_button_container:
@@ -116,3 +127,4 @@ with st.form("create_item", clear_on_submit=True):
 
         if st.form_submit_button("Delete item"):
             confirm_delete(item_id=int(selected_item_df['item_id']))
+

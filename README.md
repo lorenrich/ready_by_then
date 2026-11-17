@@ -187,3 +187,4 @@ This app is v1.0 submitted for my Boot.dev capstone project which was scaled dow
 - 🚧 **Smart Alerts** - Notify the user when there isn't enough food on the menu for the number of guests, when the menu doesn't include drinks, or make suggestions based on the most frequently tagged recipes and items from the user.
 
 - 🚧 **Chatbot Assistant** - Not sure what to do next?  Ask for help.
+

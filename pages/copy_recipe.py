@@ -3,12 +3,18 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
-from database.database import get_connection, update_and_default_selectbox, DEFAULT_STATUSES
-from database.recipes import get_selected_recipe, copy_recipe, DEFAULT_PREHEAT_UNITS, DEFAULT_RECIPE_TYPES
+from database.database import (DEFAULT_STATUSES, 
+                               get_connection, 
+                               update_and_default_selectbox) 
+from database.recipes import (DEFAULT_PREHEAT_UNITS, 
+                              DEFAULT_RECIPE_TYPES, 
+                              get_selected_recipe, 
+                              copy_recipe)
 from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 # Connect to database
@@ -20,7 +26,10 @@ setup_page_defaults()
 copied_recipe_id = st.session_state.get("selected_recipe_id")
 
 # Create dataframe based on copied recipe data excluding the new ID to be generated
-selected_recipe_df = get_selected_recipe(conn=conn, recipe_id=copied_recipe_id) if copied_recipe_id is not None else None
+selected_recipe_df = \
+    get_selected_recipe(conn=conn, 
+                        recipe_id=copied_recipe_id) \
+                            if copied_recipe_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected recipe
 if selected_recipe_df.empty:
@@ -38,18 +47,20 @@ with header_container:
      st.write(':material/chef_hat: Copy Recipe')
 st.space("small")
 
-# Create the unique lists for selectboxes including defaults and user-created entries
-recipe_types = update_and_default_selectbox(conn=conn,
-                                            table_name='recipes',
-                                            col_name='recipe_type',
-                                            selected_record_df=selected_recipe_df,
-                                            default_options=DEFAULT_RECIPE_TYPES)
+# Create unique lists for selectboxes including defaults and user entries
+recipe_types = \
+    update_and_default_selectbox(conn=conn,
+                                 table_name='recipes',
+                                 col_name='recipe_type',
+                                 selected_record_df=selected_recipe_df,
+                                 default_options=DEFAULT_RECIPE_TYPES)
 
-preheat_units = update_and_default_selectbox(conn=conn,
-                                             table_name='recipes',
-                                             col_name='recipe_preheat_unit',
-                                             selected_record_df=selected_recipe_df,
-                                             default_options=DEFAULT_PREHEAT_UNITS)
+preheat_units = \
+    update_and_default_selectbox(conn=conn,
+                                 table_name='recipes',
+                                 col_name='recipe_preheat_unit',
+                                 selected_record_df=selected_recipe_df,
+                                 default_options=DEFAULT_PREHEAT_UNITS)
 
 # Identify default user selections
 default_recipe_type = selected_recipe_df['recipe_type']
@@ -58,32 +69,69 @@ default_preheat_unit = selected_recipe_df['recipe_preheat_unit']
 # Form
 with st.form("copy_recipe"):
     recipe_name = st.text_input("Recipe name", 
-                                   value=f"Copy of {selected_recipe_df["recipe_name"]}")
+                                value=f"Copy of {
+                                    selected_recipe_df["recipe_name"]}")
+    
     recipe_type = st.selectbox(
             "Recipe type",
             options=recipe_types,
-            index=recipe_types.index(default_recipe_type) if default_recipe_type in recipe_types else None,
+            index=recipe_types.index(default_recipe_type) \
+                if default_recipe_type in recipe_types else None,
             accept_new_options=True,
             placeholder="Choose or type a new type",
         )
     recipe_yield = st.number_input("Servings yield",
                                     step=1,
                                     value=selected_recipe_df['recipe_yield'])
-    recipe_cooking_vessel = st.text_input("Where recipe is cooked (e.g. oven, air fryer)", value=selected_recipe_df['recipe_cooking_vessel'])
-    recipe_preheat_temp = st.number_input("Preheat Temperature", step=1, value=selected_recipe_df['recipe_preheat_temp'])
+    
+    recipe_cooking_vessel = \
+        st.text_input("Where recipe is cooked (e.g. oven, air fryer)", 
+                      value=selected_recipe_df['recipe_cooking_vessel'])
+    
+    recipe_preheat_temp = \
+        st.number_input("Preheat Temperature", 
+                        step=1, 
+                        value=selected_recipe_df['recipe_preheat_temp'])
+    
     recipe_preheat_unit = st.selectbox(
             "Preheat Unit",
             options=preheat_units,
-            index=preheat_units.index(default_preheat_unit) if default_preheat_unit in preheat_units else None,
+            index=preheat_units.index(default_preheat_unit) \
+                if default_preheat_unit in preheat_units else None,
             accept_new_options=True,
             placeholder="Choose or type a temperature unit",
             )
-    recipe_preheat_time = st.number_input("How long should be allowed for preheat (in minutes)?", step=1, value=selected_recipe_df['recipe_preheat_time'], min_value=0)
-    recipe_prep_time = st.number_input("What is the approximate prep time (in minutes)?", step=1, value=selected_recipe_df['recipe_prep_time'], min_value=0)
-    recipe_cook_time = st.number_input("What is the approximate cook time (in minutes)?", step=1, value=selected_recipe_df['recipe_cook_time'], min_value=0)
-    recipe_source = st.text_input("Who or where is this recipe from?", value=selected_recipe_df['recipe_source'])
-    recipe_notes = st.text_area("Any extra notes you want to add?", value=selected_recipe_df['recipe_notes'])
-    recipe_status = st.selectbox("Is this recipe now complete?", options=DEFAULT_STATUSES, index=1)
+    
+    recipe_preheat_time = \
+        st.number_input("How long should be allowed for preheat (in minutes)?", 
+                        step=1, 
+                        value=selected_recipe_df['recipe_preheat_time'], 
+                        min_value=0)
+    
+    recipe_prep_time = \
+        st.number_input("What is the approximate prep time (in minutes)?", 
+                        step=1, 
+                        value=selected_recipe_df['recipe_prep_time'], 
+                        min_value=0)
+    
+    recipe_cook_time = \
+        st.number_input("What is the approximate cook time (in minutes)?", 
+                        step=1, 
+                        value=selected_recipe_df['recipe_cook_time'], 
+                        min_value=0)
+    
+    recipe_source = \
+        st.text_input("Who or where is this recipe from?", 
+                      value=selected_recipe_df['recipe_source'])
+    
+    recipe_notes = \
+        st.text_area("Any extra notes you want to add?", 
+                     value=selected_recipe_df['recipe_notes'])
+    
+    recipe_status = \
+        st.selectbox("Is this recipe now complete?", 
+                     options=DEFAULT_STATUSES, 
+                     index=1)
 
     # Save 
     if st.form_submit_button("Save changes"):
@@ -103,4 +151,5 @@ with st.form("copy_recipe"):
                     recipe_prep_time=recipe_prep_time
                     )
         st.switch_page(PAGES['recipes'])
+
        

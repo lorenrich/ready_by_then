@@ -41,55 +41,93 @@ def create_event(conn,
                  event_date, 
                  num_adults, 
                  num_kids,
-                 num_hearty_eaters,
-                 need_kids_menu, 
-                 dietary_needs,
-                 event_occurred,
                  event_notes,
                  event_status,
                  event_serving_time):
     
     event_name = clean(event_name, collapse=True)
-    dietary_needs = clean(dietary_needs)
     event_notes = clean(event_notes)
     cursor = conn.execute(
-        "INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time)
+        """INSERT INTO events (event_name, 
+                                event_date, 
+                                num_adults, 
+                                num_kids, 
+                                event_notes, 
+                                event_status, 
+                                event_serving_time) 
+                                VALUES ( ?, ?, ?, ?, ?, ?, ?)""",
+        (event_name, 
+         event_date, 
+         num_adults, 
+         num_kids, 
+         event_notes, 
+         event_status, 
+         event_serving_time)
     )
     conn.commit()
     return cursor.lastrowid
 
 
-def edit_event(conn, event_id, event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time):
+def edit_event(conn, 
+               event_id, 
+               event_name, 
+               event_date, 
+               num_adults, 
+               num_kids, 
+               event_notes, 
+               event_status,
+               event_serving_time):
     """
     Modify content of a logged event record
     """
     event_name = clean(event_name, collapse=True)
-    dietary_needs = clean(dietary_needs)
     event_notes = clean(event_notes)
     conn.execute(
         """
         UPDATE events
-        SET event_name = ?, event_date = ?, num_adults = ?, num_kids = ?, num_hearty_eaters = ?, need_kids_menu = ?, dietary_needs = ?, event_occurred = ?, event_notes = ?, event_status = ?, event_serving_time = ?
+        SET event_name = ?, 
+        event_date = ?, 
+        num_adults = ?, 
+        num_kids = ?, 
+        event_notes = ?, 
+        event_status = ?, 
+        event_serving_time = ?
         WHERE event_id = ?;
         """,
-        (event_name, event_date, num_adults, num_kids, num_hearty_eaters, need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time, event_id)
+        (event_name, 
+         event_date, 
+         num_adults, 
+         num_kids, 
+         event_notes, 
+         event_status, 
+         event_serving_time, 
+         event_id)
     )
     conn.commit()
 
 
 def copy_event(conn, event_id):
     """
-    Duplicate an event and link the copy to the same menus. Returns the new event_id.
+    Duplicate an event and link the copy to the same menus
     """
     event_id = int(event_id)
     try:
         cur = conn.execute(
             """
-            INSERT INTO events (event_name, event_date, num_adults, num_kids, num_hearty_eaters,
-                                need_kids_menu, dietary_needs, event_occurred, event_notes, event_status, event_serving_time)
-            SELECT 'Copy of ' || event_name, event_date, num_adults, num_kids, num_hearty_eaters,
-                   need_kids_menu, dietary_needs, 0, event_notes, event_status, event_serving_time
+            INSERT INTO events (event_name, 
+                                event_date, 
+                                num_adults, 
+                                num_kids, 
+                                event_notes, 
+                                event_status, 
+                                event_serving_time)
+            SELECT 'Copy of ' || event_name, 
+                                event_date, 
+                                num_adults, 
+                                num_kids, 
+                                event_notes, 
+                                event_status, 
+                                event_serving_time
             FROM events
             WHERE event_id = ?
             """,

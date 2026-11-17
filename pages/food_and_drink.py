@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -35,7 +36,7 @@ with header_container:
      icon_calendar = ''
      st.write(':material/chef_hat: Kitchen')
 
-# The default section/page for the kitchen is recipes with buttons to other sections
+# The default section/page for the kitchen is recipes
 button_container = st.container(horizontal=True)
 with button_container:
     if create_button(name='recipes_secondary'):
@@ -51,12 +52,16 @@ with button_container:
 if df.empty:
 
     st.html(create_no_records_container('no_items'))
-    blank_container = st.container(height=250, key='no_items', horizontal_alignment='center')
+    blank_container = st.container(height=250, 
+                                   key='no_items', 
+                                   horizontal_alignment='center')
 
     fill_no_records_container(container=blank_container,
                             icon_name='food_and_drink',
                             header_val='Create your first food or drink item',
-                            caption_val="Log dinner rolls, a bottle of wine, and your family's favorite sodas all in one place",
+                            caption_val="Log dinner rolls, a bottle of wine, "\
+                                "and your family's favorite sodas all in one"\
+                                    " place",
                             button_name='add_food_and_drink',
                             page_redirect='create_food_and_drink') 
 
@@ -87,3 +92,5 @@ else:
                 id_field='Item ID',
                 on_open=open_item,
                 prefix='Items')
+
+    

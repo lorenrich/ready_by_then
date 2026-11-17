@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -42,12 +43,15 @@ with header_container:
 if df.empty:
 
     st.html(create_no_records_container('no_events'))
-    blank_container = st.container(height=250, key='no_events', horizontal_alignment='center')
+    blank_container = st.container(height=250, 
+                                   key='no_events', 
+                                   horizontal_alignment='center')
 
     fill_no_records_container(container=blank_container,
                               icon_name='events',
                               header_val='Create your first event',
-                              caption_val='Plan menus, guests, and to-do lists all in one place',
+                              caption_val='Plan menus, guests, and to-do lists'\
+                                ' all in one place',
                               button_name='create_event',
                               page_redirect='create_event')
 
@@ -80,3 +84,4 @@ else:
                 id_field='Event ID',
                 on_open=open_event,
                 prefix='Events')
+

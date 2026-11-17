@@ -5,15 +5,18 @@ import math
 from collections import defaultdict, Counter
 from database.events import get_selected_event
 from database.menus import get_event_menus, get_menu_batches
-from database.recipes import PREP_LABELS, get_selected_recipe_ingredients, get_selected_recipe
+from database.recipes import (PREP_LABELS, 
+                              get_selected_recipe_ingredients, 
+                              get_selected_recipe)
 from database.food_and_drink import get_selected_menu_items_for_edit
 
 
 def build_schedule_and_shopping_prep(conn, event_id):
-    # Calculate number of guests including kids and hearty eaters
+    # Calculate number of guests including kids
     selected_event = get_selected_event(conn=conn, event_id=event_id)
 
-    guest_count = int(selected_event['num_adults']) + int(selected_event['num_hearty_eaters']) + int(selected_event['num_kids'])
+    guest_count = int(selected_event['num_adults']) + \
+        int(selected_event['num_kids'])
 
     # Pull event data
     event_menus = get_event_menus(conn=conn, event_id=event_id)
@@ -37,14 +40,19 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
     shopping_list = []
     checked_recipes = []
 
-    # Recursively check for recipe components and ingredients and nested ingredients to shopping list
-    def find_nested_components(unchecked, checked, batch_multiplier, shopping_list):
+    # Recursively check for recipe components and ingredients
+    def find_nested_components(unchecked, 
+                               checked, 
+                               batch_multiplier, 
+                               shopping_list):
         # Base case
         if unchecked == []:
             return unchecked, checked, batch_multiplier, shopping_list
 
         # Build recipe ingredients
-        recipe_ingredients = get_selected_recipe_ingredients(conn=conn, recipe_id=unchecked[0])
+        recipe_ingredients = \
+            get_selected_recipe_ingredients(conn=conn, 
+                                            recipe_id=unchecked[0])
 
         checked.append(unchecked[0])
 
@@ -56,19 +64,25 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
 
             elif ingredient[2] == 'Ingredient':
                 event_amount = ingredient[3] * batch_multiplier[0]
-                shopping_list.append((ingredient[0], event_amount, ingredient[4]))
+                shopping_list.append((ingredient[0], 
+                                      event_amount, 
+                                      ingredient[4]))
 
         del unchecked[0]
         del batch_multiplier[0]
-        return find_nested_components(unchecked, checked, batch_multiplier, shopping_list)
+        return find_nested_components(unchecked, 
+                                      checked, 
+                                      batch_multiplier, 
+                                      shopping_list)
 
 
     # Build shopping list of recipe ingredients
-    unchecked, checked, batch_multiplier, shopping_list = find_nested_components(
-        unchecked=unchecked,
-        checked=checked_recipes,
-        batch_multiplier=batch_multiplier,
-        shopping_list=shopping_list)
+    unchecked, checked, batch_multiplier, shopping_list = \
+        find_nested_components(
+            unchecked=unchecked,
+            checked=checked_recipes,
+            batch_multiplier=batch_multiplier,
+            shopping_list=shopping_list)
 
 
     # Pull additional food and drink items from menu
@@ -94,7 +108,7 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
         item[0] = item[0].strip().lower()
 
 
-    # Normalize ingredient amounts by converting US customary units to teaspoons
+    # Normalize amounts by converting US customary units to teaspoons
     TO_TSP = {"cup(s)": 48, "tbsp": 3, "tsp": 1}
 
     totals = {}
@@ -114,7 +128,7 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
         totals[key] = totals.get(key, 0) + amount
 
 
-    # Convert back to more human-friendly units
+    # Summarize as top-most unit
     def round_to(value, step):
         return math.floor(value / step + 0.5) * step
 
@@ -140,7 +154,6 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
     # Alphabetize the shopping list
     final_shopping_list.sort()
 
-    # checked = every recipe visited (menu recipes and nested components)
     return final_shopping_list, checked
 
 
@@ -156,7 +169,9 @@ def build_schedule(conn, menu_recipes, menus):
             return unchecked, checked
 
         # Build recipe ingredients
-        recipe_ingredients = get_selected_recipe_ingredients(conn=conn, recipe_id=unchecked[0])
+        recipe_ingredients = \
+            get_selected_recipe_ingredients(conn=conn, 
+                                            recipe_id=unchecked[0])
 
         checked.append(unchecked[0])
 
@@ -170,7 +185,8 @@ def build_schedule(conn, menu_recipes, menus):
 
 
     # Build list of recipes
-    unchecked, checked = find_nested_components_only(unchecked=unchecked, checked=checked)
+    unchecked, checked = find_nested_components_only(unchecked=unchecked, 
+                                                     checked=checked)
 
     # Deduplicate list of recipes, preserving the original checked list
     checked_dict = dict.fromkeys(checked)
@@ -182,7 +198,8 @@ def build_schedule(conn, menu_recipes, menus):
     for recipe_id in checked_dict:
 
         # Get ingredients
-        ingredients = get_selected_recipe_ingredients(conn=conn, recipe_id=recipe_id)
+        ingredients = get_selected_recipe_ingredients(conn=conn, 
+                                                      recipe_id=recipe_id)
 
         # Group the tuples by prep_timing
         for i in ingredients:
@@ -195,11 +212,13 @@ def build_schedule(conn, menu_recipes, menus):
     schedule = defaultdict(list)
 
     for recipe_id, buckets in groups.items():
-        name = get_selected_recipe(conn=conn, recipe_id=recipe_id)["recipe_name"]
+        name = get_selected_recipe(conn=conn, 
+                                   recipe_id=recipe_id)["recipe_name"]
 
         if len(buckets) == 1:
             timing = next(iter(buckets))
-            schedule[timing].append({"row_key": f"{recipe_id}_{timing}", "label": name})
+            schedule[timing].append({"row_key": f"{recipe_id}_{timing}", 
+                                     "label": name})
 
         else:
             all_rows = [r for rows in groups[recipe_id].values() for r in rows]
@@ -209,12 +228,14 @@ def build_schedule(conn, menu_recipes, menus):
                 bucket_count = Counter(r[1] for r in rows)
                 parts = []
                 for section in bucket_count:
-                    if section is not None and bucket_count[section] == section_total[section]:
+                    if section is not None and \
+                        bucket_count[section] == section_total[section]:
                         parts.append(section)
                     else:
                         parts.extend(r[0] for r in rows if r[1] == section)
                 label = f"{name} ({', '.join(parts)})"
-                schedule[timing].append({"row_key": f"{recipe_id}_{timing}", "label": label})
+                schedule[timing].append({"row_key": f"{recipe_id}_{timing}", 
+                                         "label": label})
 
     # Add in menu_items
     for menu in menus:
@@ -222,12 +243,19 @@ def build_schedule(conn, menu_recipes, menus):
 
         for item in menu_items:
             timing = item[5] if item[5] is not None else 1
-            schedule[timing].append({"row_key": f"item_{menu}_{item[6]}_{timing}", "label": item[0]})
+            schedule[timing].append({
+                "row_key": f"item_{menu}_{item[6]}_{timing}", 
+                "label": item[0]
+                })
 
     rows = []
     for t in sorted(schedule, reverse=True):
         for entry in sorted(schedule[t], key=lambda e: e["label"].lower()):
-            rows.append({"When": PREP_LABELS[t], "Task": entry["label"], "row_key": entry["row_key"]})
+            rows.append({
+                "When": PREP_LABELS[t], 
+                "Task": entry["label"], 
+                "row_key": entry["row_key"]
+                })
 
     return rows, checked
 

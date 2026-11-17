@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -20,7 +21,10 @@ from database.menus import (COURSES,
                             render_menu, 
                             remove_menu_from_event, 
                             add_menu_to_event)
-from styles.page_config import PAGES, setup_page_defaults, create_button, create_page_header
+from styles.page_config import (PAGES, 
+                                setup_page_defaults, 
+                                create_button, 
+                                create_page_header)
 
 # Connect to database
 conn = get_connection()
@@ -43,7 +47,9 @@ if selected_event_df is None:
     st.stop()
 
 # Create event dataframe
-selected_event_df = get_selected_event(conn=conn, event_id=event_id) if event_id is not None else None
+selected_event_df = \
+    get_selected_event(conn=conn, 
+                       event_id=event_id) if event_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected event
 if event_id is None:
@@ -55,10 +61,13 @@ if selected_event_df is None:
     st.stop()
 
 # Prep data before rendering
-kids_amt = f", {selected_event_df['num_kids']} kids" if selected_event_df['num_kids'] > 0 else ""
+kids_amt = f", {selected_event_df['num_kids']} kids" \
+    if selected_event_df['num_kids'] > 0 else ""
 
-event_date = datetime.strptime(selected_event_df['event_date'], "%Y-%m-%d %H:%M:%S").date()
-event_time = datetime.strptime(selected_event_df['event_date'], "%Y-%m-%d %H:%M:%S").time()
+event_date = datetime.strptime(selected_event_df['event_date'], 
+                               "%Y-%m-%d %H:%M:%S").date()
+event_time = datetime.strptime(selected_event_df['event_date'], 
+                               "%Y-%m-%d %H:%M:%S").time()
 event_time = event_time.strftime("%I:%M %p")
 
 month = event_date.strftime("%B")
@@ -75,10 +84,11 @@ with header_container:
      st.write(':material/today: Events')
 
 # Event Details
-details_container = st.container(horizontal=True, border=True, key='detail_card')
+details_container = st.container(horizontal=True, 
+                                 border=True, 
+                                 key='detail_card')
 with details_container:
     
-
     col1, col2 = st.columns(2)
     with col1:
         info_col1, info_col2 = st.columns([1, 3], gap="small")
@@ -109,13 +119,19 @@ available = menu_display_df[~menu_display_df["Menu ID"].isin(attached)]
 names = dict(zip(available["Menu ID"].tolist(), available["Menu"]))
 
 pick_key = f"add_menu_pick_{st.session_state.get('menu_pick_version', 0)}"
-picked = st.selectbox("Add a menu", options=list(names), format_func=lambda m: names[m], 
-                      index=None, placeholder="Choose a menu", key=pick_key)
+picked = st.selectbox("Add a menu", 
+                      options=list(names), 
+                      format_func=lambda m: names[m], 
+                      index=None, 
+                      placeholder="Choose a menu", 
+                      key=pick_key)
 
 if picked is not None:
     with st.container(border=True):
         render_menu(get_selected_menu_recipes(conn=conn, menu_id=picked))
     if create_button(name='add_menu_to_event'):
         add_menu_to_event(conn, event_id, picked)
-        st.session_state.menu_pick_version = st.session_state.get("menu_pick_version", 0) + 1
+        st.session_state.menu_pick_version = st.session_state.get(
+            "menu_pick_version", 0) + 1
         st.rerun()
+

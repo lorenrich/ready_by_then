@@ -25,7 +25,10 @@ def create_menu(conn,
     menu_notes = clean(menu_notes)
     
     cursor = conn.execute(
-        "INSERT INTO menus (menu_name, menu_notes, menu_status) VALUES(?, ?, ?)",
+        """INSERT INTO menus (menu_name, 
+                                menu_notes, 
+                                menu_status) 
+            VALUES(?, ?, ?)""",
         (menu_name, menu_notes, menu_status)
         )
     conn.commit()
@@ -172,7 +175,8 @@ def edit_menu(conn,
 
 def copy_menu(conn, menu_id):
     """
-    Duplicate a menu and its recipe and item lists. The copy is not attached to any event. Returns the new menu_id.
+    Duplicate a menu and its recipe and item lists. 
+    The copy is not attached to any event.
     """
     menu_id = int(menu_id)
     try:
@@ -190,15 +194,32 @@ def copy_menu(conn, menu_id):
         conn.execute(
             """
             INSERT INTO menu_recipes (menu_id, recipe_id, course, batches)
-            SELECT ?, recipe_id, course, batches FROM menu_recipes WHERE menu_id = ?
+            SELECT ?, 
+                    recipe_id, 
+                    course, 
+                    batches 
+            FROM menu_recipes WHERE menu_id = ?
             """,
             (new_id, menu_id),
         )
 
         conn.execute(
             """
-            INSERT INTO menu_items (menu_id, item_id, course, amount, unit, scales_with_guests, prep_timing)
-            SELECT ?, item_id, course, amount, unit, scales_with_guests, prep_timing FROM menu_items WHERE menu_id = ?
+            INSERT INTO menu_items (menu_id, 
+                                    item_id, 
+                                    course, 
+                                    amount, 
+                                    unit, 
+                                    scales_with_guests, 
+                                    prep_timing)
+            SELECT ?, 
+                    item_id, 
+                    course, 
+                    amount, 
+                    unit, 
+                    scales_with_guests, 
+                    prep_timing 
+            FROM menu_items WHERE menu_id = ?
             """,
             (new_id, menu_id)
         )
@@ -247,8 +268,15 @@ def save_menu(conn, menu_id, recipes):
         conn.execute("DELETE FROM menu_recipes WHERE menu_id = ?", (menu_id,))
         for item in recipes:
             conn.execute(
-                "INSERT INTO menu_recipes (menu_id, recipe_id, course, batches) VALUES (?, ?, ?, ?)",
-                (menu_id, int(item["recipe_id"]), item["course"], item['batches']),
+                """INSERT INTO menu_recipes (menu_id, 
+                                            recipe_id, 
+                                            course, 
+                                            batches) 
+                VALUES (?, ?, ?, ?)""",
+                (menu_id, 
+                 int(item["recipe_id"]), 
+                 item["course"], 
+                 item['batches']),
             )
         conn.commit()
     except Exception:
@@ -271,7 +299,9 @@ def render_menu(recipes, items=()):
     # Turn recipes and items into pairs
     entries = []
     for _, name, status, course in recipes:
-        entries.append((course, format_item(recipe_name=name, recipe_status=status)))
+        entries.append((course, 
+                        format_item(recipe_name=name,
+                                    recipe_status=status)))
     for _, name, course in items:
         entries.append((course, name))
 
@@ -290,10 +320,12 @@ def render_menu(recipes, items=()):
     for course, text in entries:
         by_course.setdefault(course or "Unassigned", []).append(text)
 
-    order = [c for c in COURSES if c in by_course] + [c for c in by_course if c not in COURSES]
+    order = [c for c in COURSES if c in by_course] + \
+        [c for c in by_course if c not in COURSES]
     for course in order:
         label_col, items_col = st.columns([1, 4])
         label_col.markdown(f"**{course}**")
         with items_col:
             for text in by_course[course]:
                 st.write(text)
+                

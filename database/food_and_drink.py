@@ -14,7 +14,7 @@ DEFAULT_ITEM_TYPES = [
 
 def get_items_for_display(conn):
     """
-    Pull slimmed down version of table for summary display on food and drink page
+    Pull slimmed down table for summary display on food and drink page
     """
     df = pd.read_sql_query(
     '''
@@ -64,7 +64,9 @@ def create_item(conn,
 
 def get_selected_item(conn, item_id):
     df = pd.read_sql_query(
-        "SELECT * FROM food_and_drinks WHERE item_id = ?", conn, params=(item_id,)
+        "SELECT * FROM food_and_drinks WHERE item_id = ?", 
+        conn, 
+        params=(item_id,)
     )
     return df.iloc[0] if not df.empty else None
 
@@ -135,12 +137,14 @@ def get_or_create_item(conn, name):
     name = clean(name, collapse=True)
     
     row = conn.execute(
-        "SELECT item_id FROM food_and_drinks WHERE item_name = ? COLLATE NOCASE",
+        """SELECT item_id FROM food_and_drinks WHERE item_name = ? 
+            COLLATE NOCASE""",
         (name,),
     ).fetchone()
     if row:
         return row[0]
-    cur = conn.execute("INSERT INTO food_and_drinks (item_name) VALUES (?)", (name,))
+    cur = conn.execute("INSERT INTO food_and_drinks (item_name) VALUES (?)", 
+                       (name,))
     return cur.lastrowid
 
 
@@ -153,7 +157,13 @@ def save_menu_items(conn, menu_id, items):
             item_id = get_or_create_item(conn, item["name"])
             conn.execute(
                 """
-                INSERT INTO menu_items (menu_id, item_id, course, amount, unit, scales_with_guests, prep_timing)
+                INSERT INTO menu_items (menu_id, 
+                                        item_id, 
+                                        course, 
+                                        amount, 
+                                        unit, 
+                                        scales_with_guests, 
+                                        prep_timing)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (menu_id, item_id, item["course"], item["amount"], item["unit"],
@@ -163,6 +173,7 @@ def save_menu_items(conn, menu_id, items):
     except Exception:
         conn.rollback()
         raise
+
 
 def get_selected_menu_items(conn,
                             menu_id):
@@ -190,7 +201,13 @@ def get_selected_menu_items_for_edit(conn,
     menu_id = int(menu_id)
     return conn.execute(
         """
-        SELECT i.item_name, mi.course, mi.amount, mi.unit, mi.scales_with_guests, mi.prep_timing, mi.item_id
+        SELECT i.item_name, 
+                mi.course, 
+                mi.amount, 
+                mi.unit, 
+                mi.scales_with_guests, 
+                mi.prep_timing, 
+                mi.item_id
         FROM menu_items mi
         JOIN food_and_drinks i on i.item_id = mi.item_id
         WHERE mi.menu_id = ?

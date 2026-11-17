@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -19,13 +20,13 @@ from styles.page_config import (PAGES,
                                 create_page_header,
                                 badge,
                                 render_list,
-                                section_heading,
                                 create_no_records_container,
                                 fill_no_records_container)
 
 @st.dialog("Delete event?")
 def confirm_delete(event_id):
-    st.write("This permanently deletes the event. This action cannot be undone.")
+    st.write(
+        "This permanently deletes the event. This action cannot be undone.")
     col1, col2 = st.columns(2)
     with col1:
         if create_button(name="confirm_delete"):
@@ -48,8 +49,12 @@ setup_page_defaults()
 event_id = st.session_state.get("selected_event_id")
 
 # Create dataframe
-selected_event_df = get_selected_event(conn=conn, event_id=event_id) if event_id is not None else None
-selected_event_menus = get_event_menus(conn=conn, event_id=event_id) if event_id is not None else None
+selected_event_df = \
+    get_selected_event(conn=conn, 
+                       event_id=event_id) if event_id is not None else None
+selected_event_menus = \
+    get_event_menus(conn=conn, 
+                    event_id=event_id) if event_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected event
 if event_id is None:
@@ -61,10 +66,13 @@ if selected_event_df is None:
     st.stop()
 
 # Prep data before rendering
-kids_amt = f", {selected_event_df['num_kids']} kids" if selected_event_df['num_kids'] > 0 else ""
+kids_amt = f", {selected_event_df['num_kids']} kids" \
+    if selected_event_df['num_kids'] > 0 else ""
 
-event_date = datetime.strptime(selected_event_df['event_date'], "%Y-%m-%d %H:%M:%S").date()
-event_time = datetime.strptime(selected_event_df['event_date'], "%Y-%m-%d %H:%M:%S").time()
+event_date = datetime.strptime(selected_event_df['event_date'], 
+                               "%Y-%m-%d %H:%M:%S").date()
+event_time = datetime.strptime(selected_event_df['event_date'], 
+                               "%Y-%m-%d %H:%M:%S").time()
 event_time = event_time.strftime("%I:%M %p")
 
 month = event_date.strftime("%B")
@@ -83,12 +91,15 @@ with header_container:
 title_col, action_col = st.columns([5, 3], vertical_alignment='center')
 with title_col:
     title_col.markdown(
-        f"<h2 style='margin:0'>{html.escape(selected_event_df['event_name'])} {badge(selected_event_df['event_status'])}</h2>", 
+        f"""<h2 style='margin:0'>{
+            html.escape(selected_event_df['event_name'])} 
+            {badge(selected_event_df['event_status'])}</h2>""", 
         unsafe_allow_html=True,
         )
 
 with action_col:
-    button_container = st.container(horizontal=True, horizontal_alignment='right')
+    button_container = st.container(horizontal=True, 
+                                    horizontal_alignment='right')
     with button_container:
         if create_button(name='edit'):
             st.switch_page(PAGES['edit_event'])
@@ -108,7 +119,9 @@ with action_col:
 st.space("small")
 
 # Event Details
-details_container = st.container(horizontal=True, border=True, key='detail_card')
+details_container = st.container(horizontal=True, 
+                                 border=True, 
+                                 key='detail_card')
 with details_container:
     
 
@@ -129,7 +142,9 @@ with details_container:
 # Write menu
 if not selected_event_menus:
     st.html(create_no_records_container('no_menus'))
-    no_menus_container = st.container(key='no_menus', height=250, horizontal_alignment='center')
+    no_menus_container = st.container(key='no_menus', 
+                                      height=250, 
+                                      horizontal_alignment='center')
 
     fill_no_records_container(container=no_menus_container,
                               icon_name='menus',
@@ -154,7 +169,8 @@ else:
         def course_rank(course):
             return COURSES.index(course) if course in COURSES else len(COURSES)
 
-        entries.sort(key=lambda e: (course_rank(e["course"]), e["name"].lower()))
+        entries.sort(key=lambda e: (course_rank(e["course"]), 
+                                    e["name"].lower()))
 
         rows, last = [], None
         for e in entries:
@@ -190,6 +206,9 @@ else:
 
 # Write menu notes
 if selected_event_df['event_notes']:
-    notes_container = st.container(horizontal=True, border=True, key='detail_card')
+    notes_container = st.container(horizontal=True, 
+                                   border=True, 
+                                   key='detail_card')
     with notes_container:
         st.write(selected_event_df['event_notes'])
+

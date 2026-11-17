@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0,
+                 os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -13,14 +14,14 @@ from datetime import date
 from database.database import get_connection
 from database.events import get_selected_event
 from database.recipes import get_selected_recipe
-from database.schedule_and_shopping import build_schedule_and_shopping_prep, build_shopping_list
-from styles.page_config import (
-    PAGES,
-    setup_page_defaults,
-    create_page_header,
-    create_button,
-    render_list,
-    badge)
+from database.schedule_and_shopping import (build_schedule_and_shopping_prep, 
+                                            build_shopping_list)
+from styles.page_config import (PAGES,
+                                setup_page_defaults,
+                                create_page_header,
+                                create_button,
+                                render_list,
+                                badge)
 
 def export_shopping_list():
     df = pd.DataFrame(data=final_shopping_list, columns=['Item', 'Amount'])
@@ -36,9 +37,12 @@ event_id = st.session_state.get('selected_event_id')
 today = date.today()
 
 # Call functions to build shopping list
-selected_event = get_selected_event(conn=conn, event_id=event_id)
-guest_count, menu_recipes, menus = build_schedule_and_shopping_prep(conn, event_id)
-final_shopping_list, checked = build_shopping_list(conn, menu_recipes, guest_count, menus)
+selected_event = get_selected_event(conn=conn, 
+                                    event_id=event_id)
+guest_count, menu_recipes, menus = build_schedule_and_shopping_prep(conn, 
+                                                                    event_id)
+final_shopping_list, checked = build_shopping_list(conn, menu_recipes, 
+                                                   guest_count, menus)
 
 
 # Render data to the page
@@ -54,7 +58,9 @@ with header_container:
 title_col, action_col = st.columns([5, 3], vertical_alignment='center')
 with title_col:
     title_col.markdown(
-        f"<h2 style='margin:0'>{html.escape(selected_event['event_name'])} {badge(selected_event['event_status'])}</h2>", 
+        f"""<h2 style='margin:0'>{
+            html.escape(selected_event['event_name'])} 
+            {badge(selected_event['event_status'])}</h2>""", 
         unsafe_allow_html=True,
         )
 
@@ -67,12 +73,14 @@ with action_col:
         st.download_button(
             label='Export Shopping List',
             data=export_shopping_list(),
-            file_name=f'{selected_event['event_name']} Shopping List {today}.csv',
+            file_name=\
+                f'{selected_event['event_name']} Shopping List {today}.csv',
             mime="text/csv",
             icon=":material/download:"
             )
 
-# If event has recipes or nested recipes which are incomplete, alert the user and guide them to fix it
+# If event has recipes or nested recipes which are incomplete, alert the user 
+# and guide them to fix it
 incomplete = {}
 
 for recipe_id in dict.fromkeys(checked):
@@ -100,7 +108,8 @@ if incomplete:
                 on_open=open_entry, 
                 prefix='incomplete_recipe',
                 title="Wait, you have incomplete recipes",
-                subtext="Click below to review. Some recipes listed may be nested within other recipes such as a dressing within a salad.")
+                subtext="Click below to review. Some recipes listed may be "\
+                    "nested in other recipes (e.g. a dressing within a salad).")
 
 
 # Render shopping list
@@ -118,5 +127,4 @@ render_list(rows=rows,
             prefix='shopping',
             title='Shopping List', 
             empty_message="There are no menu items assigned to this event yet.")
-
 

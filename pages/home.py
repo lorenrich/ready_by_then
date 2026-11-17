@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -20,7 +21,7 @@ with home_row1_col1:
     st.title("Ready by")
     st.title("Then")
     st.space("small")
-    st.write("Your personal party planner!")
+    st.write("Your party planning assistant")
 
 with home_row1_col2:
     home_button1, home_button2 = st.columns(2, gap="large")
@@ -43,3 +44,4 @@ with home_row2_col2:
     with home_button3:
         if create_big_button("help", 'Help', '#7EC234', '#BCE292'):
             st.switch_page(PAGES['help'])
+

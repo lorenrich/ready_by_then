@@ -3,7 +3,8 @@ import sys
 import os
 
 # Walk up path to root directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, 
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Continue import statements after locating root
 import streamlit as st
@@ -33,7 +34,9 @@ def confirm_delete(menu_id):
         if create_button(name="confirm_delete"):
             events = get_menu_events_for_display(conn=conn, menu_id=menu_id)
             if events:
-                st.warning("This menu is used by: " + ", ".join(name for _, name in events) + ". Deleting it removes it from those events.")
+                st.warning("This menu is used by: " + \
+                           ", ".join(name for _, name in events) + \
+                            ". Deleting it removes it from those events.")
 
             deleted = delete_menu(conn, menu_id=menu_id)
             if deleted:
@@ -55,10 +58,19 @@ setup_page_defaults()
 menu_id = st.session_state.get("selected_menu_id")
 
 # Create dataframes
-selected_menu_df = get_selected_menu(conn=conn, menu_id=menu_id) if menu_id is not None else None
-selected_menu_recipes = get_selected_menu_recipes(conn=conn, menu_id=menu_id) if menu_id is not None else None
-selected_menu_items = get_selected_menu_items(conn=conn, menu_id=menu_id) if menu_id is not None else None
-selected_menu_events = get_menu_events_for_display(conn=conn, menu_id=menu_id) if menu_id is not None else None
+selected_menu_df = \
+    get_selected_menu(conn=conn, 
+                      menu_id=menu_id) if menu_id is not None else None
+selected_menu_recipes = \
+    get_selected_menu_recipes(conn=conn, 
+                              menu_id=menu_id) if menu_id is not None else None
+selected_menu_items = \
+    get_selected_menu_items(conn=conn, 
+                            menu_id=menu_id) if menu_id is not None else None
+selected_menu_events = \
+    get_menu_events_for_display(conn=conn, 
+                                menu_id=menu_id) \
+                                    if menu_id is not None else None
 
 # Guard against empty dataframe else filter it to the selected menu
 if menu_id is None:
@@ -81,12 +93,15 @@ with header_container:
 title_col, action_col = st.columns([5, 3], vertical_alignment='center')
 with title_col:
     title_col.markdown(
-        f"<h2 style='margin:0'>{html.escape(selected_menu_df['menu_name'])} {badge(selected_menu_df['menu_status'])}</h2>", 
+        f"""<h2 style='margin:0'>{
+            html.escape(selected_menu_df['menu_name'])} 
+            {badge(selected_menu_df['menu_status'])}</h2>""", 
         unsafe_allow_html=True,
         )
 
 with action_col:
-    button_container = st.container(horizontal=True, horizontal_alignment='right')
+    button_container = st.container(horizontal=True, 
+                                    horizontal_alignment='right')
     with button_container:
         if create_button(name='edit'):
             st.switch_page(PAGES['edit_menu'])
@@ -101,7 +116,9 @@ st.space("small")
 
 # Write menu notes
 if selected_menu_df['menu_notes']:
-    notes_container = st.container(horizontal=True, border=True, key='detail_card')
+    notes_container = st.container(horizontal=True, 
+                                   border=True, 
+                                   key='detail_card')
     with notes_container:
         st.write(selected_menu_df['menu_notes'])
 
@@ -123,7 +140,8 @@ with menu_container:
         def course_rank(course):
             return COURSES.index(course) if course in COURSES else len(COURSES)
 
-        entries.sort(key=lambda e: (course_rank(e["course"]), e["name"].lower()))
+        entries.sort(key=lambda e: (course_rank(e["course"]), 
+                                    e["name"].lower()))
 
         rows, last = [], None
         for e in entries:
@@ -168,8 +186,13 @@ if not selected_menu_events:
 else:
     events = []
     for event_id, name, date, status in selected_menu_events:
-        date_shown = datetime.strptime(date, "%Y-%m-%d %H:%M:%S").strftime("%b %d, %Y")
-        events.append({"id": event_id, "Name": name, "Date": date_shown, "Status": status})
+        date_shown = \
+            datetime.strptime(date, 
+                               "%Y-%m-%d %H:%M:%S").strftime("%b %d, %Y")
+        events.append({"id": event_id, 
+                       "Name": name, 
+                       "Date": date_shown, 
+                       "Status": status})
 
 
     columns = [
