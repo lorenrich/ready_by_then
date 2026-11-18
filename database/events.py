@@ -39,30 +39,36 @@ def get_selected_event(conn, event_id):
 def create_event(conn, 
                  event_name, 
                  event_date, 
+                 event_time,
+                 event_serving_time,
                  num_adults, 
                  num_kids,
                  event_notes,
-                 event_status,
-                 event_serving_time):
+                 event_status):
     
     event_name = clean(event_name, collapse=True)
     event_notes = clean(event_notes)
+    event_time = event_time.strftime("%H:%M") if event_time else None
+    event_serving_time = \
+    event_serving_time.strftime("%H:%M") if event_serving_time else None
     cursor = conn.execute(
         """INSERT INTO events (event_name, 
                                 event_date, 
+                                event_time,
+                                event_serving_time,
                                 num_adults, 
                                 num_kids, 
                                 event_notes, 
-                                event_status, 
-                                event_serving_time) 
-                                VALUES ( ?, ?, ?, ?, ?, ?, ?)""",
+                                event_status) 
+                                VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)""",
         (event_name, 
          event_date, 
+         event_time,
+         event_serving_time,
          num_adults, 
          num_kids, 
          event_notes, 
-         event_status, 
-         event_serving_time)
+         event_status)
     )
     conn.commit()
     return cursor.lastrowid
@@ -72,35 +78,41 @@ def edit_event(conn,
                event_id, 
                event_name, 
                event_date, 
+               event_time,
+               event_serving_time,
                num_adults, 
                num_kids, 
                event_notes, 
-               event_status,
-               event_serving_time):
+               event_status):
     """
     Modify content of a logged event record
     """
     event_name = clean(event_name, collapse=True)
     event_notes = clean(event_notes)
+    event_time = event_time.strftime("%H:%M") if event_time else None
+    event_serving_time = \
+    event_serving_time.strftime("%H:%M") if event_serving_time else None
     conn.execute(
         """
         UPDATE events
         SET event_name = ?, 
         event_date = ?, 
+        event_time = ?,
+        event_serving_time = ?,
         num_adults = ?, 
         num_kids = ?, 
         event_notes = ?, 
-        event_status = ?, 
-        event_serving_time = ?
+        event_status = ?
         WHERE event_id = ?;
         """,
         (event_name, 
          event_date, 
+         event_time,
+         event_serving_time,
          num_adults, 
          num_kids, 
          event_notes, 
-         event_status, 
-         event_serving_time, 
+         event_status,
          event_id)
     )
     conn.commit()
@@ -115,19 +127,22 @@ def copy_event(conn, event_id):
         cur = conn.execute(
             """
             INSERT INTO events (event_name, 
-                                event_date, 
+                                event_date,
+                                event_time, 
+                                event_serving_time,
                                 num_adults, 
                                 num_kids, 
                                 event_notes, 
-                                event_status, 
-                                event_serving_time)
+                                event_status)
             SELECT 'Copy of ' || event_name, 
                                 event_date, 
+                                event_time,
+                                event_serving_time,
                                 num_adults, 
                                 num_kids, 
                                 event_notes, 
-                                event_status, 
-                                event_serving_time
+                                event_status 
+                                
             FROM events
             WHERE event_id = ?
             """,

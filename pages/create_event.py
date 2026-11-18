@@ -8,6 +8,7 @@ sys.path.insert(0,
 
 # Continue import statements after locating root
 import streamlit as st
+from datetime import datetime
 from database.database import DEFAULT_STATUSES, get_connection
 from database.events import create_event
 from styles.page_config import PAGES, setup_page_defaults, create_page_header
@@ -31,8 +32,12 @@ with header_container:
 with st.form("create_event"):
     st.write("Let's get started!")
     event_name = st.text_input("What should we call the event?")
-    event_date = st.datetime_input("When is your event?")
-    event_serving_time = st.time_input("What time are you serving food?")
+    event_date = st.date_input("When is your event?", 
+                               format="MM/DD/YYYY")
+    event_time = st.time_input("What time is your event?",
+                               format="12h")
+    event_serving_time = st.time_input("What time are you serving food?",
+                                       format="12h")
     num_adults = st.number_input("Number of adults attending", 
                                  step=1)
     num_kids = st.number_input("Number of kids attending", 
@@ -58,12 +63,13 @@ with st.form("create_event"):
 
         new_event_id = create_event(conn,
                                     event_name=event_name, 
-                                    event_date=event_date, 
+                                    event_date=event_date,
+                                    event_time=event_time,
+                                    event_serving_time=event_serving_time, 
                                     num_adults=num_adults, 
                                     num_kids=num_kids,
                                     event_notes=event_notes,
-                                    event_status=event_status,
-                                    event_serving_time=event_serving_time)
+                                    event_status=event_status)
 
         if add_now:
             st.session_state["selected_event_id"] = new_event_id

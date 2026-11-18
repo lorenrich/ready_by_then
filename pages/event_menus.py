@@ -64,15 +64,14 @@ if selected_event_df is None:
 kids_amt = f", {selected_event_df['num_kids']} kids" \
     if selected_event_df['num_kids'] > 0 else ""
 
-event_date = datetime.strptime(selected_event_df['event_date'], 
-                               "%Y-%m-%d %H:%M:%S").date()
-event_time = datetime.strptime(selected_event_df['event_date'], 
-                               "%Y-%m-%d %H:%M:%S").time()
+event_date = pd.to_datetime(selected_event_df['event_date'])
+event_date = event_date.strftime("%m/%d/%Y")
+
+event_time = pd.to_datetime(selected_event_df['event_time'])
 event_time = event_time.strftime("%I:%M %p")
 
-month = event_date.strftime("%B")
-day = event_date.strftime("%d")
-year = event_date.strftime("%Y")
+event_serving_time = pd.to_datetime(selected_event_df['event_serving_time'])
+event_serving_time = event_serving_time.strftime("%I:%M %p")
 
 # Page header
 st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
@@ -95,10 +94,12 @@ with details_container:
         with info_col1:
             st.markdown("**Date:**", text_alignment="right")
             st.markdown("**Time:**", text_alignment="right")
+            st.markdown("**Food served at:**", text_alignment="right")
             st.markdown("**Guests:**", text_alignment="right")
 
         with info_col2:
-            st.write(f'{month} {day}, {year}')
+            st.write(event_date)
+            st.text(event_time)
             st.text(event_time)
             st.write(f"{selected_event_df['num_adults']} adults{kids_amt}")
 

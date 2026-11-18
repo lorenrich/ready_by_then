@@ -23,11 +23,12 @@ def initialize_schema(conn):
         event_id INTEGER PRIMARY KEY AUTOINCREMENT,
         event_name TEXT NOT NULL,
         event_date TEXT NOT NULL,
+        event_time TEXT,
+        event_serving_time TEXT,
         num_adults INTEGER NOT NULL,
         num_kids INTEGER NOT NULL,
         event_notes TEXT,
-        event_status TEXT NOT NULL DEFAULT 'Incomplete',
-        serving_time TEXT,
+        event_status TEXT NOT NULL DEFAULT 'Incomplete'
         );
     """)
 

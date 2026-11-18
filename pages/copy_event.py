@@ -9,6 +9,7 @@ sys.path.insert(0,
 # Continue import statements after locating root
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 from database.database import DEFAULT_STATUSES, get_connection
 from database.events import get_selected_event, create_event
 from styles.page_config import PAGES, setup_page_defaults, create_page_header
@@ -33,6 +34,11 @@ if selected_event_df.empty:
     st.page_link(PAGES['events'], label="<- Back to Events")
     st.stop()
 
+# Prep data before rendering
+event_time = pd.to_datetime(selected_event_df['event_time'])
+
+event_serving_time = pd.to_datetime(selected_event_df['event_serving_time'])
+
 # Title
 st.html(create_page_header('events_page_header', '#FE936A', '#FFAD94'))
 
@@ -49,10 +55,15 @@ with st.form("copy_event"):
     event_name = \
         st.text_input("Event name", 
                       value=f"Copy of {selected_event_df["event_name"]}")
-    event_date = st.datetime_input("Event Date", 
-                                   value=selected_event_df["event_date"])
+    event_date = st.date_input("Event Date", 
+                                   format="MM/DD/YYYY",
+                                   value=selected_event_df['event_date'])
+    event_time = st.time_input("Event Time",
+                               format="12h",
+                               value=event_time)
     event_serving_time = st.time_input("Food Serve Time",
-                                       value=selected_event_df['serving_time'])
+                                       format="12h",
+                                       value=event_serving_time)
     num_adults = st.number_input("Number of adults attending", 
                                  step=1, 
                                  value=selected_event_df["num_adults"])
@@ -65,15 +76,19 @@ with st.form("copy_event"):
                                 options=DEFAULT_STATUSES, 
                                 index=1)
 
+    # Combine the event date and time into one field for the table
+    final_event_date = datetime.combine(event_date, event_time)
+
     # Save 
     if st.form_submit_button("Save changes"):
        create_event(conn,
                   event_name=event_name, 
-                  event_date=event_date, 
+                  event_date=event_date,
+                  event_time=event_time, 
+                  event_serving_time=event_serving_time,
                   num_adults=num_adults, 
                   num_kids=num_kids,
                   event_notes=event_notes,
-                  event_status=event_status,
-                  event_serving_time=event_serving_time)
+                  event_status=event_status)
        st.switch_page(PAGES['events'])
        
