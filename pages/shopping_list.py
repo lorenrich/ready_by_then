@@ -21,6 +21,8 @@ from styles.page_config import (PAGES,
                                 create_page_header,
                                 create_button,
                                 render_list,
+                                create_no_records_container,
+                                fill_no_records_container,
                                 badge)
 
 def export_shopping_list():
@@ -70,61 +72,77 @@ with action_col:
         if create_button('back_to_details'):
             st.switch_page(PAGES['event_details'])
 
-        st.download_button(
-            label='Export Shopping List',
-            data=export_shopping_list(),
-            file_name=\
-                f'{selected_event['event_name']} Shopping List {today}.csv',
-            mime="text/csv",
-            icon=":material/download:"
-            )
+        if menus:
+            # Only show download button if there is a menu
+            st.download_button(
+                label='Export Shopping List',
+                data=export_shopping_list(),
+                file_name=\
+                    f'{selected_event['event_name']} Shopping List {today}.csv',
+                mime="text/csv",
+                icon=":material/download:"
+                )
 
-# If event has recipes or nested recipes which are incomplete, alert the user 
-# and guide them to fix it
-incomplete = {}
+# Alert the user if there is no shopping list to build
+if not menus:
+    st.html(create_no_records_container('no_menu'))
+    blank_container = st.container(height=250, 
+                                   key='no_menu', 
+                                   horizontal_alignment='center')
 
-for recipe_id in dict.fromkeys(checked):
-    recipe = get_selected_recipe(conn=conn, recipe_id=recipe_id)
-    if recipe is not None and recipe["recipe_status"] == "Incomplete":
-        incomplete[recipe_id] = recipe["recipe_name"]
+    fill_no_records_container(container=blank_container,
+                              icon_name='menus',
+                              header_val='Add a menu',
+                              caption_val="Looks like you don't have any menu for your event.  Click below to get started",
+                              button_name='add_menu_to_event',
+                              page_redirect='event_menus')
+
+else:
+    # If event has recipes or nested recipes which are incomplete, alert the user 
+    # and guide them to fix it
+    incomplete = {}
+
+    for recipe_id in dict.fromkeys(checked):
+        recipe = get_selected_recipe(conn=conn, recipe_id=recipe_id)
+        if recipe is not None and recipe["recipe_status"] == "Incomplete":
+            incomplete[recipe_id] = recipe["recipe_name"]
 
 
-if incomplete:
-    rows = [{"Name": name, "Status": "Incomplete", "id": rid, "row_key": rid}
-            for rid, name in incomplete.items()]
+    if incomplete:
+        rows = [{"Name": name, "Status": "Incomplete", "id": rid, "row_key": rid}
+                for rid, name in incomplete.items()]
+
+        columns = [
+                ("Name", "Name", 5, "link"),
+                ("Status", "Status", 2, "badge")
+                ]
+        
+        def open_entry(row):
+            st.session_state["selected_recipe_id"] = int(row["id"])
+            st.switch_page(PAGES['edit_recipe'])
+
+        render_list(rows=rows, 
+                    columns=columns, 
+                    id_field="row_key",
+                    on_open=open_entry, 
+                    prefix='incomplete_recipe',
+                    title="Wait, you have incomplete recipes",
+                    subtext="Click below to review. Some recipes listed may be "\
+                        "nested in other recipes (e.g. a dressing within a salad).")
+
+
+    # Render shopping list
+    rows = [{"Item": name.title(), "Amount": quantity, "row_key": i}
+            for i, (name, quantity) in enumerate(final_shopping_list)]
 
     columns = [
-            ("Name", "Name", 5, "link"),
-            ("Status", "Status", 2, "badge")
+            ("Item", "Item", 1, "string"),
+            ("Amount", "Amount", 2, "string")
             ]
-    
-    def open_entry(row):
-        st.session_state["selected_recipe_id"] = int(row["id"])
-        st.switch_page(PAGES['edit_recipe'])
 
     render_list(rows=rows, 
                 columns=columns, 
                 id_field="row_key",
-                on_open=open_entry, 
-                prefix='incomplete_recipe',
-                title="Wait, you have incomplete recipes",
-                subtext="Click below to review. Some recipes listed may be "\
-                    "nested in other recipes (e.g. a dressing within a salad).")
-
-
-# Render shopping list
-rows = [{"Item": name.title(), "Amount": quantity, "row_key": i}
-        for i, (name, quantity) in enumerate(final_shopping_list)]
-
-columns = [
-        ("Item", "Item", 1, "string"),
-        ("Amount", "Amount", 2, "string")
-        ]
-
-render_list(rows=rows, 
-            columns=columns, 
-            id_field="row_key",
-            prefix='shopping',
-            title='Shopping List', 
-            empty_message="There are no menu items assigned to this event yet.")
+                prefix='shopping',
+                title='Shopping List')
 

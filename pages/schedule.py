@@ -21,6 +21,8 @@ from styles.page_config import (PAGES,
                                 setup_page_defaults,
                                 create_page_header,
                                 create_button,
+                                create_no_records_container,
+                                fill_no_records_container,
                                 render_list,
                                 badge)
 
@@ -59,7 +61,7 @@ for r in schedule:
     last = r["When"]
 
 schedule_columns = [("When", "When", 2, "string"),
-                    ("Task", "Task", 5, "string")]
+                    ("Task", "Task", 5, "string")] 
 
 
 # Render to page
@@ -87,71 +89,78 @@ with action_col:
         if create_button('back_to_details'):
             st.switch_page(PAGES['event_details'])
 
-        st.download_button(
-            label='Export Schedule',
-            data=export_schedule(schedule_rows=schedule_rows),
-            file_name=\
-                f'{selected_event['event_name']} Prep Schedule {today}.csv',
-            mime="text/csv",
-            icon=":material/download:"
-            )
+        if menus:
+            st.download_button(
+                label='Export Schedule',
+                data=export_schedule(schedule_rows=schedule_rows),
+                file_name=\
+                    f'{selected_event['event_name']} Prep Schedule {today}.csv',
+                mime="text/csv",
+                icon=":material/download:"
+                )
 
-# Alert the user of assumptions
-with st.expander(label='About scheduling'):
-    st.write(
-        "If there are recipes with no data entered for preheat, prep, or cook "\
-            "times, you will see them below and have a chance to make edits "\
-                "to them."
-    )
+# Alert the user if there is nothing to build a shopping list
+if not menus:
+    st.html(create_no_records_container('no_menu'))
+    blank_container = st.container(height=250, 
+                                   key='no_menu', 
+                                   horizontal_alignment='center')
 
-# If event has recipes missing times, alert the user and guide them to fix it
-missing_info = []
+    fill_no_records_container(container=blank_container,
+                              icon_name='menus',
+                              header_val='Add a menu',
+                              caption_val="Looks like you don't have any menu for your event.  Click below to get started",
+                              button_name='add_menu_to_event',
+                              page_redirect='event_menus')
 
-for recipe_id in checked:
-    df = get_selected_recipe(conn=conn, recipe_id=recipe_id)
-    issues = []
+else:
+    # If event has recipes missing times, alert the user and guide them to fix it
+    missing_info = []
 
-    if df['recipe_cooking_vessel'] != '' and df['recipe_cook_time'] == 0:
-        issues.append('cook time')
-    if df['recipe_preheat_temp'] > 0 and df['recipe_preheat_time'] == 0:
-        issues.append("preheat time")
-    if df['recipe_prep_time'] == 0:
-        issues.append("prep time")
+    for recipe_id in checked:
+        df = get_selected_recipe(conn=conn, recipe_id=recipe_id)
+        issues = []
 
-    if issues:
-        missing_info.append({
-            "Name": df['recipe_name'],
-            "Status": f"Missing {', '.join(issues)}",
-            "recipe_id": recipe_id,
-            "row_key": recipe_id
-        })
+        if df['recipe_cooking_vessel'] != '' and df['recipe_cook_time'] == 0:
+            issues.append('cook time')
+        if df['recipe_preheat_temp'] > 0 and df['recipe_preheat_time'] == 0:
+            issues.append("preheat time")
+        if df['recipe_prep_time'] == 0:
+            issues.append("prep time")
+
+        if issues:
+            missing_info.append({
+                "Name": df['recipe_name'],
+                "Status": f"Missing {', '.join(issues)}",
+                "recipe_id": recipe_id,
+                "row_key": recipe_id
+            })
 
 
-if missing_info:
-    columns = [
-            ("Name", "Name", 5, "link"),
-            ("Status", "Status", 2, "string")
-            ]
+    if missing_info:
+        columns = [
+                ("Name", "Name", 5, "link"),
+                ("Status", "Status", 2, "string")
+                ]
 
-    def open_entry(row):
-        st.session_state["selected_recipe_id"] = int(row["recipe_id"])
-        st.switch_page(PAGES['edit_recipe'])
+        def open_entry(row):
+            st.session_state["selected_recipe_id"] = int(row["recipe_id"])
+            st.switch_page(PAGES['edit_recipe'])
 
-    render_list(rows=missing_info, 
-                columns=columns, 
+        render_list(rows=missing_info, 
+                    columns=columns, 
+                    id_field="row_key",
+                    on_open=open_entry, 
+                    prefix='missing_times',
+                    title="Wait, some recipes are missing times",
+                    subtext="Click to fix.")
+
+
+    # Render schedule to page
+    render_list(rows=schedule_rows, 
+                columns=schedule_columns, 
                 id_field="row_key",
-                on_open=open_entry, 
-                prefix='missing_times',
-                title="Wait, some recipes are missing times",
-                subtext="Click to fix.")
-
-
-# Render schedule to page
-render_list(rows=schedule_rows, 
-            columns=schedule_columns, 
-            id_field="row_key",
-            prefix="schedule", 
-            title="Prep Schedule",
-            empty_message="There are no menu items assigned to this event yet.")
+                prefix="schedule", 
+                title="Prep Schedule")
 
  

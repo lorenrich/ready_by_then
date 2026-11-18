@@ -24,7 +24,10 @@ from database.menus import (COURSES,
 from styles.page_config import (PAGES, 
                                 setup_page_defaults, 
                                 create_button, 
-                                create_page_header)
+                                create_page_header,
+                                create_subheader,
+                                create_no_records_container,
+                                fill_no_records_container)
 
 # Connect to database
 conn = get_connection()
@@ -119,20 +122,43 @@ menu_display_df = get_menus_for_display(conn=conn)
 available = menu_display_df[~menu_display_df["Menu ID"].isin(attached)]
 names = dict(zip(available["Menu ID"].tolist(), available["Menu"]))
 
-pick_key = f"add_menu_pick_{st.session_state.get('menu_pick_version', 0)}"
-picked = st.selectbox("Add a menu", 
-                      options=list(names), 
-                      format_func=lambda m: names[m], 
-                      index=None, 
-                      placeholder="Choose a menu", 
-                      key=pick_key)
+# Guard against no available menus
+if not names:
+    st.html(create_no_records_container('no_menus'))
+    blank_container = st.container(height=250, 
+                                    key='no_menus', 
+                                    horizontal_alignment='center')
 
-if picked is not None:
-    with st.container(border=True):
-        render_menu(get_selected_menu_recipes(conn=conn, menu_id=picked))
-    if create_button(name='add_menu_to_event'):
-        add_menu_to_event(conn, event_id, picked)
-        st.session_state.menu_pick_version = st.session_state.get(
-            "menu_pick_version", 0) + 1
-        st.rerun()
+    fill_no_records_container(container=blank_container,
+                                icon_name='menus',
+                                header_val='No available menus',
+                                caption_val="Head to the kitchen to create "\
+                                    "menus, recipes, and food and drink items",
+                                button_name='to_kitchen',
+                                page_redirect='recipes')
+
+else:
+    pick_key = f"add_menu_pick_{st.session_state.get('menu_pick_version', 0)}"
+
+    with st.container(key='list_card_add_menu'):
+        create_subheader('Add menus', align='left')
+        picked = st.selectbox("Select menu", 
+                            options=list(names), 
+                            format_func=lambda m: names[m], 
+                            index=None, 
+                            placeholder="Choose a menu", 
+                            key=pick_key)
+
+        if picked is not None:
+            with st.container(border=True):
+                create_subheader('On this menu', align='left')
+                render_menu(
+                    get_selected_menu_recipes(conn=conn, menu_id=picked), 
+                    get_selected_menu_items(conn=conn, menu_id=picked)
+                    )
+            if create_button(name='add_menu_to_event'):
+                add_menu_to_event(conn, event_id, picked)
+                st.session_state.menu_pick_version = st.session_state.get(
+                    "menu_pick_version", 0) + 1
+                st.rerun()
 

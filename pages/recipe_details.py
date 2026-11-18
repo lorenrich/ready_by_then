@@ -163,12 +163,11 @@ with recipe_info_col:
                 st.write(
                     f"Bake at {selected_recipe_df['recipe_preheat_temp']} "\
                     f"degrees {selected_recipe_df["recipe_preheat_unit"]} in "\
-                    f"{selected_recipe_df["recipe_cooking_vessel"]} for "\
-                    f"{selected_recipe_df['recipe_cook_time']} minutes")
+                    f"{selected_recipe_df["recipe_cooking_vessel"].lower()} "\
+                    f"for {selected_recipe_df['recipe_cook_time']} minutes")
             elif cooking_vessel in cooktops:
                 st.write(f"Cook on stove for "\
-                         f"{selected_recipe_df['recipe_cook_time']} minutes "\
-                        "(includes preheat time)")
+                         f"{selected_recipe_df['recipe_cook_time']} minutes ")
                 
 
             st.write(selected_recipe_df["recipe_source"] \

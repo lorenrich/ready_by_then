@@ -15,11 +15,11 @@ from database.recipes import (DEFAULT_PREHEAT_UNITS,
 from styles.page_config import PAGES, setup_page_defaults, create_page_header
 
 INSTRUCTIONS = [
-    'Ready by Then needs your recipe details like cook time and ingredients '\
-        'but not your recipe steps like "Add ingredients to bowl".',
+    'Ready by Then needs your recipe details including cook time and '\
+        'ingredients, but not your recipe steps like "Add ingredients to bowl".',
     "You can come back and edit a recipe at any time, even if it's marked "\
-        "complete.  We'll remind you when you have incomplete recipes.",
-    "Once you create a recipe, you can tag it to a menu from the Menu page."
+        "complete.  You will be reminded when you have incomplete recipes.",
+    "Once you create a recipe, you can tag it to a menu from the Menus page."
 ]
 
 # Connect to database

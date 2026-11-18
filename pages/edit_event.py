@@ -98,7 +98,7 @@ with st.form("edit_event"):
     with col1:
         add_menus = st.form_submit_button("Add menu", type="primary")
     with col2:
-        add_later = st.form_submit_button("I'll add a menu later") 
+        add_later = st.form_submit_button("I'm finished") 
 
     if add_menus or add_later:
         if not event_name.strip():

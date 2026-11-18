@@ -131,6 +131,9 @@ BUTTONS = {
     'back_to_details': dict(label='Back to Event Details', 
                             type='secondary', 
                             icon=':material/arrow_back:'),
+    'to_kitchen': dict(label='Take me to the Kitchen',
+                       type="primary",
+                       icon=':material/arrow_back:'),
 
     # Event buttons
     'events': dict(label="Events", 
@@ -344,8 +347,8 @@ def create_page_header(name, dark_color, light_color):
     """
 
 
-def create_subheader(text):
-    st.markdown(f"""<h3 style="text-align: center; font-size: 20px; 
+def create_subheader(text, align='center'):
+    st.markdown(f"""<h3 style="text-align: {align}; font-size: 20px; 
                 font-color: #2E1A5E;">{text}</h3>""", unsafe_allow_html=True)
 
 

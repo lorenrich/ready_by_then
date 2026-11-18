@@ -53,8 +53,8 @@ with button_container:
 with st.form("create_item", clear_on_submit=True):
     st.write("Let's get started!")
     item_name = \
-        st.text_input('Name your item (you can include your favorite "\
-                      "brands or keep names generic like "dinner rolls")')
+        st.text_input('Name your item (you can include your favorite '\
+                      'brands or keep names generic like "dinner rolls")')
     
     item_type = st.selectbox("Select the item type or add a new one",
                              options=item_types,
