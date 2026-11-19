@@ -23,6 +23,9 @@ from styles.page_config import (PAGES,
                                 setup_page_defaults, 
                                 create_button, 
                                 create_page_header,
+                                create_subheader,
+                                create_no_records_container,
+                                fill_no_records_container,
                                 badge,
                                 render_list)
 
@@ -127,7 +130,19 @@ menu_container = st.container(horizontal=True)
 with menu_container:
     
     if not selected_menu_recipes and not selected_menu_items:
-            st.caption("No items have been added.")
+        st.html(create_no_records_container('no_menu_data'))
+        no_menu_data_container = st.container(key='no_menu_data', 
+                                              height=250, 
+                                              horizontal_alignment='center')
+    
+        fill_no_records_container(container=no_menu_data_container,
+                                  icon_name='menus',
+                                  header_val='Ready to build your menu?',
+                                  caption_val='Start tagging recipes and food '\
+                                    'and drink items to your event',
+                                  button_name='add_recipes_to_menu',
+                                  page_redirect='edit_menu')
+        
     else:
         entries = []
         for recipe_id, name, status, course in selected_menu_recipes:
@@ -180,9 +195,19 @@ with menu_container:
 
 # Write event tags to page   
 if not selected_menu_events:
-        st.caption("This menu has not been added to any events")
-        if create_button(name='events'):
-            st.switch_page(PAGES['events'])
+    st.html(create_no_records_container('no_menu_event'))
+    no_menu_event_container = st.container(key='no_menu_event', 
+                                            height=250, 
+                                            horizontal_alignment='center')
+
+    fill_no_records_container(container=no_menu_event_container,
+                                icon_name='events',
+                                header_val='This menu is not tagged to any '\
+                                    'events',
+                                caption_val='Add your menu to an event',
+                                button_name='events',
+                                page_redirect='events')
+    
 else:
     events = []
     for event_id, name, date, status in selected_menu_events:

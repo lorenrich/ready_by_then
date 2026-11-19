@@ -103,7 +103,7 @@ with st.form("create_recipe"):
     with col1:
         add_now = st.form_submit_button("Add ingredients", type="primary")
     with col2:
-        add_later = st.form_submit_button("I'll add ingredients later")
+        add_later = st.form_submit_button("I'm finished for now")
 
     if add_now or add_later:
         if not recipe_name.strip():

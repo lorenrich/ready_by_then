@@ -19,6 +19,7 @@ from styles.page_config import (PAGES,
                                 setup_page_defaults, 
                                 create_button, 
                                 create_page_header,
+                                create_subheader,
                                 badge,
                                 render_list,
                                 create_no_records_container,
@@ -208,9 +209,8 @@ else:
 
 # Write menu notes
 if selected_event_df['event_notes']:
-    notes_container = st.container(horizontal=True, 
-                                   border=True, 
-                                   key='detail_card')
+    notes_container = st.container(key='info_card_notes')
     with notes_container:
+        create_subheader("Menu notes", align='left')
         st.write(selected_event_df['event_notes'])
 
