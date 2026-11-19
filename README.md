@@ -38,13 +38,10 @@ erDiagram
         int event_id PK
         string event_name
         string event_date
-        string serve_time
+        string event_time
+        string event_serving_time
         int num_adults
         int num_kids
-        int num_hearty_eaters
-        boolean need_kids_menu
-        string dietary_needs
-        boolean event_occurred
         string event_notes
         string event_status
     }
@@ -67,11 +64,11 @@ erDiagram
         int recipe_preheat_temp
         string recipe_preheat_unit
         int recipe_preheat_time
-        int recipe_prep_time
         int recipe_cook_time
         string recipe_source
         string recipe_notes
         string recipe_status
+        int recipe_prep_time
     }
     menu_recipes {
         int menu_id PK, FK
@@ -83,6 +80,7 @@ erDiagram
         int section_id PK
         int recipe_id FK
         string section_name
+        int prep_timing
     }
     recipe_ingredients {
         int ingredient_id PK
@@ -125,48 +123,69 @@ The prep schedule does not provide summary of estimated time to complete prep or
 
 
 ## Technical
-Requires:
+Requires (see ```requirements.txt``` for exact versions):
+- Git
 - Python 3.12+
-- Streamlit 1.63.0
-- Pandas 3.0.5
+- Streamlit
+- Pandas
 
 
 ## Installation & Setup
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install required packages listed in requirements.txt.
-
-### WSL/Linux
+### 1. Clone the repo and create a virtual environment
+#### On macOS/Linux/WSL
 ```
 git clone https://github.com/lorenrich/ready_by_then
 cd ready_by_then
-python 3-m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-python seed.py
-streamlit run app.py
 ```
 
-### Windows
+#### On Windows
 ```
 git clone https://github.com/lorenrich/ready_by_then
 cd ready_by_then
-python 3-m venv .venv
-.venv/Scripts/activate
+python -m venv .venv
+.venv\Scripts\activate
+```
+If PowerShell blocks activation, run ```Set-ExecutionPolicy -Scope Process RemoteSigned``` and try again.
+
+### 2. Install requirements
+Make sure the virtual environment is activate (your prompt starts with .venv), then install the packages listed in ```requirements.txt```
+```
 pip install -r requirements.txt
+```
+
+### 3. Seed and launch the app
+An example database has been provided. To run the app using the example database, from the project root run:
+
+```
 python seed.py
 streamlit run app.py
 ```
 
+To run the app with an empty database, run:
+```
+streamlit run app.py
+```
 
 ## Usage
-App opens at http://localhost:8501 and writes database to locally to your repo directory/ready_by_then.db.
+App opens at http://localhost:8501.  Your data is saved in ```ready_by_then.db``` in the project directory.
 
-Should you want to erase existing data, use the following from the project root to reset the database and run the seed script:
+If you wish to reset the database or if ```seed.py``` is run twice, you will be prompted to reset the database.
+**--reset replaces the existing database and erases any events, menus, and recipes you have added**
 
+To reset the database and remove all sample data, run:
 ```
-rm ready_by_then.db
-python seed.py
+python seed.py --reset
 streamlit run app.py
 ```
+
+If you don't wish to reset the database, proceed with:
+```
+streamlit run app.py
+```
+
+To stop the app run ```Ctrl``` + ```C```
 
 
 ## Roadmap
@@ -175,6 +194,8 @@ This app is v1.0 submitted for my Boot.dev capstone project which was scaled dow
 - 🚧 **Event Specs** - Scaling to accommodate events with "hearty eaters" and notifications for dietary restrictions.
 
 - 🚧 **Upgraded Schedule** - Prep schedule based on event start/meal serving time to estimate when the host should start cooking and how long prep is estimated to take.
+
+- 🚧 **Recipe Scraping and Uploading** - Users can submit URLs for their favorite recipes online or upload a photo of one and the app will translate the recipe data into the form for the user to review
 
 - 🚧 **Custom Lists** - Build custom to-do lists for cleaning, decorations, and gifts linked to your prep schedule where you need it.
 
