@@ -150,7 +150,7 @@ python -m venv .venv
 If PowerShell blocks activation, run ```Set-ExecutionPolicy -Scope Process RemoteSigned``` and try again.
 
 ### 2. Install requirements
-Make sure the virtual environment is activate (your prompt starts with .venv), then install the packages listed in ```requirements.txt```
+Make sure the virtual environment is activated (your prompt starts with .venv), then install the packages listed in ```requirements.txt```
 ```
 pip install -r requirements.txt
 ```
