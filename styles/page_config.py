@@ -293,7 +293,12 @@ def create_button(name, **overrides):
     return st.button(label, **cfg)
 
 
-def create_big_button(key, label, dark_color, light_color, height=250):
+def create_big_button(key, 
+                      label, 
+                      dark_color, 
+                      light_color, 
+                      height=250, 
+                      icon=None):
     st.html(f"""
             <style>
             .st-key-{key} button {{
@@ -315,13 +320,22 @@ def create_big_button(key, label, dark_color, light_color, height=250):
                 color: white !important;
             }}
             .st-key-{key} button p {{
-                color: white;
+                color: #2E1A5E;
                 font-size: 48px;
                 margin: 0;
             }}
+            .st-key-{key} button [data-testid="stMarkdownContainer"] {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            }}
+            .st-key-{key} button [data-testid="stMarkdownContainer"] 
+            p:first-child {{font-size: 64px;
+            }}
             </style>
         """)
-    return st.button(label, key=key, width="stretch")
+    return st.button(label, icon=icon, key=key, width="stretch")
 
 
 def create_page_header(name, dark_color, light_color):
@@ -347,9 +361,19 @@ def create_page_header(name, dark_color, light_color):
     """
 
 
+def create_title_header(text, align='left'):
+    st.markdown(f"""<h1 style="text-align: {align}; font-size: 100px; 
+                font-color: #2E1A5E;">{text}</h1>""", unsafe_allow_html=True)
+    
+
 def create_subheader(text, align='center'):
     st.markdown(f"""<h3 style="text-align: {align}; font-size: 20px; 
                 font-color: #2E1A5E;">{text}</h3>""", unsafe_allow_html=True)
+
+
+def create_tagline(text, align='left'):
+    st.markdown(f"""<h4 style="text-align: {align}; font-size: 35px; 
+                font-color: #2E1A5E;">{text}</h4>""", unsafe_allow_html=True)
 
 
 def create_no_records_container(name):

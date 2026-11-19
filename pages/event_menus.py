@@ -9,8 +9,7 @@ sys.path.insert(0,
 # Continue import statements after locating root
 import streamlit as st
 import pandas as pd
-from datetime import datetime
-from collections import Counter
+import html
 from database.database import DEFAULT_STATUSES, get_connection
 from database.events import get_selected_event
 from database.food_and_drink import get_selected_menu_items
@@ -27,7 +26,8 @@ from styles.page_config import (PAGES,
                                 create_page_header,
                                 create_subheader,
                                 create_no_records_container,
-                                fill_no_records_container)
+                                fill_no_records_container,
+                                badge)
 
 # Connect to database
 conn = get_connection()
@@ -85,6 +85,22 @@ with header_container:
      icon_calendar = ''
      st.write(':material/today: Events')
 
+title_col, action_col = st.columns([5, 3], vertical_alignment='center')
+with title_col:
+    title_col.markdown(
+        f"""<h2 style='margin:0'>{
+            html.escape(selected_event_df['event_name'])} 
+            {badge(selected_event_df['event_status'])}</h2>""", 
+        unsafe_allow_html=True,
+        )
+
+with action_col:
+    button_container = st.container(horizontal=True, 
+                                    horizontal_alignment='right')
+    with button_container:
+        if create_button(name='back_to_details'):
+            st.switch_page(PAGES['event_details'])
+
 # Event Details
 details_container = st.container(horizontal=True, 
                                  border=True, 
@@ -109,13 +125,16 @@ with details_container:
 # Menu review and selection
 event_menus = get_event_menus(conn=conn, event_id=event_id)
 
-for mid, mname, mstatus in event_menus:
-    with st.expander(mname):
-        render_menu(get_selected_menu_recipes(conn=conn, menu_id=mid),
-                    get_selected_menu_items(conn=conn, menu_id=mid))
-        if create_button(name='remove_menu', key=f"remove_menu_{mid}"):
-            remove_menu_from_event(conn, event_id, mid)
-            st.rerun()
+if event_menus:
+    with st.container(key='list_card_added_menus'):
+        create_subheader('Menus on this event', align='left')
+        for mid, mname, mstatus in event_menus:
+            with st.expander(mname):
+                render_menu(get_selected_menu_recipes(conn=conn, menu_id=mid),
+                            get_selected_menu_items(conn=conn, menu_id=mid))
+                if create_button(name='remove_menu', key=f"remove_menu_{mid}"):
+                    remove_menu_from_event(conn, event_id, mid)
+                    st.rerun()
 
 attached = {mid for mid, _, _ in event_menus}
 menu_display_df = get_menus_for_display(conn=conn)
@@ -123,7 +142,7 @@ available = menu_display_df[~menu_display_df["Menu ID"].isin(attached)]
 names = dict(zip(available["Menu ID"].tolist(), available["Menu"]))
 
 # Guard against no available menus
-if not names:
+if not names and not event_menus:
     st.html(create_no_records_container('no_menus'))
     blank_container = st.container(height=250, 
                                     key='no_menus', 
@@ -132,6 +151,20 @@ if not names:
     fill_no_records_container(container=blank_container,
                                 icon_name='menus',
                                 header_val='No available menus',
+                                caption_val="Head to the kitchen to create "\
+                                    "menus, recipes, and food and drink items",
+                                button_name='to_kitchen',
+                                page_redirect='recipes')
+
+elif not names:
+    st.html(create_no_records_container('no_more_menus'))
+    blank_container = st.container(height=250, 
+                                    key='no_more_menus', 
+                                    horizontal_alignment='center')
+
+    fill_no_records_container(container=blank_container,
+                                icon_name='menus',
+                                header_val="Looks like you're out of menus",
                                 caption_val="Head to the kitchen to create "\
                                     "menus, recipes, and food and drink items",
                                 button_name='to_kitchen',
