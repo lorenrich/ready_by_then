@@ -63,7 +63,9 @@ def build_shopping_list(conn, menu_recipes, guest_count, menus):
                 batch_multiplier.append(batch_multiplier[0])
 
             elif ingredient[2] == 'Ingredient':
-                event_amount = ingredient[3] * batch_multiplier[0]
+                amount = ingredient[3]
+                event_amount = amount * batch_multiplier[0] \
+                    if amount is not None else None
                 shopping_list.append((ingredient[0], 
                                       event_amount, 
                                       ingredient[4]))

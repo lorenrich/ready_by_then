@@ -213,7 +213,7 @@ else:
     for event_id, name, date, status in selected_menu_events:
         date_shown = \
             datetime.strptime(date, 
-                               "%Y-%m-%d %H:%M:%S").strftime("%b %d, %Y")
+                               "%Y-%m-%d").strftime("%b %d, %Y")
         events.append({"id": event_id, 
                        "Name": name, 
                        "Date": date_shown, 
